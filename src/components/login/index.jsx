@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { Link, useNavigate } from "react-router-dom";
 
 const validationSchema = Yup.object().shape({
   username: Yup.string().required("Username Is Required"),
@@ -13,6 +14,7 @@ const Login = () => {
     password: "",
   };
 
+  const navigate = useNavigate();
   const [passwordVisible, setPasswordVisible] = useState(false);
 
   const togglePasswordVisibility = () => {
@@ -20,8 +22,8 @@ const Login = () => {
   };
 
   return (
-    <div>
-      <section className="bg-gray-50 dark:bg-gray-900">
+    <div className="h-screen bg-gray-50">
+      <section className="dark:bg-gray-900">
         <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
           <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
             <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
@@ -33,10 +35,11 @@ const Login = () => {
                 validationSchema={validationSchema}
                 onSubmit={(values, { setSubmitting }) => {
                   console.log("login credentials: ", values);
+                  navigate('/home');
                   setSubmitting(false);
                 }}
               >
-                {({ isSubmitting }) => (
+                {({ isSubmitting, resetForm }) => (
                   <Form className="space-y-4 md:space-y-6">
                     <div>
                       <label
@@ -84,7 +87,6 @@ const Login = () => {
                               width="16"
                               height="16"
                               fill="currentColor"
-                              class="bi bi-eye"
                               viewBox="0 0 16 16"
                             >
                               <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
@@ -96,7 +98,6 @@ const Login = () => {
                               width="16"
                               height="16"
                               fill="currentColor"
-                              class="bi bi-eye-slash"
                               viewBox="0 0 16 16"
                             >
                               <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7 7 0 0 0-2.79.588l.77.771A6 6 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755q-.247.248-.517.486z" />
@@ -112,11 +113,14 @@ const Login = () => {
                         className="text-red-500 text-sm"
                       />
                     </div>
+
+                    {/* buttons */}
                     <div className="flex justify-center">
                       <button
                         type="reset"
                         className="text-white mr-6 bg-gray-400 hover:bg-gray-700 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
                         disabled={isSubmitting}
+                        onClick={() => resetForm()}
                       >
                         Reset
                       </button>
@@ -128,6 +132,8 @@ const Login = () => {
                         Sign In
                       </button>
                     </div>
+
+                    <p className="mt-2 text-sm text-center">New User ? <Link className="text-blue-600" to="/signup"><u>Create new account</u></Link></p>
                   </Form>
                 )}
               </Formik>

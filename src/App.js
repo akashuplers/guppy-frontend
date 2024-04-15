@@ -1,10 +1,17 @@
-import Login from "./components/Login.jsx";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Home from "./components/home";
+import Login from "./components/login";
+import SignUp from "./components/signup";
 
 function App() {
   return (
-    <div>
-      <Login />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path='/' element={<Login />} />
+        <Route path='/home' element={<Home />} />
+        <Route path='/signup' element={<SignUp />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
