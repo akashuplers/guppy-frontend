@@ -17,7 +17,12 @@ const Home = () => {
   };
 
   return (
-    <div className="bg-gray-50 h-screen">
+    <div
+      className="bg-green-50 h-screen"
+      // style={{
+      //   backgroundImage: "url(../logo192.png)",
+      // }}
+    >
       {/* head */}
       <div className="flex justify-between px-2 md:px-8 mb-4 md:mb-8 items-center">
         <button
