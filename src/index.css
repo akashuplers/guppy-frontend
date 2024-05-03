@@ -12,6 +12,17 @@ code {
     monospace;
 }
 
+::-webkit-scrollbar {
+  width: 5px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  /* background-color: #888; */
+  background-color: rgb(196, 198, 201);
+  border-radius: 5px;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

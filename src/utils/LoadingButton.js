@@ -1,11 +1,12 @@
 import React from "react";
 
-const LoadingButton = ({ title }) => {
+const LoadingButton = ({ title, className }) => {
   return (
     <button
       disabled
       type="button"
-      className="text-white bg-blue-400 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 dark:bg-blue-600 dark:focus:ring-blue-800 inline-flex items-center"
+      style={{ backgroundImage: 'linear-gradient(to right, violet, rgb(55, 55, 243))' }}
+      className={className || "text-white mt-2 md:mt-8 w-full bg-blue-400 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-3 text-center me-2 inline-flex flex justify-center" }
     >
       <svg
         aria-hidden="true"

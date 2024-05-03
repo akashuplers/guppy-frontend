@@ -1,150 +1,122 @@
-import React from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
-import { useNavigate } from "react-router-dom";
-
-const validationSchema = Yup.object().shape({
-  storyWorld: Yup.string().required("Please Select An Option"),
-  leadWho: Yup.string().required("Field Required"),
-  fileInput: Yup.mixed().required("File Is Required"),
-});
+import { useEffect, useState } from "react";
+import Footer from "../../utils/Footer";
+import SidebarWithHeader from "../sidebar-with-header";
+import Stepper from "./Stepper";
+import StoryUpload from "./StoryUpload";
+import ThreeWsSelection from "./ThreeWsSelection";
+import IdeasSelection from "./IdeasSelection";
+import SituationSelection from "./SituationSelection";
+import { message } from "antd";
+import TitleSelection from "./TitleSelection";
+import { StoryUploadApiProvider } from "../../contexts/ApiContext";
 
 const Home = () => {
-  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isContentOverflowing, setIsContentOverflowing] = useState(false);
+  const [fileName, setFileName] = useState('');
+  const [storyWorld, setStoryWorld] = useState('');
+  const [leadWho, setLeadWho] = useState('');
 
-  const handleSignOut = () => {
-    navigate("/");
-  };
+  useEffect(() => {
+    const handleResize = () => {
+      const bodyHeight = document.body.clientHeight;
+      const windowHeight = window.innerHeight;
+      setIsContentOverflowing(bodyHeight > windowHeight);
+    };
+
+    handleResize(); // Call initially to set the state
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [currentStep]);
+
+  const handlePreviousStep = () => {
+    setCurrentStep(prevStep => prevStep - 1);
+  }
+
+  const handleNextStep = () => {
+    setCurrentStep(prevStep => prevStep + 1);
+  }
+
+  const onStoryUpload = (storyWorldValue, leadWhoValue, fileNameValue) => {
+    setStoryWorld(storyWorldValue);
+    setLeadWho(leadWhoValue);
+    setFileName(fileNameValue.length>50 ? fileNameValue.slice(0,50) + '...' : fileNameValue);
+    message.success('Story Uploaded Successfully !');
+  }
+
+  const onDiscard = () => {
+    setCurrentStep(0);
+    message.success('Changes Discarded Successfully !');
+  }
 
   return (
-    <div
-      className="bg-green-50 h-screen"
-      // style={{
-      //   backgroundImage: "url(../logo192.png)",
-      // }}
-    >
-      {/* head */}
-      <div className="flex justify-between px-2 md:px-8 mb-4 md:mb-8 items-center">
-        <button
-          className="text-white mt-6 bg-gray-400 hover:bg-gray-500 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800"
-          onClick={handleSignOut}
-        >
-          Sign Out
-        </button>
-        <button className="text-white mt-6 bg-red-500 hover:bg-red-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800">
-          All Stories
-        </button>
-      </div>
+    <StoryUploadApiProvider>
+      <SidebarWithHeader>
+        {/* <div className="p-2 relative"> */}
+        <div className={`flex flex-col ${isContentOverflowing ? 'sm:min-h-screen' : ''}`}>
+        {/* <div className={`flex flex-col sm:min-h-screen`}> */}
+          {/* head */}
+          <p className="text-xl md:text-3xl mt-1 mb-2 md:mb-0 font-medium">Guppy Stories</p>
 
-      {/* body */}
-      <section className="dark:bg-gray-900">
-        <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto lg:py-0">
-          <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
-            <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
-              <Formik
-                initialValues={{
-                  storyWorld: "",
-                  leadWho: "",
-                  fileInput: null,
-                }}
-                validationSchema={validationSchema}
-                onSubmit={(values, { setSubmitting }) => {
-                  console.log("Form values:", values);
-                  setSubmitting(false);
-                }}
-              >
-                {({ isSubmitting, setFieldValue }) => (
-                  <Form className="space-y-4">
-                    <div>
-                      <label
-                        htmlFor="storyWorld"
-                        className="block mb-2 text-lg font-medium text-gray-900"
-                      >
-                        Story World
-                      </label>
-                      <Field
-                        as="select"
-                        name="storyWorld"
-                        id="storyWorld"
-                        className="bg-gray-50 block w-full px-2 py-4 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      >
-                        <option value="">
-                          Please Select
-                        </option>
-                        <option value="option1">Story_World_1</option>
-                        <option value="option2">Story_World_2</option>
-                        <option value="option3">Story_World_2</option>
-                      </Field>
-                      <ErrorMessage
-                        name="storyWorld"
-                        component="div"
-                        className="text-red-500 text-sm"
-                      />
-                    </div>
+          {/* body */}
 
-                    <div>
-                      <label
-                        htmlFor="leadWho"
-                        className="block mb-2 text-lg font-medium text-gray-900"
-                      >
-                        Lead WHO
-                      </label>
-                      <Field
-                        type="text"
-                        name="leadWho"
-                        id="leadWho"
-                        className="bg-gray-50 border p-3 border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      />
-                      <ErrorMessage
-                        name="leadWho"
-                        component="div"
-                        className="text-red-500 text-sm"
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="fileInput"
-                        className="block mb-2 text-lg font-medium text-gray-900"
-                      >
-                        Select File
-                      </label>
-                      <input
-                        type="file"
-                        id="fileInput"
-                        name="fileInput"
-                        onChange={(event) => {
-                          setFieldValue(
-                            "fileInput",
-                            event.currentTarget.files[0]
-                          );
-                        }}
-                        className="bg-gray-50 p-3 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      />
-                      <ErrorMessage
-                        name="fileInput"
-                        component="div"
-                        className="text-red-500 text-sm"
-                      />
-                    </div>
-
-                    <div className="text-center">
-                      <button
-                        type="submit"
-                        className="text-white mt-6 bg-blue-600 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
-                        disabled={isSubmitting}
-                      >
-                        Upload
-                      </button>
-                    </div>
-                  </Form>
-                )}
-              </Formik>
-            </div>
+          {/* stepper */}
+          <div className="mt-3 md:mt-8 mb-5 bg-gray-50 p-3 border rounded-md">
+            <Stepper currentStep={currentStep} />
           </div>
+
+          {/* component based on step number */}
+          <div className="flex-grow">
+            {currentStep === 0 ? (
+              <StoryUpload
+                onStoryUpload={onStoryUpload}
+              />
+            ) : currentStep === 1 ? (
+              <ThreeWsSelection
+                storyWorld={storyWorld}
+                leadWho={leadWho}
+                fileName={fileName}
+                onDiscard={onDiscard}
+              />
+            ) : currentStep === 2 ? (
+              <TitleSelection
+                storyWorld={storyWorld}
+                fileName={fileName}
+                onDiscard={onDiscard}
+              />
+            ) : currentStep === 3 ? (
+              <IdeasSelection />
+            ) : (
+              <SituationSelection />
+            )}
+          </div>
+
+          {/* <div className="flex justify-between px-2 md:px-8 mb-4 md:mb-8 items-center"> */}
+            <div className="flex-shrink-0 flex justify-between">
+              <button
+                // className="text-white mt-6 bg-gray-400 hover:bg-gray-500 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800"
+                className={`text-white mt-6 bg-gray-500 disabled:bg-gray-400 hover:bg-gray-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
+                onClick={handlePreviousStep}
+                disabled={currentStep === 0}
+              >
+                {"<<Prev"}
+              </button>
+              <button
+                className={`text-white ml-2 right-6 mt-6 bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
+                onClick={handleNextStep}
+                disabled={currentStep === 0 && ( !fileName || !storyWorld ) }
+              >
+                Next
+              </button>
+            </div>
+          {/* </div> */}
+
+
+          {/* footer */}
+          {/* <Footer className={"sm:ml-64 p-1 bg-yellow-100 border"} /> */}
         </div>
-      </section>
-    </div>
+      </SidebarWithHeader>
+    </StoryUploadApiProvider>
   );
 };
 
