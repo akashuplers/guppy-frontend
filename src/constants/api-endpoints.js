@@ -1,4 +1,4 @@
-export const API_BASE_PATH = "http://20.119.96.181";
+export const API_BASE_PATH = "https://guppy.lille.ai";
 
 export const API_ROUTES = {
     SIGNUP: '/auth/signup',
