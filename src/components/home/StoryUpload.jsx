@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { API_BASE_PATH, API_ROUTES } from "../../constants/api-endpoints";
@@ -15,6 +15,14 @@ const validationSchema = Yup.object().shape({
 
 const StoryUpload = ({ onStoryUpload = () => { } }) => {
   const { setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
+  const [token, setToken] = useState('');
+
+  useEffect(() => {
+    const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
+    if(tokenVal) {
+      setToken(tokenVal);
+    }
+  }, []);
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
@@ -29,7 +37,7 @@ const StoryUpload = ({ onStoryUpload = () => { } }) => {
       formData.append('lead_who', leadWho);
       formData.append('story_lead_who', storyLeadWho);
 
-      const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFrYXNoMkBtYWlsaW5hdG9yLmNvbSIsImlkIjoiNjVmZDYzOGFlY2Q5ODllOGFlOWE4MzFhIiwiaWF0IjoxNzE0NjQ5NzE0LCJleHAiOjE3MTQ3MzYxMTR9.17aIl9R8ZghVYAiVWbdwRAPDK7Lo9jxanz3lnt1NlGk";
+      // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFrYXNoMkBtYWlsaW5hdG9yLmNvbSIsImlkIjoiNjVmZDYzOGFlY2Q5ODllOGFlOWE4MzFhIiwiaWF0IjoxNzE0NjQ5NzE0LCJleHAiOjE3MTQ3MzYxMTR9.17aIl9R8ZghVYAiVWbdwRAPDK7Lo9jxanz3lnt1NlGk";
       const config = {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -54,7 +62,12 @@ const StoryUpload = ({ onStoryUpload = () => { } }) => {
 
     } catch (error) {
       console.error('Error:', error);
-      message.error("Something Went Wrong ! Please Try Again After Some Time !");
+      const errorMessage = error?.response?.data?.message;
+      if(errorMessage) {
+        message.error(errorMessage);
+      } else {
+        message.error("Something Went Wrong ! Please Try Again After Some Time !");
+      }
     }
 
     setSubmitting(false);

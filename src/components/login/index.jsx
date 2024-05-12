@@ -37,7 +37,11 @@ const Login = () => {
     try {
       const apiUrl = API_BASE_PATH + API_ROUTES.LOGIN;
       const output = await axios.post(apiUrl, values);
-      if (output?.data?.data) {
+      const respObj = output?.data?.data;
+      if (respObj) {
+        const { accessToken, email } = respObj;
+        localStorage.setItem("accessToken", JSON.stringify(accessToken));
+        localStorage.setItem("email", JSON.stringify(email));
         message.success("Login Successful !");
         navigate("/home");
       }
