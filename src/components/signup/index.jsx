@@ -98,7 +98,7 @@ const SignUp = () => {
                         <div>
                           <label
                             htmlFor="firstName"
-                            className="block mb-1 md:mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                            className="block mb-1 md:mb-2 text-sm font-medium text-gray-900"
                           >
                             First Name
                           </label>
@@ -119,7 +119,7 @@ const SignUp = () => {
                         <div>
                           <label
                             htmlFor="lastName"
-                            className="block mb-1 md:mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                            className="block mb-1 md:mb-2 text-sm font-medium text-gray-900"
                           >
                             Last Name
                           </label>
@@ -140,7 +140,7 @@ const SignUp = () => {
                         <div>
                           <label
                             htmlFor="email"
-                            className="block mb-1 md:mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                            className="block mb-1 md:mb-2 text-sm font-medium text-gray-900"
                           >
                             Email
                           </label>
@@ -161,7 +161,7 @@ const SignUp = () => {
                         <div>
                           <label
                             htmlFor="password"
-                            className="block mb-1 md:mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                            className="block mb-1 md:mb-2 text-sm font-medium text-gray-900"
                           >
                             Password
                           </label>
@@ -176,7 +176,7 @@ const SignUp = () => {
                             />
                             <button
                               type="button"
-                              className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-600 dark:text-gray-400 focus:outline-none"
+                              className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-600 focus:outline-none"
                               onClick={togglePasswordVisibility}
                             >
                               {!passwordVisible ? (
@@ -214,7 +214,7 @@ const SignUp = () => {
                         <div>
                           <label
                             htmlFor="dob"
-                            className="block mb-1 md:mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                            className="block mb-1 md:mb-2 text-sm font-medium text-gray-900"
                           >
                             Date of Birth
                           </label>

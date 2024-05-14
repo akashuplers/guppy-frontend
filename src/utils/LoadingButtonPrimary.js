@@ -1,12 +1,10 @@
 import React from "react";
 
-const LoadingButton = ({ title, className }) => {
+const LoadingButtonPrimary = ({ title, className }) => {
   return (
     <button
-      disabled
       type="button"
-      style={{ backgroundImage: 'linear-gradient(to right, violet, rgb(55, 55, 243))' }}
-      className={className || "text-white mt-2 md:mt-8 w-full bg-blue-400 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-1 md:py-3 text-center me-2 inline-flex flex justify-center" }
+      className={className || "cursor-not-allowed text-white w-full md:w-[21vw] mt-6 bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"}
     >
       <svg
         aria-hidden="true"
@@ -30,4 +28,4 @@ const LoadingButton = ({ title, className }) => {
   );
 };
 
-export default LoadingButton;
+export default LoadingButtonPrimary;

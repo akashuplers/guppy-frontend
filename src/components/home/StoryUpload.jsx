@@ -5,22 +5,33 @@ import { API_BASE_PATH, API_ROUTES } from "../../constants/api-endpoints";
 import axios from "axios";
 import { message } from "antd";
 import { StoryUploadApiContext } from "../../contexts/ApiContext";
+import { useNavigate } from "react-router-dom";
+import LoadingButtonPrimary from "../../utils/LoadingButtonPrimary";
 
 const validationSchema = Yup.object().shape({
   storyWorld: Yup.string().required("Please Select An Option"),
   leadWho: Yup.string().required("Field Required"),
   storyLeadWho: Yup.string().required("Field Required"),
-  fileInput: Yup.mixed().required("File Is Required"),
+  fileInput: Yup.mixed()
+    .required("File Is Required")
+    .test('fileType', 'Please upload a text file', (value) => {
+      if (!value) return true; // Skip validation if no file is selected
+      const supportedFormats = ['text/plain']; // Add more mime types as needed
+      return supportedFormats.includes(value.type);
+    }),
 });
 
 const StoryUpload = ({ onStoryUpload = () => { } }) => {
   const { setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
   const [token, setToken] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
     if(tokenVal) {
       setToken(tokenVal);
+    } else {
+      navigate('/');
     }
   }, []);
 
@@ -28,8 +39,6 @@ const StoryUpload = ({ onStoryUpload = () => { } }) => {
     try {
       const apiUrl = API_BASE_PATH + API_ROUTES.UPLOAD_STORY;
       const { storyWorld, leadWho, storyLeadWho, fileInput } = values;
-      console.log('form values: ', values);
-
       // api call
       const formData = new FormData();
       formData.append('file', fileInput);
@@ -37,13 +46,13 @@ const StoryUpload = ({ onStoryUpload = () => { } }) => {
       formData.append('lead_who', leadWho);
       formData.append('story_lead_who', storyLeadWho);
 
-      // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFrYXNoMkBtYWlsaW5hdG9yLmNvbSIsImlkIjoiNjVmZDYzOGFlY2Q5ODllOGFlOWE4MzFhIiwiaWF0IjoxNzE0NjQ5NzE0LCJleHAiOjE3MTQ3MzYxMTR9.17aIl9R8ZghVYAiVWbdwRAPDK7Lo9jxanz3lnt1NlGk";
       const config = {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`,
         },
       };
+
       const response = await axios.post(apiUrl, formData, config); // post api request
       console.log(response);
       const output = response?.data?.data;
@@ -62,16 +71,22 @@ const StoryUpload = ({ onStoryUpload = () => { } }) => {
 
     } catch (error) {
       console.error('Error:', error);
-      const errorMessage = error?.response?.data?.message;
-      if(errorMessage) {
-        message.error(errorMessage);
+      const statusCode = error?.response?.status;
+      if(statusCode === 401) {
+        message.error("Not Authorized ! You need to login first !");
+        navigate("/");
+      } else if(statusCode === 500) {
+        message.error("Internal Server Error !");
       } else {
-        message.error("Something Went Wrong ! Please Try Again After Some Time !");
+        const errorMessage = error?.response?.data?.message;
+        if(errorMessage) {
+          message.error(errorMessage);
+        } else {
+          message.error("Something Went Wrong ! Please Try Again After Some Time !");
+        }
       }
     }
-
     setSubmitting(false);
-
   }
 
   return (
@@ -109,9 +124,9 @@ const StoryUpload = ({ onStoryUpload = () => { } }) => {
                         <option value="">
                           Please Select
                         </option>
-                        <option value="Story_World_1">Story_World_1</option>
-                        <option value="Story_World_2">Story_World_2</option>
-                        <option value="Story_World_3">Story_World_3</option>
+                        <option value={1}>Story_World_1</option>
+                        <option value={2}>Story_World_2</option>
+                        <option value={3}>Story_World_3</option>
                       </Field>
                       <ErrorMessage
                         name="storyWorld"
@@ -187,14 +202,19 @@ const StoryUpload = ({ onStoryUpload = () => { } }) => {
                       />
                     </div>
 
-                    <div className="">
-                      <button
-                        type="submit"
-                        className="text-white w-full md:w-[21vw] mt-6 bg-blue-600 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
-                        disabled={isSubmitting}
-                      >
-                        Upload
-                      </button>
+                    <div>
+                      {!isSubmitting ? (
+                        <button
+                          type="submit"
+                          className="text-white w-full md:w-[21vw] px-5 py-3 mt-6 bg-blue-600 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
+                          disabled={isSubmitting}
+                        >
+                          Upload
+                        </button>
+                      ) : (
+                        <LoadingButtonPrimary title={"Loading..."} />
+                      )}
+
                     </div>
                   </Form>
                 )}

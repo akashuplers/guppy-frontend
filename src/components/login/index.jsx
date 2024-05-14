@@ -79,7 +79,7 @@ const Login = () => {
             <div className="flex flex-col items-center justify-center mx-auto md:h-screen lg:py-0">
               <div className="h-[58vh] md:h-[70vh] w-[70vw] md:[30vw] bg-violet-100 border-2 border-indigo-500 md:mt-0 sm:max-w-md xl:p-0">
                 <div className="px-5 mt-3 md:mt-0 md:space-y-6 md:p-8">
-                  <h1 className="text-xl mb-2 md:mb-14 font-bold text-center leading-tight tracking-tight text-violet-500 md:text-2xl dark:text-white">
+                  <h1 className="text-xl mb-2 md:mb-14 font-bold text-center leading-tight tracking-tight text-violet-500 md:text-2xl">
                     LOGIN
                   </h1>
                   <Formik
@@ -92,7 +92,7 @@ const Login = () => {
                         <div>
                           <label
                             htmlFor="email"
-                            className="block mb-1 md:mb-2 text-sm md:text-lg font-medium text-gray-900 dark:text-white"
+                            className="block mb-1 md:mb-2 text-sm md:text-lg font-medium text-gray-900"
                           >
                             Username
                           </label>
@@ -113,7 +113,7 @@ const Login = () => {
                         <div>
                           <label
                             htmlFor="password"
-                            className="block mb-1 md:mb-2 text-sm md:text-lg font-medium text-gray-900 dark:text-white"
+                            className="block mb-1 md:mb-2 text-sm md:text-lg font-medium text-gray-900"
                           >
                             Password
                           </label>
@@ -128,7 +128,7 @@ const Login = () => {
                             />
                             <button
                               type="button"
-                              className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-600 dark:text-gray-400 focus:outline-none"
+                              className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-600 focus:outline-none"
                               onClick={togglePasswordVisibility}
                             >
                               {!passwordVisible ? (
@@ -168,7 +168,7 @@ const Login = () => {
                           <div className="flex items-center h-5">
                             <input id="remember" type="checkbox" value="" className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300" />
                           </div>
-                          <label htmlFor="remember" className="ms-2 text-sm font-medium text-gray-700 dark:text-gray-300">Remember Me</label>
+                          <label htmlFor="remember" className="ms-2 text-sm font-medium text-gray-700">Remember Me</label>
                         </div>
                         {/* buttons */}
                         <div>
