@@ -1,6 +1,6 @@
 import { Button } from "antd";
 
-const FooterButtons = ({ onDiscard = () => {}, onReset = () => {}, onSubmit = () => {} }) => {
+const FooterButtons = ({ onDiscard = () => {}, onReset = () => {}, onSubmit = () => {}, isSubmitting }) => {
 
   return (
     <div className="mt-8 flex justify-between">
@@ -22,6 +22,7 @@ const FooterButtons = ({ onDiscard = () => {}, onReset = () => {}, onSubmit = ()
           onClick={onSubmit}
           type="primary"
           className="bg-blue-50 border-blue-500 text-blue-500"
+          loading={isSubmitting}
         >
           Submit
         </Button>

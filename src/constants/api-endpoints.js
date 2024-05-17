@@ -6,4 +6,10 @@ export const API_ROUTES = {
     RESET_PASSWORD: '/auth/reset-password',
     RESET_PASSWORD_LINK: '/auth/send-reset-link',
     UPLOAD_STORY: '/story/upload-story',
+    GET_STORY_WORLD: '/story/story-world',
+    ADD_STORY_WORLD: '/story/add-story-world',
+    SAVE_Ws: '/story/save-ws',
+    SAVE_TITLES: '/story/save-titles',
+    SAVE_SITUATIONS: '/story/save-situations',
+    DOWNLOAD_STORY: '/story/download-story',
 }

@@ -1,5 +1,6 @@
 import { Button, Checkbox, Modal, Select } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { StoryUploadApiContext } from "../../../contexts/ApiContext";
 const { Option } = Select;
 
 const ModifyPopup = ({
@@ -25,36 +26,37 @@ const ModifyPopup = ({
   const [secondaryWhereOptions, setSecondaryWhereOptions] = useState([]);
   const [secondaryWhereSelectedOptions, setSecondaryWhereSelectedOptions] = useState([]);
 
+  // story upload context
+  const { storyUploadApiResponse } = useContext(StoryUploadApiContext);
+  const { primaryWhos, secondaryWhos, primaryWhats, secondaryWhats, primaryWheres, secondaryWheres } = storyUploadApiResponse;
+
   useEffect(() => {
     setCurrentValue(modifyItemObj.sentence);
-    const storedWsInfo = localStorage.getItem("threeWsInfo");
-    if(storedWsInfo) {
-        const { primaryWhos, secondaryWhos, primaryWhats, secondaryWhats, primaryWheres, secondaryWheres } = JSON.parse(storedWsInfo);
-        // primaryWhos
-        const tablePrimaryWhos = [...modifyItemObj.primaryWhos, ...primaryWhos];
-        setPrimaryWhoOptions(tablePrimaryWhos);
-        setPrimaryWhoSelectedOptions(modifyItemObj.primaryWhos);
-        //secondaryWhos
-        const tableSecondaryWhos = [...modifyItemObj.secondaryWhos, ...secondaryWhos];
-        setSecondaryWhoOptions(tableSecondaryWhos);
-        setSecondaryWhoSelectedOptions(modifyItemObj.secondaryWhos);
-        // primaryWhats
-        const tablePrimaryWhats = [...modifyItemObj.primaryWhats, ...primaryWhats];
-        setPrimaryWhatOptions(tablePrimaryWhats);
-        setPrimaryWhatSelectedOptions(modifyItemObj.primaryWhats);
-        //secondaryWhats
-        const tableSecondaryWhats = [...modifyItemObj.secondaryWhats, ...secondaryWhats];
-        setSecondaryWhatOptions(tableSecondaryWhats);
-        setSecondaryWhatSelectedOptions(modifyItemObj.secondaryWhats);
-        // primaryWheres
-        const tablePrimaryWheres = [...modifyItemObj.primaryWheres, ...primaryWheres];
-        setPrimaryWhereOptions(tablePrimaryWheres);
-        setPrimaryWhereSelectedOptions(modifyItemObj.primaryWheres);
-        //secondaryWheres
-        const tableSecondaryWheres = [...modifyItemObj.secondaryWheres, ...secondaryWheres];
-        setSecondaryWhereOptions(tableSecondaryWheres);
-        setSecondaryWhereSelectedOptions(modifyItemObj.secondaryWheres);
-    }
+
+    // primaryWhos
+    const tablePrimaryWhos = [...new Set([...modifyItemObj.primaryWhos, ...primaryWhos])];
+    setPrimaryWhoOptions(tablePrimaryWhos);
+    setPrimaryWhoSelectedOptions(modifyItemObj.primaryWhos);
+    //secondaryWhos
+    const tableSecondaryWhos = [...new Set([...modifyItemObj.secondaryWhos, ...secondaryWhos])];
+    setSecondaryWhoOptions(tableSecondaryWhos);
+    setSecondaryWhoSelectedOptions(modifyItemObj.secondaryWhos);
+    // primaryWhats
+    const tablePrimaryWhats = [...new Set([...modifyItemObj.primaryWhats, ...primaryWhats])];
+    setPrimaryWhatOptions(tablePrimaryWhats);
+    setPrimaryWhatSelectedOptions(modifyItemObj.primaryWhats);
+    //secondaryWhats
+    const tableSecondaryWhats = [...new Set([...modifyItemObj.secondaryWhats, ...secondaryWhats])];
+    setSecondaryWhatOptions(tableSecondaryWhats);
+    setSecondaryWhatSelectedOptions(modifyItemObj.secondaryWhats);
+    // primaryWheres
+    const tablePrimaryWheres = [...new Set([...modifyItemObj.primaryWheres, ...primaryWheres])];
+    setPrimaryWhereOptions(tablePrimaryWheres);
+    setPrimaryWhereSelectedOptions(modifyItemObj.primaryWheres);
+    //secondaryWheres
+    const tableSecondaryWheres = [...new Set([...modifyItemObj.secondaryWheres, ...secondaryWheres])];
+    setSecondaryWhereOptions(tableSecondaryWheres);
+    setSecondaryWhereSelectedOptions(modifyItemObj.secondaryWheres);
   }, []);
 
   const handleChange = (e) => {
@@ -153,7 +155,7 @@ const ModifyPopup = ({
     }
     onModify(updatedObj);
     onClose();
-  };
+  }
 
   return (
     <Modal
@@ -171,7 +173,7 @@ const ModifyPopup = ({
           </Button>
           <Button
             onClick={handleUpdate}
-            primary
+            type="primary"
             className="bg-blue-50 border-blue-500 text-blue-500"
           >
             Update

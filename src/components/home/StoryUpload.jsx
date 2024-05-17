@@ -7,6 +7,12 @@ import { message } from "antd";
 import { StoryUploadApiContext } from "../../contexts/ApiContext";
 import { useNavigate } from "react-router-dom";
 import LoadingButtonPrimary from "../../utils/LoadingButtonPrimary";
+import AddStoryWorld from "./AddStoryWorld";
+
+const storyWorldsLocal = [
+  { _id: 1, name: "story_world_1", lead_who: "Alice" },
+  { _id: 2, name: "story_world_2", lead_who: "Sara" },
+];
 
 const validationSchema = Yup.object().shape({
   storyWorld: Yup.string().required("Please Select An Option"),
@@ -24,16 +30,69 @@ const validationSchema = Yup.object().shape({
 const StoryUpload = ({ onStoryUpload = () => { } }) => {
   const { setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
   const [token, setToken] = useState('');
+  const [storyWorldOptions, setStoryWorldOptions] = useState([]);
+  const [storyWorldName, setStoryWorldName] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
     const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
     if(tokenVal) {
       setToken(tokenVal);
+      fetchStoryWorlds(tokenVal);
     } else {
       navigate('/');
     }
   }, []);
+
+  const fetchStoryWorlds = async (tokenVal) => {
+    try {
+      const apiUrl = API_BASE_PATH + API_ROUTES.GET_STORY_WORLD;
+      const config = {
+        headers: {
+          Authorization: `Bearer ${tokenVal}`,
+        },
+      };
+      const response = await axios.get(apiUrl, config);
+      const outputArr = response?.data?.data;
+      if(outputArr?.length > 0) {
+        setStoryWorldOptions(outputArr);
+      } else {
+        setStoryWorldOptions(storyWorldsLocal);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      const statusCode = error?.response?.status;
+      if(statusCode === 401) {
+        navigate("/");
+      } else if(statusCode === 500) {
+        message.error("Internal Server Error !");
+      } else {
+        const errorMessage = error?.response?.data?.message;
+        if(errorMessage) {
+          message.error(errorMessage);
+        } else {
+          message.error("Something Went Wrong ! Not able to fetch story worlds !");
+        }
+      }      
+    }
+  }
+
+  const getUpdatedJson = (arr) => {
+    if(arr && arr.length>0) {
+      const updated = arr.map((item, index) => ({
+        id: index + 1,
+        name: item.value,
+        isRadioSelected: false,
+        isCheckboxSelected: false,
+      }));
+      return updated;
+    }
+    return null;
+  }
+
+  const formattedFileName = (fileNameValue) => {
+    return fileNameValue?.length>50 ? fileNameValue?.slice(0,50) + '...' : fileNameValue;
+  }
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
@@ -54,19 +113,30 @@ const StoryUpload = ({ onStoryUpload = () => { } }) => {
       };
 
       const response = await axios.post(apiUrl, formData, config); // post api request
-      console.log(response);
       const output = response?.data?.data;
 
       if(output) {
-        const { story_text } = output;
+        const { story_text, story_id } = output;
+        const wsDataObj = output?.wsData?.ws_data;
+        const { Who, What, Where } = wsDataObj;
+
         const respObj = {
-          storyWorld: storyWorld,
+          story_id: story_id,
+          storyWorld: storyWorldName,
           leadWho: leadWho,
           storyLeadWho: storyLeadWho,
+          fileName: formattedFileName(fileInput?.name),
           storyText: story_text,
-        }
+          whos: getUpdatedJson(Who),
+          updatedWhos: getUpdatedJson(Who),
+          whats: getUpdatedJson(What),
+          updatedWhats: getUpdatedJson(What),
+          wheres: getUpdatedJson(Where),
+          updatedWheres: getUpdatedJson(Where),
+          token: token,
+        };
         setStoryUploadApiResponse(respObj);
-        onStoryUpload(values?.storyWorld, values?.leadWho, fileInput?.name);
+        message.success("Story Uploaded Successfully !");
       }
 
     } catch (error) {
@@ -89,18 +159,32 @@ const StoryUpload = ({ onStoryUpload = () => { } }) => {
     setSubmitting(false);
   }
 
+  const onAddStoryWorld = (storyWorldObj) => {
+    const optionsCur = [...storyWorldOptions];
+    const updated = [...optionsCur, storyWorldObj];
+    setStoryWorldOptions(updated);
+    message.success('Story World Added Successfully !');
+  }
+
   return (
     <div>
       <section className="mt-6">
         <div className="flex flex-col px-6 py-8 mx-auto lg:py-0">
           <div className="w-full bg-white rounded-lg md:mt-0 sm:max-w-md xl:p-0">
             <p className="text-lg md:text-xl font-medium">Step 1 : <span className="underline">Story Upload</span></p>
-            <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
+
+            {/* add story world form */}
+            <p className="text-lg text-gray-600 font-medium mt-3 md:mt-6"><span className="underline">Add Story World</span> (Optional)</p>
+            <AddStoryWorld token={token} onAddStoryWorld={onAddStoryWorld} />
+
+            {/* upload story form */}
+            <p className="text-lg text-gray-600 underline font-medium">Upload Story</p>
+            <div className="px-6 py-6 space-y-4 md:space-y-6 sm:px-8 sm:py-4">
               <Formik
                 initialValues={{
                   storyWorld: "",
-                  leadWho: 'Alice',
-                  storyLeadWho: 'Sara',
+                  leadWho: "",
+                  storyLeadWho: "",
                   fileInput: null,
                 }}
                 validationSchema={validationSchema}
@@ -120,13 +204,18 @@ const StoryUpload = ({ onStoryUpload = () => { } }) => {
                         name="storyWorld"
                         id="storyWorld"
                         className="bg-gray-50 block w-full md:w-[35vw] p-2 border border-gray-300 text-gray-900 sm:text-md rounded-lg focus:ring-primary-600 focus:border-primary-600 p-2"
+                        onChange={(e) => {
+                          const selectedOption = storyWorldOptions?.find(option => option._id === e.target.value);
+                          setFieldValue('storyWorld', e.target.value);
+                          setFieldValue('leadWho', selectedOption ? selectedOption.lead_who : '');
+                          setFieldValue('storyLeadWho', selectedOption ? selectedOption.lead_who : '');
+                          setStoryWorldName(selectedOption ? selectedOption.name : '');
+                        }}
                       >
-                        <option value="">
-                          Please Select
-                        </option>
-                        <option value={1}>Story_World_1</option>
-                        <option value={2}>Story_World_2</option>
-                        <option value={3}>Story_World_3</option>
+                        <option value="">Please Select...</option>
+                        {storyWorldOptions?.map((item, index) => (
+                          <option key={index} value={item?._id}>{item?.name}</option>
+                        ))}
                       </Field>
                       <ErrorMessage
                         name="storyWorld"
@@ -146,7 +235,8 @@ const StoryUpload = ({ onStoryUpload = () => { } }) => {
                         type="text"
                         name="leadWho"
                         id="leadWho"
-                        className="bg-gray-50 w-full md:w-[35vw] border p-2 border-gray-300 text-gray-900 sm:text-md rounded-lg focus:ring-primary-600 focus:border-primary-600 block"
+                        disabled
+                        className="bg-gray-200 w-full md:w-[35vw] border p-2 border-gray-300 text-gray-900 sm:text-md rounded-lg focus:ring-primary-600 focus:border-primary-600 block"
                       />
                       <ErrorMessage
                         name="leadWho"
@@ -166,7 +256,8 @@ const StoryUpload = ({ onStoryUpload = () => { } }) => {
                         type="text"
                         name="storyLeadWho"
                         id="storyLeadWho"
-                        className="bg-gray-50 w-full md:w-[35vw] border p-2 border-gray-300 text-gray-900 sm:text-md rounded-lg focus:ring-primary-600 focus:border-primary-600 block"
+                        disabled
+                        className="bg-gray-200 w-full md:w-[35vw] border p-2 border-gray-300 text-gray-900 sm:text-md rounded-lg focus:ring-primary-600 focus:border-primary-600 block"
                       />
                       <ErrorMessage
                         name="storyLeadWho"

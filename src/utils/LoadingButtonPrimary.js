@@ -4,7 +4,7 @@ const LoadingButtonPrimary = ({ title, className }) => {
   return (
     <button
       type="button"
-      className={className || "cursor-not-allowed text-white w-full md:w-[21vw] mt-6 bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"}
+      className={`cursor-not-allowed text-white w-full md:w-[21vw] mt-6 bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800 ${className}`}
     >
       <svg
         aria-hidden="true"

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Footer from "../../utils/Footer";
 import SidebarWithHeader from "../sidebar-with-header";
 import Stepper from "./Stepper";
@@ -8,14 +8,15 @@ import IdeasSelection from "./IdeasSelection";
 import SituationSelection from "./SituationSelection";
 import { message } from "antd";
 import TitleSelection from "./TitleSelection";
-import { StoryUploadApiProvider } from "../../contexts/ApiContext";
+import { StoryUploadApiContext } from "../../contexts/ApiContext";
 
 const Home = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isContentOverflowing, setIsContentOverflowing] = useState(false);
-  const [fileName, setFileName] = useState('');
-  const [storyWorld, setStoryWorld] = useState('');
-  const [leadWho, setLeadWho] = useState('');
+
+  // story upload context
+  const { storyUploadApiResponse } = useContext(StoryUploadApiContext);
+  const { storyWorld, leadWho } = storyUploadApiResponse;
 
   useEffect(() => {
     const handleResize = () => {
@@ -37,24 +38,16 @@ const Home = () => {
     setCurrentStep(prevStep => prevStep + 1);
   }
 
-  const onStoryUpload = (storyWorldValue, leadWhoValue, fileNameValue) => {
-    setStoryWorld(storyWorldValue);
-    setLeadWho(leadWhoValue);
-    setFileName(fileNameValue.length>50 ? fileNameValue.slice(0,50) + '...' : fileNameValue);
-    message.success('Story Uploaded Successfully !');
-  }
-
   const onDiscard = () => {
     setCurrentStep(0);
     message.success('Changes Discarded Successfully !');
   }
 
   return (
-    <StoryUploadApiProvider>
       <SidebarWithHeader>
         {/* <div className="p-2 relative"> */}
-        <div className={`flex flex-col ${isContentOverflowing ? 'sm:min-h-screen' : ''}`}>
-        {/* <div className={`flex flex-col sm:min-h-screen`}> */}
+        {/* <div className={`flex flex-col ${isContentOverflowing ? 'sm:min-h-screen' : ''}`}> */}
+        <div className={`flex flex-col sm:min-h-screen`}>
           {/* head */}
           <p className="text-xl md:text-3xl mt-1 mb-2 md:mb-0 font-medium">Guppy Stories</p>
 
@@ -68,20 +61,13 @@ const Home = () => {
           {/* component based on step number */}
           <div className="flex-grow">
             {currentStep === 0 ? (
-              <StoryUpload
-                onStoryUpload={onStoryUpload}
-              />
+              <StoryUpload />
             ) : currentStep === 1 ? (
               <ThreeWsSelection
-                storyWorld={storyWorld}
-                leadWho={leadWho}
-                fileName={fileName}
                 onDiscard={onDiscard}
               />
             ) : currentStep === 2 ? (
               <TitleSelection
-                storyWorld={storyWorld}
-                fileName={fileName}
                 onDiscard={onDiscard}
               />
             ) : currentStep === 3 ? (
@@ -104,7 +90,7 @@ const Home = () => {
               <button
                 className={`text-white ml-2 right-6 mt-6 bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
                 onClick={handleNextStep}
-                disabled={currentStep === 0 && ( !fileName || !storyWorld ) }
+                disabled={currentStep === 0 && ( !storyWorld || !leadWho )}
               >
                 Next
               </button>
@@ -116,7 +102,6 @@ const Home = () => {
           {/* <Footer className={"sm:ml-64 p-1 bg-yellow-100 border"} /> */}
         </div>
       </SidebarWithHeader>
-    </StoryUploadApiProvider>
   );
 };
 
