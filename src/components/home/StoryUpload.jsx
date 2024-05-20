@@ -27,7 +27,7 @@ const validationSchema = Yup.object().shape({
     }),
 });
 
-const StoryUpload = ({ onStoryUpload = () => { } }) => {
+const StoryUpload = () => {
   const { setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
   const [token, setToken] = useState('');
   const [storyWorldOptions, setStoryWorldOptions] = useState([]);

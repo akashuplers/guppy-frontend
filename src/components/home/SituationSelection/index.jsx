@@ -5,42 +5,38 @@ import DeleteConfirmationDialog from "../../../utils/modals/DeleteConfirmationDi
 import { StoryUploadApiContext } from "../../../contexts/ApiContext";
 import { API_BASE_PATH, API_ROUTES } from "../../../constants/api-endpoints";
 import axios from "axios";
-import TitleModifyPopup from "./TitleModifyPopup";
 import { useNavigate } from "react-router-dom";
+import SituationActionModifyPopup from "../SituationActionModifyPopup";
 
 const getCSVsFromList = (list_of_strings) => {
   return list_of_strings.join(", ");
 };
 
-const TitleSelection = ({ onDiscard = () => {} }) => {
+const SituationSelection = ({ onDiscard = () => {} }) => {
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState({});
-  const [titleSelectionItems, setTitleSelectionItems] = useState([]);
+  const [situationSelectionItems, setSituationSelectionItems] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
-  const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos, secondaryWhos, primaryWhats, secondaryWhats, primaryWheres, secondaryWheres } = storyUploadApiResponse;
+  const { token, story_id, storyWorld, fileName, situations, updatedSituations, primaryWhos, secondaryWhos, primaryWhats, secondaryWhats, primaryWheres, secondaryWheres } = storyUploadApiResponse;
+
 
   useEffect(() => {
-    setTitleSelectionItems(updatedTitles);
+    setSituationSelectionItems(updatedSituations);
   }, []);
 
-  const bodyForSaveTitlesApi = () => {
-    const updated = titleSelectionItems?.map((item) => ({
-      Title: item.sentence,
-      Who_Primary: item.primaryWhos,
-      Who_Secondary: item.secondaryWhos,
-      What_Primary: item.primaryWhats,
-      What_Secondary: item.secondaryWhats,
-      Where_Primary: item.primaryWheres,
-      Where_Secondary: item.secondaryWheres,
+  const bodyForSaveSituationsApi = () => {
+    const updated = situationSelectionItems?.map((item) => ({
+      idea: item.sentence,
+      type: "Situation",
     }));
     const body = {
-      titles: updated,
       story_id: story_id,
+      ideas: updated,
     };
     return body;
   };
@@ -57,6 +53,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
         primaryWheres: primaryWheres,
         secondaryWheres: secondaryWheres,
       }));
+      console.log('updated actions: ', updated)
       return updated;
     }
     return null;
@@ -66,8 +63,8 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
     setIsSubmitting(true);
     try {
       // api call
-      const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_TITLES;
-      const payload = bodyForSaveTitlesApi();
+      const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_SITUATIONS;
+      const payload = bodyForSaveSituationsApi();
       console.log("payload: ", payload);
 
       const config = {
@@ -78,23 +75,23 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
       };
       message.loading("Processing...");
       const response = await axios.post(apiUrl, payload, config); // post api request
-      console.log("save titles response: ", response);
+      console.log("save situations response: ", response);
       const output = response?.data;
       if(output) {
-        const { situations } = output;
+        const { actions } = output;
         
         // update context
         const contextObj = { ...storyUploadApiResponse };
         const updatedContextObj = {
           ...contextObj,
-          updatedTitles: titleSelectionItems,
-          situations: getUpdatedJson(situations),
-          updatedSituations: getUpdatedJson(situations),
+          updatedSituations: situationSelectionItems,
+          actions: getUpdatedJson(actions),
+          updatedActions: getUpdatedJson(actions),
         };
         setStoryUploadApiResponse(updatedContextObj);
-        message.success("Titles Saved Successfully !");
+        message.success("Situations Saved Successfully !");
       } else {
-        message.error("Error In Saving Titles ! Unable To Fetch Response !");
+        message.error("Error In Saving Situations ! Unable To Fetch Response !");
       }
     } catch (error) {
       console.error("Error:", error);
@@ -109,7 +106,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
         if (errorMessage) {
           message.error(errorMessage);
         } else {
-          message.error("Error In Saving Titles ! Unable To Fetch Response !");
+          message.error("Error In Saving Situations ! Unable To Fetch Response !");
         }
       }
     }
@@ -117,22 +114,22 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
   };
 
   const onModify = (updatedObj) => {
-    const curData = [...titleSelectionItems];
+    const curData = [...situationSelectionItems];
     const modified = curData.map((ele) =>
       ele.id === selectedRow.id ? updatedObj : ele
     );
-    setTitleSelectionItems(modified);
+    setSituationSelectionItems(modified);
     message.success("Updated Successfully !");
   };
 
   const onReset = () => {
-    setTitleSelectionItems(titles);
+    setSituationSelectionItems(situations);
     message.success("Reset Successfully !");
   };
 
   const handleAddRow = () => {
     const newObj = {
-      id: titleSelectionItems?.length + 1,
+      id: situationSelectionItems?.length + 1,
       sentence: "",
       primaryWhos: [],
       secondaryWhos: [],
@@ -141,22 +138,22 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
       primaryWheres: [],
       secondaryWheres: [],
     };
-    const curData = [newObj, ...titleSelectionItems];
-    setTitleSelectionItems(curData);
+    const curData = [newObj, ...situationSelectionItems];
+    setSituationSelectionItems(curData);
     message.success("New Row Added Successfully !");
   };
 
   const handleDelete = () => {
-    const curData = [...titleSelectionItems];
+    const curData = [...situationSelectionItems];
     const updated = curData.filter((ele) => ele.id !== selectedRow.id);
-    setTitleSelectionItems(updated);
+    setSituationSelectionItems(updated);
     message.success("Deleted Successfully !");
   };
 
-  const titleSelectionColumns = [
+  const situationSelectionColumns = [
     {
       dataIndex: "sentence",
-      title: "Title / Sentence",
+      title: "Situation",
       render: (val) => {
         return (
           <p title={val?.length > 25 ? val : ""}>
@@ -318,7 +315,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
   return (
     <div className="px-5 pb-5 rounded-md border">
       <p className="text-lg md:text-xl font-medium mt-5 mb-3 md:mb-5">
-        Step-3 : <span className="underline">Title Selection</span>
+        Step-4 : <span className="underline">Situation Selection</span>
       </p>
       <p className="text-lg md:text-xl mb-2 md:mb-4 text-violet-500">
         {storyWorld}
@@ -335,26 +332,27 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
       {/* body */}
       <div>
         <div className="flex justify-between items-center mb-3">
-          <p className="text-lg md:text-xl underline">TITLES</p>
+          <p className="text-lg md:text-xl underline">SITUATIONS</p>
           <Button className="bg-blue-500 text-white h-9" onClick={handleAddRow}>
             ADD NEW
           </Button>
         </div>
         <div className="overflow-auto">
           <Table
-            dataSource={titleSelectionItems}
-            columns={titleSelectionColumns}
+            dataSource={situationSelectionItems}
+            columns={situationSelectionColumns}
           />
         </div>
       </div>
 
       {/* modify popup */}
       {showModifyPopup && (
-        <TitleModifyPopup
+        <SituationActionModifyPopup
           open={showModifyPopup}
           modifyItemObj={selectedRow}
           onClose={() => setShowModifyPopup(false)}
           onModify={onModify}
+          type="situation"
         />
       )}
 
@@ -377,4 +375,4 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
   );
 };
 
-export default TitleSelection;
+export default SituationSelection;

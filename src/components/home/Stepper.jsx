@@ -14,10 +14,10 @@ const Stepper = ({ currentStep }) => (
                 title: "Title Selection",
             },
             {
-                title: "Ideas Selection",
+                title: "Situation Selection",
             },
             {
-                title: "Situation Selection",
+                title: "Action Selection",
             },
         ]}
     />

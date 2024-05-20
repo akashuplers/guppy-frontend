@@ -37,7 +37,7 @@ const EditModal = ({ open, onClose = () => {}, editItemObj, onUpdate = () => {} 
           >
             Cancel
           </Button>
-          <Button onClick={handleUpdate} primary className="bg-blue-50 border-blue-500 text-blue-500">
+          <Button onClick={handleUpdate} type="primary" className="bg-blue-50 border-blue-500 text-blue-500">
             Update
           </Button>
         </div>,

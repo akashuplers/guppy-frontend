@@ -378,7 +378,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
       {fileName && (
         <p className="text-md md:text-lg mb-4 md:mb-6">
           File Uploaded :{" "}
-          <span className="font-medium text-blue-500 underline">
+          <span className="font-medium text-blue-500">
             {fileName}
           </span>
         </p>

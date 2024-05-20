@@ -11,5 +11,6 @@ export const API_ROUTES = {
     SAVE_Ws: '/story/save-ws',
     SAVE_TITLES: '/story/save-titles',
     SAVE_SITUATIONS: '/story/save-situations',
+    SAVE_ACTIONS: '/story/save-actions',
     DOWNLOAD_STORY: '/story/download-story',
 }

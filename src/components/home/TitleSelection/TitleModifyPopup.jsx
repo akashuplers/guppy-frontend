@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { StoryUploadApiContext } from "../../../contexts/ApiContext";
 const { Option } = Select;
 
-const ModifyPopup = ({
+const TitleModifyPopup = ({
   open,
   onClose = () => {},
   modifyItemObj,
@@ -428,4 +428,4 @@ const ModifyPopup = ({
   );
 };
 
-export default ModifyPopup;
+export default TitleModifyPopup;

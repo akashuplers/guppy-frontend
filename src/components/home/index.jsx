@@ -4,11 +4,11 @@ import SidebarWithHeader from "../sidebar-with-header";
 import Stepper from "./Stepper";
 import StoryUpload from "./StoryUpload";
 import ThreeWsSelection from "./ThreeWsSelection";
-import IdeasSelection from "./IdeasSelection";
 import SituationSelection from "./SituationSelection";
 import { message } from "antd";
 import TitleSelection from "./TitleSelection";
 import { StoryUploadApiContext } from "../../contexts/ApiContext";
+import ActionSelection from "./ActionSelection";
 
 const Home = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -38,9 +38,11 @@ const Home = () => {
     setCurrentStep(prevStep => prevStep + 1);
   }
 
-  const onDiscard = () => {
+  const onDiscard = async () => {
     setCurrentStep(0);
     message.success('Changes Discarded Successfully !');
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    window.location.reload();
   }
 
   return (
@@ -71,9 +73,13 @@ const Home = () => {
                 onDiscard={onDiscard}
               />
             ) : currentStep === 3 ? (
-              <IdeasSelection />
+              <SituationSelection
+                onDiscard={onDiscard}
+              />
             ) : (
-              <SituationSelection />
+              <ActionSelection
+                onDiscard={onDiscard}
+              />
             )}
           </div>
 
