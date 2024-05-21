@@ -116,7 +116,7 @@ const StoryUpload = () => {
       const output = response?.data?.data;
 
       if(output) {
-        const { story_text, story_id, _id } = output;
+        const { story_text, story_id, story_world_id } = output;
         const wsDataObj = output?.wsData?.ws_data;
         const { Who, What, Where } = wsDataObj;
         const contextObj = { ...storyUploadApiResponse };
@@ -125,7 +125,7 @@ const StoryUpload = () => {
           ...contextObj,
           story_id: story_id,
           storyWorld: storyWorldName,
-          storyWorldId: _id,
+          storyWorldId: story_world_id,
           leadWho: leadWho,
           storyLeadWho: storyLeadWho,
           fileName: formattedFileName(fileInput?.name),
