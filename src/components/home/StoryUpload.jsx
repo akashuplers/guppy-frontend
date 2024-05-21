@@ -28,7 +28,7 @@ const validationSchema = Yup.object().shape({
 });
 
 const StoryUpload = () => {
-  const { setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
+  const { storyUploadApiResponse, setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
   const [token, setToken] = useState('');
   const [storyWorldOptions, setStoryWorldOptions] = useState([]);
   const [storyWorldName, setStoryWorldName] = useState('');
@@ -87,7 +87,7 @@ const StoryUpload = () => {
       }));
       return updated;
     }
-    return null;
+    return [];
   }
 
   const formattedFileName = (fileNameValue) => {
@@ -116,13 +116,16 @@ const StoryUpload = () => {
       const output = response?.data?.data;
 
       if(output) {
-        const { story_text, story_id } = output;
+        const { story_text, story_id, _id } = output;
         const wsDataObj = output?.wsData?.ws_data;
         const { Who, What, Where } = wsDataObj;
+        const contextObj = { ...storyUploadApiResponse };
 
         const respObj = {
+          ...contextObj,
           story_id: story_id,
           storyWorld: storyWorldName,
+          storyWorldId: _id,
           leadWho: leadWho,
           storyLeadWho: storyLeadWho,
           fileName: formattedFileName(fileInput?.name),

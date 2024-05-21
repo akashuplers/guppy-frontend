@@ -260,7 +260,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
       }));
       return updated;
     }
-    return null;
+    return [];
   }
 
   const onSave = async () => {
@@ -269,7 +269,6 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
       // api call
       const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_Ws;
       const payload = bodyForSaveWsApi();
-      console.log("payload: ", payload);
 
       const config = {
         headers: {

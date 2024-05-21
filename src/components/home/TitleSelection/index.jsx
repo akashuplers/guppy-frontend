@@ -59,7 +59,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
       }));
       return updated;
     }
-    return null;
+    return [];
   }
 
   const onSave = async () => {
@@ -68,7 +68,6 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
       // api call
       const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_TITLES;
       const payload = bodyForSaveTitlesApi();
-      console.log("payload: ", payload);
 
       const config = {
         headers: {

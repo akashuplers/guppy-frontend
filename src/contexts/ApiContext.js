@@ -6,6 +6,7 @@ const initialStateObj = {
   token: "",
   story_id: "",
   storyWorld: "",
+  storyWorldId: "",
   leadWho: "",
   storyLeadWho: "",
   fileName: "",
@@ -23,6 +24,11 @@ const initialStateObj = {
   primaryWheres: [],
   secondaryWheres: [],
   titles: [],
+  updatedTitles: [],
+  situations: [],
+  updatedSituations: [],
+  actions: [],
+  updatedActions: [],
 };
 
 const StoryUploadApiProvider = ({ children }) => {

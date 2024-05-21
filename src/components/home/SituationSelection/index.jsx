@@ -53,10 +53,9 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
         primaryWheres: primaryWheres,
         secondaryWheres: secondaryWheres,
       }));
-      console.log('updated actions: ', updated)
       return updated;
     }
-    return null;
+    return [];
   }
 
   const onSave = async () => {
@@ -65,7 +64,6 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
       // api call
       const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_SITUATIONS;
       const payload = bodyForSaveSituationsApi();
-      console.log("payload: ", payload);
 
       const config = {
         headers: {
@@ -88,6 +86,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
           actions: getUpdatedJson(actions),
           updatedActions: getUpdatedJson(actions),
         };
+        console.log('updatedContextObj: ', updatedContextObj);
         setStoryUploadApiResponse(updatedContextObj);
         message.success("Situations Saved Successfully !");
       } else {

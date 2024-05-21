@@ -9,6 +9,7 @@ import { message } from "antd";
 import TitleSelection from "./TitleSelection";
 import { StoryUploadApiContext } from "../../contexts/ApiContext";
 import ActionSelection from "./ActionSelection";
+import DownloadStory from "./DownloadStory";
 
 const Home = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -76,8 +77,12 @@ const Home = () => {
               <SituationSelection
                 onDiscard={onDiscard}
               />
-            ) : (
+            ) : currentStep === 4 ? (
               <ActionSelection
+                onDiscard={onDiscard}
+              />
+            ) : (
+              <DownloadStory
                 onDiscard={onDiscard}
               />
             )}
@@ -96,7 +101,7 @@ const Home = () => {
               <button
                 className={`text-white ml-2 right-6 mt-6 bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
                 onClick={handleNextStep}
-                disabled={currentStep === 0 && ( !storyWorld || !leadWho )}
+                disabled={(currentStep === 0 && ( !storyWorld || !leadWho )) || currentStep === 5}
               >
                 Next
               </button>
