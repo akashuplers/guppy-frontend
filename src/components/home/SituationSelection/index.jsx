@@ -368,6 +368,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
         onDiscard={onDiscard}
         onReset={onReset}
         onSubmit={onSave}
+        saveType="Situations"
         isSubmitting={isSubmitting}
       />
     </div>

@@ -370,6 +370,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
         onDiscard={onDiscard}
         onReset={onReset}
         onSubmit={onSave}
+        saveType="Titles"
         isSubmitting={isSubmitting}
       />
     </div>

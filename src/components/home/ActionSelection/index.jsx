@@ -346,6 +346,7 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
         onDiscard={onDiscard}
         onReset={onReset}
         onSubmit={onSave}
+        saveType="Actions"
         isSubmitting={isSubmitting}
       />
     </div>

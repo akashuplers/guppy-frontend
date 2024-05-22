@@ -1,7 +1,7 @@
 import { Button, Popconfirm } from "antd";
 import { useState } from "react";
 
-const FooterButtons = ({ onDiscard = () => {}, onReset = () => {}, onSubmit = () => {}, isSubmitting }) => {
+const FooterButtons = ({ onDiscard = () => {}, onReset = () => {}, onSubmit = () => {}, saveType, isSubmitting }) => {
   const [showDiscardPopConfirm, setShowDiscardPopConfirm] = useState(false);
   const [showResetPopConfirm, setShowResetPopConfirm] = useState(false);
 
@@ -52,7 +52,7 @@ const FooterButtons = ({ onDiscard = () => {}, onReset = () => {}, onSubmit = ()
           className="bg-blue-50 border-blue-500 text-blue-500"
           loading={isSubmitting}
         >
-          Submit
+          Save {saveType}
         </Button>
       </div>
     </div>

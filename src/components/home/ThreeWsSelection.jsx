@@ -685,6 +685,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
         onDiscard={handleDiscard}
         onReset={onReset}
         onSubmit={onSave}
+        saveType="Ws"
         isSubmitting={isSubmitting}
       />
     </div>
