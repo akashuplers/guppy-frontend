@@ -6,7 +6,8 @@ import { StoryUploadApiContext } from "../../../contexts/ApiContext";
 import { API_BASE_PATH, API_ROUTES } from "../../../constants/api-endpoints";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import SituationActionModifyPopup from "../SituationActionModifyPopup";
+import ModifySelectionPopup from "../ModifySelectionPopup";
+import StoryTextPopup from "../StoryTextPopup";
 
 const getCSVsFromList = (list_of_strings) => {
   return list_of_strings.join(", ");
@@ -18,12 +19,12 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
   const [selectedRow, setSelectedRow] = useState({});
   const [actionSelectionItems, setActionSelectionItems] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showStoryModal, setShowStoryModal] = useState(false);
   const navigate = useNavigate();
 
   // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
-  const { token, story_id, storyWorld, fileName, actions, updatedActions } = storyUploadApiResponse;
-
+  const { token, story_id, storyWorld, fileName, actions, updatedActions, primaryWhos } = storyUploadApiResponse;
 
   useEffect(() => {
     setActionSelectionItems(updatedActions);
@@ -43,6 +44,7 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
 
   const onSave = async () => {
     setIsSubmitting(true);
+    let alertKey;
     try {
       // api call
       const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_ACTIONS;
@@ -54,11 +56,10 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
           Authorization: `Bearer ${token}`,
         },
       };
-      message.loading("Processing...");
+      alertKey = message.loading("Saving Actions...", 0).key;
       const response = await axios.post(apiUrl, payload, config); // post api request
-      console.log("save actions response: ", response);
       const output = response?.data;
-      if(output) {        
+      if(output) {
         // update context
         const contextObj = { ...storyUploadApiResponse };
         const updatedContextObj = {
@@ -66,12 +67,14 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
           updatedActions: actionSelectionItems,
         };
         setStoryUploadApiResponse(updatedContextObj);
+        message.destroy(alertKey);
         message.success("Actions Saved Successfully !");
       } else {
         message.error("Error In Saving Actions ! Unable To Fetch Response !");
       }
     } catch (error) {
       console.error("Error:", error);
+      message.destroy(alertKey);
       const statusCode = error?.response?.status;
       if (statusCode === 401) {
         message.error("Not Authorized ! You need to login first !");
@@ -108,7 +111,7 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
     const newObj = {
       id: actionSelectionItems?.length + 1,
       sentence: "",
-      primaryWhos: [],
+      primaryWhos,
       secondaryWhos: [],
       primaryWhats: [],
       secondaryWhats: [],
@@ -300,7 +303,7 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
       {fileName && (
         <p className="text-md md:text-lg mb-4 md:mb-6">
           File Uploaded :{" "}
-          <span className="font-medium text-blue-500">
+          <span title="Click to see story text" className="font-medium text-blue-500 cursor-pointer" onClick={() => setShowStoryModal(true)} >
             {fileName}
           </span>
         </p>
@@ -324,7 +327,7 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
 
       {/* modify popup */}
       {showModifyPopup && (
-        <SituationActionModifyPopup
+        <ModifySelectionPopup
           open={showModifyPopup}
           modifyItemObj={selectedRow}
           onClose={() => setShowModifyPopup(false)}
@@ -339,6 +342,14 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
           open={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
           onConfirm={handleDelete}
+        />
+      )}
+
+      {/* story text */}
+      {showStoryModal && (
+        <StoryTextPopup
+          open={showStoryModal}
+          onClose={() => setShowStoryModal(false)}
         />
       )}
 

@@ -16,7 +16,7 @@ const storyWorldsLocal = [
 
 const validationSchema = Yup.object().shape({
   storyWorld: Yup.string().required("Please Select An Option"),
-  leadWho: Yup.string().required("Field Required"),
+  storyWorldLead: Yup.string().required("Field Required"),
   storyLeadWho: Yup.string().required("Field Required"),
   fileInput: Yup.mixed()
     .required("File Is Required")
@@ -27,7 +27,7 @@ const validationSchema = Yup.object().shape({
     }),
 });
 
-const StoryUpload = () => {
+const StoryUpload = ({ onSuccess = () => {} }) => {
   const { storyUploadApiResponse, setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
   const [token, setToken] = useState('');
   const [storyWorldOptions, setStoryWorldOptions] = useState([]);
@@ -77,6 +77,19 @@ const StoryUpload = () => {
     }
   }
 
+  const getWhosUpdatedJson = (arr, storyWorldLead) => {
+    if(arr && arr.length>0) {
+      const updated = arr.map((item, index) => ({
+        id: index + 1,
+        name: item.value,
+        isRadioSelected: item.value?.toLowerCase()===storyWorldLead?.toLowerCase(),
+        isCheckboxSelected: false,
+      }));
+      return updated;
+    }
+    return [];
+  }
+
   const getUpdatedJson = (arr) => {
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
@@ -95,14 +108,15 @@ const StoryUpload = () => {
   }
 
   const handleSubmit = async (values, { setSubmitting }) => {
+    let alertKey;
     try {
       const apiUrl = API_BASE_PATH + API_ROUTES.UPLOAD_STORY;
-      const { storyWorld, leadWho, storyLeadWho, fileInput } = values;
+      const { storyWorld, storyWorldLead, storyLeadWho, fileInput } = values;
       // api call
       const formData = new FormData();
       formData.append('file', fileInput);
       formData.append('story_world', storyWorld);
-      formData.append('lead_who', leadWho);
+      formData.append('lead_who', storyWorldLead);
       formData.append('story_lead_who', storyLeadWho);
 
       const config = {
@@ -112,6 +126,9 @@ const StoryUpload = () => {
         },
       };
 
+      // show infinite loader alert
+      alertKey = message.loading('Your Story Is Getting Uploaded...', 0).key;
+      
       const response = await axios.post(apiUrl, formData, config); // post api request
       const output = response?.data?.data;
 
@@ -126,24 +143,30 @@ const StoryUpload = () => {
           story_id: story_id,
           storyWorld: storyWorldName,
           storyWorldId: story_world_id,
-          leadWho: leadWho,
+          storyWorldLead: storyWorldLead,
           storyLeadWho: storyLeadWho,
           fileName: formattedFileName(fileInput?.name),
           storyText: story_text,
-          whos: getUpdatedJson(Who),
-          updatedWhos: getUpdatedJson(Who),
+          whos: getWhosUpdatedJson(Who, storyWorldLead),
+          updatedWhos: getWhosUpdatedJson(Who, storyWorldLead),
           whats: getUpdatedJson(What),
           updatedWhats: getUpdatedJson(What),
           wheres: getUpdatedJson(Where),
           updatedWheres: getUpdatedJson(Where),
+          primaryWhos: [storyWorldLead?.toLowerCase()],
           token: token,
         };
-        setStoryUploadApiResponse(respObj);
-        message.success("Story Uploaded Successfully !");
+        setStoryUploadApiResponse(respObj);        
+        onSuccess();
+
+        // alert
+        message.destroy(alertKey); // stop infinite loader alert
+        message.success("Story Uploaded Successfully !"); // success alert
       }
 
     } catch (error) {
       console.error('Error:', error);
+      message.destroy(alertKey);
       const statusCode = error?.response?.status;
       if(statusCode === 401) {
         message.error("Not Authorized ! You need to login first !");
@@ -186,7 +209,7 @@ const StoryUpload = () => {
               <Formik
                 initialValues={{
                   storyWorld: "",
-                  leadWho: "",
+                  storyWorldLead: "",
                   storyLeadWho: "",
                   fileInput: null,
                 }}
@@ -210,7 +233,7 @@ const StoryUpload = () => {
                         onChange={(e) => {
                           const selectedOption = storyWorldOptions?.find(option => option._id === e.target.value);
                           setFieldValue('storyWorld', e.target.value);
-                          setFieldValue('leadWho', selectedOption ? selectedOption.lead_who : '');
+                          setFieldValue('storyWorldLead', selectedOption ? selectedOption.lead_who : '');
                           setFieldValue('storyLeadWho', selectedOption ? selectedOption.lead_who : '');
                           setStoryWorldName(selectedOption ? selectedOption.name : '');
                         }}
@@ -229,19 +252,19 @@ const StoryUpload = () => {
 
                     <div>
                       <label
-                        htmlFor="leadWho"
+                        htmlFor="storyWorldLead"
                         className="block mb-2 text-md md:text-lg font-medium text-gray-900"
                       >
-                        Lead WHO
+                        Story World Lead
                       </label>
                       <Field
                         type="text"
-                        name="leadWho"
-                        id="leadWho"
+                        name="storyWorldLead"
+                        id="storyWorldLead"
                         className="bg-gray-50 w-full md:w-[35vw] border p-2 border-gray-300 text-gray-900 sm:text-md rounded-lg focus:ring-primary-600 focus:border-primary-600 block"
                       />
                       <ErrorMessage
-                        name="leadWho"
+                        name="storyWorldLead"
                         component="div"
                         className="text-red-500 text-sm"
                       />

@@ -6,7 +6,8 @@ import { StoryUploadApiContext } from "../../../contexts/ApiContext";
 import { API_BASE_PATH, API_ROUTES } from "../../../constants/api-endpoints";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import SituationActionModifyPopup from "../SituationActionModifyPopup";
+import ModifySelectionPopup from "../ModifySelectionPopup";
+import StoryTextPopup from "../StoryTextPopup";
 
 const getCSVsFromList = (list_of_strings) => {
   return list_of_strings.join(", ");
@@ -18,12 +19,12 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
   const [selectedRow, setSelectedRow] = useState({});
   const [situationSelectionItems, setSituationSelectionItems] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showStoryModal, setShowStoryModal] = useState(false);
   const navigate = useNavigate();
 
   // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
-  const { token, story_id, storyWorld, fileName, situations, updatedSituations, primaryWhos, secondaryWhos, primaryWhats, secondaryWhats, primaryWheres, secondaryWheres } = storyUploadApiResponse;
-
+  const { token, story_id, storyWorld, fileName, situations, updatedSituations, primaryWhos } = storyUploadApiResponse;
 
   useEffect(() => {
     setSituationSelectionItems(updatedSituations);
@@ -46,12 +47,12 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
       const updated = arr.map((item, index) => ({
         id: index + 1,
         sentence: item.idea,
-        primaryWhos: primaryWhos,
-        secondaryWhos: secondaryWhos,
-        primaryWhats: primaryWhats,
-        secondaryWhats: secondaryWhats,
-        primaryWheres: primaryWheres,
-        secondaryWheres: secondaryWheres,
+        primaryWhos: item.Who_Primary,
+        secondaryWhos: item.Who_Secondary,
+        primaryWhats: item.What_Primary,
+        secondaryWhats: item.What_Secondary,
+        primaryWheres: item.Where_Primary,
+        secondaryWheres: item.Where_Secondary,
       }));
       return updated;
     }
@@ -60,6 +61,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
 
   const onSave = async () => {
     setIsSubmitting(true);
+    let alertKey;
     try {
       // api call
       const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_SITUATIONS;
@@ -71,12 +73,12 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
           Authorization: `Bearer ${token}`,
         },
       };
-      message.loading("Processing...");
+      alertKey = message.loading("Saving Situations...", 0).key;
+      
       const response = await axios.post(apiUrl, payload, config); // post api request
-      console.log("save situations response: ", response);
       const output = response?.data;
       if(output) {
-        const { actions } = output;
+        const actions= output?.actions?.ideas;
         
         // update context
         const contextObj = { ...storyUploadApiResponse };
@@ -86,14 +88,16 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
           actions: getUpdatedJson(actions),
           updatedActions: getUpdatedJson(actions),
         };
-        console.log('updatedContextObj: ', updatedContextObj);
         setStoryUploadApiResponse(updatedContextObj);
+        message.destroy(alertKey);
         message.success("Situations Saved Successfully !");
       } else {
+        message.destroy(alertKey);
         message.error("Error In Saving Situations ! Unable To Fetch Response !");
       }
     } catch (error) {
       console.error("Error:", error);
+      message.destroy(alertKey);
       const statusCode = error?.response?.status;
       if (statusCode === 401) {
         message.error("Not Authorized ! You need to login first !");
@@ -130,7 +134,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
     const newObj = {
       id: situationSelectionItems?.length + 1,
       sentence: "",
-      primaryWhos: [],
+      primaryWhos,
       secondaryWhos: [],
       primaryWhats: [],
       secondaryWhats: [],
@@ -322,7 +326,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
       {fileName && (
         <p className="text-md md:text-lg mb-4 md:mb-6">
           File Uploaded :{" "}
-          <span className="font-medium text-blue-500">
+          <span title="Click to see story text" className="font-medium text-blue-500 cursor-pointer" onClick={() => setShowStoryModal(true)}>
             {fileName}
           </span>
         </p>
@@ -346,7 +350,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
 
       {/* modify popup */}
       {showModifyPopup && (
-        <SituationActionModifyPopup
+        <ModifySelectionPopup
           open={showModifyPopup}
           modifyItemObj={selectedRow}
           onClose={() => setShowModifyPopup(false)}
@@ -361,6 +365,14 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
           open={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
           onConfirm={handleDelete}
+        />
+      )}
+
+      {/* story text */}
+      {showStoryModal && (
+        <StoryTextPopup
+          open={showStoryModal}
+          onClose={() => setShowStoryModal(false)}
         />
       )}
 

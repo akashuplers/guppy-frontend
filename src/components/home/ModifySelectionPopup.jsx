@@ -1,18 +1,18 @@
 import { Button, Checkbox, Modal, Select } from "antd";
 import React, { useContext, useEffect, useState } from "react";
-import { StoryUploadApiContext } from "../../../contexts/ApiContext";
+import { StoryUploadApiContext } from "../../contexts/ApiContext";
 const { Option } = Select;
 
-const TitleModifyPopup = ({
+const ModifySelectionPopup = ({
   open,
   onClose = () => {},
   modifyItemObj,
   onModify = () => {},
+  type,
 }) => {
   const [currentValue, setCurrentValue] = useState("");
-  // whos
-  const [primaryWhoOptions, setPrimaryWhoOptions] = useState([]);
-  const [primaryWhoSelectedOptions, setPrimaryWhoSelectedOptions] = useState([]);
+  const [popupTitle, setPopupTitle] = useState("");
+
   const [secondaryWhoOptions, setSecondaryWhoOptions] = useState([]);
   const [secondaryWhoSelectedOptions, setSecondaryWhoSelectedOptions] = useState([]);
   // whats
@@ -32,11 +32,14 @@ const TitleModifyPopup = ({
 
   useEffect(() => {
     setCurrentValue(modifyItemObj.sentence);
+    if(type === "title") {
+        setPopupTitle("Title/Sentence");
+    } else if(type === "situation") {
+        setPopupTitle("Situation");
+    } else {
+        setPopupTitle("Action");
+    }
 
-    // primaryWhos
-    const tablePrimaryWhos = [...new Set([...modifyItemObj.primaryWhos, ...primaryWhos])];
-    setPrimaryWhoOptions(tablePrimaryWhos);
-    setPrimaryWhoSelectedOptions(modifyItemObj.primaryWhos);
     //secondaryWhos
     const tableSecondaryWhos = [...new Set([...modifyItemObj.secondaryWhos, ...secondaryWhos])];
     setSecondaryWhoOptions(tableSecondaryWhos);
@@ -62,18 +65,6 @@ const TitleModifyPopup = ({
   const handleChange = (e) => {
     setCurrentValue(e.target.value);
   };
-
-  // primaryWhos
-  const onPrimaryWhosChange = (value) => {
-    setPrimaryWhoSelectedOptions(value);
-  }
-  const handleSelectAllPrimaryWhos = () => {
-    if(primaryWhoSelectedOptions.length === primaryWhoOptions.length) {
-        setPrimaryWhoSelectedOptions([]);
-    } else {
-        setPrimaryWhoSelectedOptions(primaryWhoOptions);
-    }
-  }
 
   // secondaryWhos
   const onSecondaryWhosChange = (value) => {
@@ -135,7 +126,7 @@ const TitleModifyPopup = ({
     }
   }
 
-  const allPrimaryWhoSelected = primaryWhoSelectedOptions.length === primaryWhoOptions.length;
+//   const allPrimaryWhoSelected = primaryWhoSelectedOptions.length === primaryWhoOptions.length;
   const allSecondaryWhoSelected = secondaryWhoSelectedOptions.length === secondaryWhoOptions.length;
   const allPrimaryWhatSelected = primaryWhatSelectedOptions.length === primaryWhatOptions.length;
   const allSecondaryWhatSelected = secondaryWhatSelectedOptions.length === secondaryWhatOptions.length;
@@ -146,7 +137,7 @@ const TitleModifyPopup = ({
     const updatedObj = {
         id: modifyItemObj.id,
         sentence: currentValue,
-        primaryWhos: primaryWhoSelectedOptions,
+        primaryWhos,
         secondaryWhos: secondaryWhoSelectedOptions,
         primaryWhats: primaryWhatSelectedOptions,
         secondaryWhats: secondaryWhatSelectedOptions,
@@ -188,7 +179,7 @@ const TitleModifyPopup = ({
             htmlFor="sentence"
             className="block mb-2 mt-5 text-md md:text-lg font-medium text-gray-900"
           >
-            Sentence/Title
+            {popupTitle}
           </label>
           <textarea
             rows={6}
@@ -200,42 +191,6 @@ const TitleModifyPopup = ({
 
         {/* W's Dropdowns */}
         <div className="mt-8 mb-6 md:mb-16 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
-            {/* primary who dropdown */}
-            <div>
-                <label
-                    htmlFor="primaryWhos"
-                    className="block mb-2 text-md md:text-lg font-medium text-gray-900"
-                >
-                    Primary WHOs
-                </label>
-                <Select
-                    size="large"
-                    mode="multiple"
-                    className="w-full"
-                    value={primaryWhoSelectedOptions}
-                    onChange={onPrimaryWhosChange}
-                    placeholder={"Please Select Primary Whos"}
-                >
-                    <Option value="select-all">
-                        <Checkbox
-                            id="selectAllCheckbox"
-                            className="me-2"
-                            checked={allPrimaryWhoSelected}
-                            onChange={handleSelectAllPrimaryWhos}
-                        />
-                        <label htmlFor="selectAllCheckbox">
-                        {
-                            allPrimaryWhoSelected ? "Unselect All" : "Select All"
-                        }
-                        </label>
-                    </Option>
-                    {primaryWhoOptions?.map((option, index) => (
-                        <Option key={index} value={option}>
-                            {option}
-                        </Option>
-                    ))}
-                </Select>         
-            </div>
 
             {/* secondary who dropdown */}
             <div>
@@ -428,4 +383,4 @@ const TitleModifyPopup = ({
   );
 };
 
-export default TitleModifyPopup;
+export default ModifySelectionPopup;

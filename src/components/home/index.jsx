@@ -17,7 +17,7 @@ const Home = () => {
 
   // story upload context
   const { storyUploadApiResponse } = useContext(StoryUploadApiContext);
-  const { storyWorld, leadWho, titles, situations, actions } = storyUploadApiResponse;
+  const { storyWorld, storyWorldLead, titles, situations, actions } = storyUploadApiResponse;
 
   useEffect(() => {
     const handleResize = () => {
@@ -64,7 +64,7 @@ const Home = () => {
         {/* component based on step number */}
         <div className="flex-grow">
           {currentStep === 0 ? (
-            <StoryUpload />
+            <StoryUpload onSuccess={handleNextStep} />
           ) : currentStep === 1 ? (
             <ThreeWsSelection
               onDiscard={onDiscard}
@@ -101,7 +101,7 @@ const Home = () => {
             <button
               className={`text-white ml-2 right-6 mt-6 bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
               onClick={handleNextStep}
-              disabled={(currentStep === 0 && ( !storyWorld || !leadWho )) || (currentStep===1 && titles?.length===0) || (currentStep===2 && situations?.length===0) || (currentStep===3 && actions?.length===0) || currentStep === 5}
+              disabled={(currentStep === 0 && ( !storyWorld || !storyWorldLead )) || (currentStep===1 && titles?.length===0) || (currentStep===2 && situations?.length===0) || (currentStep===3 && actions?.length===0) || currentStep === 5}
             >
               Next
             </button>

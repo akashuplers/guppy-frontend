@@ -5,11 +5,12 @@ import DeleteConfirmationDialog from "../../../utils/modals/DeleteConfirmationDi
 import { StoryUploadApiContext } from "../../../contexts/ApiContext";
 import { API_BASE_PATH, API_ROUTES } from "../../../constants/api-endpoints";
 import axios from "axios";
-import TitleModifyPopup from "./TitleModifyPopup";
 import { useNavigate } from "react-router-dom";
+import ModifySelectionPopup from "../ModifySelectionPopup";
+import StoryTextPopup from "../StoryTextPopup";
 
 const getCSVsFromList = (list_of_strings) => {
-  return list_of_strings.join(", ");
+  return list_of_strings?.join(", ");
 };
 
 const TitleSelection = ({ onDiscard = () => {} }) => {
@@ -18,11 +19,12 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
   const [selectedRow, setSelectedRow] = useState({});
   const [titleSelectionItems, setTitleSelectionItems] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showStoryModal, setShowStoryModal] = useState(false);
   const navigate = useNavigate();
 
   // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
-  const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos, secondaryWhos, primaryWhats, secondaryWhats, primaryWheres, secondaryWheres } = storyUploadApiResponse;
+  const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
 
   useEffect(() => {
     setTitleSelectionItems(updatedTitles);
@@ -50,12 +52,12 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
       const updated = arr.map((item, index) => ({
         id: index + 1,
         sentence: item.idea,
-        primaryWhos: primaryWhos,
-        secondaryWhos: secondaryWhos,
-        primaryWhats: primaryWhats,
-        secondaryWhats: secondaryWhats,
-        primaryWheres: primaryWheres,
-        secondaryWheres: secondaryWheres,
+        primaryWhos: item.Who_Primary,
+        secondaryWhos: item.Who_Secondary,
+        primaryWhats: item.What_Primary,
+        secondaryWhats: item.What_Secondary,
+        primaryWheres: item.Where_Primary,
+        secondaryWheres: item.Where_Secondary,
       }));
       return updated;
     }
@@ -64,6 +66,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
 
   const onSave = async () => {
     setIsSubmitting(true);
+    let alertKey;
     try {
       // api call
       const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_TITLES;
@@ -75,12 +78,11 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
           Authorization: `Bearer ${token}`,
         },
       };
-      message.loading("Processing...");
+      alertKey = message.loading("Saving Titles...", 0).key;
       const response = await axios.post(apiUrl, payload, config); // post api request
-      console.log("save titles response: ", response);
       const output = response?.data;
       if(output) {
-        const { situations } = output;
+        const situations = output?.situations?.ideas;
         
         // update context
         const contextObj = { ...storyUploadApiResponse };
@@ -91,12 +93,15 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
           updatedSituations: getUpdatedJson(situations),
         };
         setStoryUploadApiResponse(updatedContextObj);
+        message.destroy(alertKey);
         message.success("Titles Saved Successfully !");
       } else {
+        message.destroy(alertKey);
         message.error("Error In Saving Titles ! Unable To Fetch Response !");
       }
     } catch (error) {
       console.error("Error:", error);
+      message.destroy(alertKey);
       const statusCode = error?.response?.status;
       if (statusCode === 401) {
         message.error("Not Authorized ! You need to login first !");
@@ -133,7 +138,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
     const newObj = {
       id: titleSelectionItems?.length + 1,
       sentence: "",
-      primaryWhos: [],
+      primaryWhos,
       secondaryWhos: [],
       primaryWhats: [],
       secondaryWhats: [],
@@ -325,7 +330,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
       {fileName && (
         <p className="text-md md:text-lg mb-4 md:mb-6">
           File Uploaded :{" "}
-          <span className="font-medium text-blue-500">
+          <span title="Click to see story text" className="font-medium text-blue-500 cursor-pointer" onClick={() => setShowStoryModal(true)} >
             {fileName}
           </span>
         </p>
@@ -349,11 +354,12 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
 
       {/* modify popup */}
       {showModifyPopup && (
-        <TitleModifyPopup
+        <ModifySelectionPopup
           open={showModifyPopup}
           modifyItemObj={selectedRow}
           onClose={() => setShowModifyPopup(false)}
           onModify={onModify}
+          type="title"
         />
       )}
 
@@ -363,6 +369,14 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
           open={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
           onConfirm={handleDelete}
+        />
+      )}
+
+      {/* story text */}
+      {showStoryModal && (
+        <StoryTextPopup
+          open={showStoryModal}
+          onClose={() => setShowStoryModal(false)}
         />
       )}
 

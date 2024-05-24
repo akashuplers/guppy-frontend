@@ -33,7 +33,6 @@ const Login = () => {
   };
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
-    console.log("login values : ", values);
     try {
       const apiUrl = API_BASE_PATH + API_ROUTES.LOGIN;
       const output = await axios.post(apiUrl, values);

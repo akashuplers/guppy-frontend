@@ -9,7 +9,7 @@ import LoadingButtonPrimary from "../../utils/LoadingButtonPrimary";
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required("Field Required"),
-  leadWho: Yup.string().required("Field Required"),
+  storyWorldLead: Yup.string().required("Field Required"),
 });
 
 const AddStoryWorld = ({ token, onAddStoryWorld = () => { } }) => {
@@ -20,7 +20,7 @@ const AddStoryWorld = ({ token, onAddStoryWorld = () => { } }) => {
       const apiUrl = API_BASE_PATH + API_ROUTES.ADD_STORY_WORLD;
       const formData = {
         name: values?.name,
-        lead_who: values?.leadWho
+        lead_who: values?.storyWorldLead
       }
       // api call
       const config = {
@@ -63,7 +63,7 @@ const AddStoryWorld = ({ token, onAddStoryWorld = () => { } }) => {
       <Formik
         initialValues={{
           name: "",
-          leadWho: "",
+          storyWorldLead: "",
         }}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
@@ -92,19 +92,19 @@ const AddStoryWorld = ({ token, onAddStoryWorld = () => { } }) => {
             
             <div>
                 <label
-                    htmlFor="leadWho"
+                    htmlFor="storyWorldLead"
                     className="block mb-2 text-md md:text-lg font-medium text-gray-900"
                 >
-                    Lead WHO
+                    Story World Lead
                 </label>
                 <Field
                     type="text"
-                    name="leadWho"
-                    id="leadWho"
+                    name="storyWorldLead"
+                    id="storyWorldLead"
                     className="bg-gray-50 w-full lg:w-[14vw] md:w-[18vw] border p-2 border-gray-300 text-gray-900 sm:text-md rounded-lg focus:ring-primary-600 focus:border-primary-600 block"
                 />
                 <ErrorMessage
-                    name="leadWho"
+                    name="storyWorldLead"
                     component="div"
                     className="text-red-500 text-sm"
                 />

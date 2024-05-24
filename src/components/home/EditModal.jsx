@@ -33,7 +33,8 @@ const EditModal = ({ open, onClose = () => {}, editItemObj, onUpdate = () => {} 
         <div className="text-center">
           <Button
             onClick={onClose}
-            className="custom-btn mt-2 md:mt-4 me-2 md:me-4 bg-gray-400 border-gray-500 text-white"
+            type="secondary"
+            className="custom-btn mt-2 md:mt-4 me-2 md:me-4 bg-gray-400 hover:bg-gray-500 border-gray-500 text-white"
           >
             Cancel
           </Button>

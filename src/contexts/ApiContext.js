@@ -7,7 +7,7 @@ const initialStateObj = {
   story_id: "",
   storyWorld: "",
   storyWorldId: "",
-  leadWho: "",
+  storyWorldLead: "",
   storyLeadWho: "",
   fileName: "",
   storyText: "",

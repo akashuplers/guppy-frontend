@@ -7,6 +7,7 @@ import { StoryUploadApiContext } from "../../contexts/ApiContext";
 import { API_BASE_PATH, API_ROUTES } from "../../constants/api-endpoints";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import StoryTextPopup from "./StoryTextPopup";
 
 const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -24,6 +25,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   const [primaryWheres, setPrimaryWheres] = useState([]);
   const [secondaryWheres, setSecondaryWheres] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showStoryModal, setShowStoryModal] = useState(false);
 
   // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
@@ -31,7 +33,6 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   const {
     story_id,
     storyWorld,
-    leadWho,
     fileName,
     whos,
     whats,
@@ -43,18 +44,30 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   } = storyUploadApiResponse;
 
   useEffect(() => {
+    const { primaryWhos, secondaryWhos, primaryWhats, secondaryWhats, primaryWheres, secondaryWheres } = storyUploadApiResponse;
     setWhoItems(updatedWhos);
     setWhatItems(updatedWhats);
     setWhereItems(updatedWheres);
-  }, [storyUploadApiResponse]);
+    setPrimaryWhos(primaryWhos);
+    setSecondaryWhos(secondaryWhos);
+    setPrimaryWhats(primaryWhats);
+    setSecondaryWhats(secondaryWhats);
+    setPrimaryWheres(primaryWheres);
+    setSecondaryWheres(secondaryWheres);
+  }, []);
 
   const handleWhoRadioChange = (item) => {
-    const updatedItem = { ...item, isRadioSelected: !item.isRadioSelected };
-    const updatedArr = whoItems.map((ele) =>
-      ele.id === item.id ? updatedItem : ele
-    );
+    const updatedArr = whoItems.map((ele) => {
+      // If the current item is the one being clicked, set its isRadioSelected to true
+      // Otherwise, set its isRadioSelected to false
+      return {
+        ...ele,
+        isRadioSelected: ele.id === item.id,
+      };
+    });
+  
     setWhoItems(updatedArr);
-    setPrimaryWhos([...primaryWhos, item?.name]);
+    setPrimaryWhos([item.name]);
   };
 
   const handleWhoCheckboxChange = (item) => {
@@ -77,12 +90,19 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   };
 
   const handleWhatRadioChange = (item) => {
+    if(item.isRadioSelected) {
+      const filteredArr = primaryWhats.filter(
+        (ele) => ele.toLowerCase() !== item.name.toLowerCase()
+      );
+      setPrimaryWhats(filteredArr);
+    } else {
+      setPrimaryWhats([...primaryWhats, item?.name]);
+    }
     const updatedItem = { ...item, isRadioSelected: !item.isRadioSelected };
     const updatedArr = whatItems.map((ele) =>
       ele.id === item.id ? updatedItem : ele
     );
     setWhatItems(updatedArr);
-    setPrimaryWhats([...primaryWhats, item?.name]);
   };
 
   const handleWhatCheckboxChange = (item) => {
@@ -105,12 +125,20 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   };
 
   const handleWhereRadioChange = (item) => {
+    if(item.isRadioSelected) {
+      const filteredArr = primaryWheres.filter(
+        (ele) => ele.toLowerCase() !== item.name.toLowerCase()
+      );
+      setPrimaryWheres(filteredArr);
+    } else {
+      setPrimaryWheres([...primaryWheres, item?.name]);
+    }
+
     const updatedItem = { ...item, isRadioSelected: !item.isRadioSelected };
     const updatedArr = whereItems.map((ele) =>
       ele.id === item.id ? updatedItem : ele
     );
     setWhereItems(updatedArr);
-    setPrimaryWheres([...primaryWheres, item?.name]);
   };
 
   const handleWhereCheckboxChange = (item) => {
@@ -265,6 +293,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
 
   const onSave = async () => {
     setIsSubmitting(true);
+    let alertKey;
     try {
       // api call
       const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_Ws;
@@ -276,9 +305,10 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
           Authorization: `Bearer ${token}`,
         },
       };
-      message.loading("Processing...");
+      // show loader alert
+      alertKey = message.loading("Saving Ws...", 0).key;
+
       const response = await axios.post(apiUrl, payload, config); // post api request
-      console.log("save ws response: ", response);
       const output = response?.data;
       if (output) {
         const { titles } = output;
@@ -302,12 +332,16 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
         };
         setStoryUploadApiResponse(updatedContextObj);
 
+        message.destroy(alertKey); // stop infinite loader alert
         message.success("Ws Saved Successfully !");
+
       } else {
+        message.destroy(alertKey); // stop infinite loader alert
         message.error("Error In Saving Ws ! Unable To Fetch Response !");
       }
     } catch (error) {
       console.error("Error:", error);
+      message.destroy(alertKey); // stop infinite loader alert
       const statusCode = error?.response?.status;
       if (statusCode === 401) {
         message.error("Not Authorized ! You need to login first !");
@@ -377,7 +411,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
       {fileName && (
         <p className="text-md md:text-lg mb-4 md:mb-6">
           File Uploaded :{" "}
-          <span className="font-medium text-blue-500">
+          <span title="Click to see story text" className="font-medium text-blue-500 cursor-pointer" onClick={() => setShowStoryModal(true)} >
             {fileName}
           </span>
         </p>
@@ -388,10 +422,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
         {/* WHO SECTION */}
         <div className="h-[24vh] overflow-auto border border-2 border-violet-300 bg-violet-50 p-2 md:p-3 rounded-md">
           <p className="text-center underline mb-2">WHO</p>
-          <ul className="space-y-0 md:space-y-1">
-            <li>
-              <p className="ml-2 font-medium">{leadWho}</p>
-            </li>
+          <ul className="space-y-0 md:space-y-1 mt-4">
             {whoItems?.map((item, index) => (
               <li key={item.id}>
                 <div className="flex items-center">
@@ -406,7 +437,8 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
                       id={`link-radio-${index}`}
                       type="radio"
                       value={item.name}
-                      className="w-4 h-4 me-3 text-blue-600 border-gray-300 disabled:bg-gray-200 focus:ring-blue-500 focus:ring-2"
+                      title="Primary-Who"
+                      className="w-4 h-4 me-3 text-green-600 border-gray-300 disabled:bg-gray-200 focus:ring-blue-500 focus:ring-2"
                     />
                     <input
                       checked={item.isCheckboxSelected}
@@ -415,6 +447,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
                       id={`default-checkbox-${index}`}
                       type="checkbox"
                       value={item.name}
+                      title="Secondary-Who"
                       className="w-4 h-4 text-blue-600 border-gray-300 disabled:bg-gray-200 rounded focus:ring-blue-500 focus:ring-2"
                     />
                     <label
@@ -497,7 +530,8 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
                       id={`link-radio-${index}`}
                       type="radio"
                       value={item.name}
-                      className="w-4 h-4 me-3 text-blue-600 disabled:bg-gray-200 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                      title="Primary-What"
+                      className="w-4 h-4 me-3 text-green-600 disabled:bg-gray-200 border-gray-300 focus:ring-blue-500 focus:ring-2"
                     />
                     <input
                       checked={item.isCheckboxSelected}
@@ -506,6 +540,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
                       id={`default-checkbox-${index}`}
                       type="checkbox"
                       value={item.name}
+                      title="Secondary-What"
                       className="w-4 h-4 text-blue-600 disabled:bg-gray-200 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                     />
                     <label
@@ -518,7 +553,22 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
                           : item.name}
                       </p>
                     </label>
+                    
+                    {/* clear radio selection icon */}
+                    {item.isRadioSelected &&
+                      <button
+                        title="Clear Selection"
+                        className="ms-3 text-blue-600"
+                        onClick={() => handleWhatRadioChange(item)}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-circle" viewBox="0 0 16 16">
+                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                        </svg>
+                      </button>
+                    }
                   </div>
+
                   {/* edit icon */}
                   <button
                     title="Edit"
@@ -588,7 +638,8 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
                       id={`link-radio-${index}`}
                       type="radio"
                       value={item.name}
-                      className="w-4 h-4 me-3 text-blue-600 disabled:bg-gray-200 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                      title="Primary-Where"
+                      className="w-4 h-4 me-3 text-green-600 disabled:bg-gray-200 border-gray-300 focus:ring-blue-500 focus:ring-2"
                     />
                     <input
                       checked={item.isCheckboxSelected}
@@ -597,6 +648,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
                       id={`default-checkbox-${index}`}
                       type="checkbox"
                       value={item.name}
+                      title="Secondary-Where"
                       className="w-4 h-4 text-blue-600 disabled:bg-gray-200 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                     />
                     <label
@@ -609,6 +661,20 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
                           : item.name}
                       </p>
                     </label>
+
+                    {/* clear radio selection icon */}
+                    {item.isRadioSelected &&
+                      <button
+                        title="Clear Selection"
+                        className="ms-3 text-blue-600"
+                        onClick={() => handleWhereRadioChange(item)}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-circle" viewBox="0 0 16 16">
+                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                        </svg>
+                      </button>
+                    }
                   </div>
                   {/* edit icon */}
                   <button
@@ -678,6 +744,14 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
           onClose={() => setShowEditModal(false)}
           editItemObj={editItem}
           onUpdate={onUpdate}
+        />
+      )}
+
+      {/* story text */}
+      {showStoryModal && (
+        <StoryTextPopup
+          open={showStoryModal}
+          onClose={() => setShowStoryModal(false)}
         />
       )}
 
