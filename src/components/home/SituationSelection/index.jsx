@@ -34,17 +34,18 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
     const updated = situationSelectionItems?.map((item) => ({
       idea: item.sentence,
       Classification: "Situation",
-      Who_Primary: item.Who_Primary,
-      Who_Secondary: item.Who_Secondary,
-      What_Primary: item.What_Primary,
-      What_Secondary: item.What_Secondary,
-      Where_Primary: item.Where_Primary,
-      Where_Secondary: item.Where_Secondary,
+      Who_Primary: item.primaryWhos,
+      Who_Secondary: item.secondaryWhos,
+      What_Primary: item.primaryWhats,
+      What_Secondary: item.secondaryWhats,
+      Where_Primary: item.primaryWheres,
+      Where_Secondary: item.secondaryWheres,
     }));
     const body = {
       story_id: story_id,
       ideas: updated,
     };
+    console.log("situation body: ", body)
     return body;
   };
 
