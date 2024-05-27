@@ -33,7 +33,13 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
   const bodyForSaveActionsApi = () => {
     const updated = actionSelectionItems?.map((item) => ({
       idea: item.sentence,
-      type: "Action",
+      Classification: "Action",
+      Who_Primary: item.Who_Primary,
+      Who_Secondary: item.Who_Secondary,
+      What_Primary: item.What_Primary,
+      What_Secondary: item.What_Secondary,
+      Where_Primary: item.Where_Primary,
+      Where_Secondary: item.Where_Secondary,
     }));
     const body = {
       story_id: story_id,
