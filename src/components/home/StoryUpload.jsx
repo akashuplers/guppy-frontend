@@ -20,9 +20,9 @@ const validationSchema = Yup.object().shape({
   storyLeadWho: Yup.string().required("Field Required"),
   fileInput: Yup.mixed()
     .required("File Is Required")
-    .test('fileType', 'Please upload a text file', (value) => {
+    .test('fileType', 'Please upload a text, pdf or word/doc file', (value) => {
       if (!value) return true; // Skip validation if no file is selected
-      const supportedFormats = ['text/plain']; // Add more mime types as needed
+      const supportedFormats = ['text/plain', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']; // Add more mime types as needed
       return supportedFormats.includes(value.type);
     }),
 });
