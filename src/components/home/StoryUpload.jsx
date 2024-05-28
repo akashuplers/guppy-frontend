@@ -197,14 +197,14 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
       <section className="mt-6">
         <div className="flex flex-col px-6 py-8 mx-auto lg:py-0">
           <div className="w-full bg-white rounded-lg md:mt-0 sm:max-w-md xl:p-0">
-            <p className="text-lg md:text-xl font-medium">Step 1 : <span className="underline">Story Upload</span></p>
+            <p className="text-lg md:text-xl font-medium">Step 1 : Story Upload</p>
 
             {/* add story world form */}
-            <p className="text-lg text-gray-600 font-medium mt-3 md:mt-6"><span className="underline">Add Story World</span> (Optional)</p>
+            <p className="text-lg text-gray-600 font-medium mt-3 md:mt-6">Add Story World (Optional)</p>
             <AddStoryWorld token={token} onAddStoryWorld={onAddStoryWorld} />
 
             {/* upload story form */}
-            <p className="text-lg text-gray-600 underline font-medium">Upload Story</p>
+            <p className="text-lg text-gray-600 font-medium">Upload Story</p>
             <div className="px-6 py-6 space-y-4 md:space-y-6 sm:px-8 sm:py-4">
               <Formik
                 initialValues={{

@@ -8,6 +8,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ModifySelectionPopup from "../ModifySelectionPopup";
 import StoryTextPopup from "../StoryTextPopup";
+import "../table.css";
 
 const getCSVsFromList = (list_of_strings) => {
   return list_of_strings.join(", ");
@@ -45,7 +46,6 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
       story_id: story_id,
       ideas: updated,
     };
-    console.log("situation body: ", body)
     return body;
   };
 
@@ -324,12 +324,13 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
 
   return (
     <div className="px-5 pb-5 rounded-md border">
-      <p className="text-lg md:text-xl font-medium mt-5 mb-3 md:mb-5">
-        Step-4 : <span className="underline">Situation Selection</span>
-      </p>
-      <p className="text-lg md:text-xl mb-2 md:mb-4 text-violet-500">
-        {storyWorld}
-      </p>
+      <div className="text-lg flex flex-col md:flex-row justify-between md:text-xl mt-5 mb-3 md:mb-4">
+        <p>Step-4 : Situation Selection</p>
+        <p className="text-lg md:text-xl mt-2 md:mt-0">
+          Story World : <span className="text-violet-500">{storyWorld}</span>
+        </p>
+      </div>
+
       {fileName && (
         <p className="text-md md:text-lg mb-4 md:mb-6">
           File Uploaded :{" "}
@@ -341,8 +342,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
 
       {/* body */}
       <div>
-        <div className="flex justify-between items-center mb-3">
-          <p className="text-lg md:text-xl underline">SITUATIONS</p>
+        <div className="flex justify-end items-center mb-3">
           <Button className="bg-blue-500 text-white h-9" onClick={handleAddRow}>
             ADD NEW
           </Button>
@@ -351,6 +351,8 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
           <Table
             dataSource={situationSelectionItems}
             columns={situationSelectionColumns}
+            bordered
+            className="custom-table"
           />
         </div>
       </div>

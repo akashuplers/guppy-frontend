@@ -74,11 +74,11 @@ const Login = () => {
 
         {/* right-side: login form */}
         <div>
-          <section className="dark:bg-gray-900">
+          <section>
             <div className="flex flex-col items-center justify-center mx-auto md:h-screen lg:py-0">
               <div className="h-[58vh] md:h-[70vh] w-[70vw] md:[30vw] bg-violet-100 border-2 border-indigo-500 md:mt-0 sm:max-w-md xl:p-0">
                 <div className="px-5 mt-3 md:mt-0 md:space-y-6 md:p-8">
-                  <h1 className="text-xl mb-2 md:mb-14 font-bold text-center leading-tight tracking-tight text-violet-500 md:text-2xl">
+                  <h1 className="text-xl mb-2 font-bold text-center leading-tight tracking-tight text-violet-500 md:text-2xl">
                     LOGIN
                   </h1>
                   <Formik
@@ -183,7 +183,7 @@ const Login = () => {
                             <button
                               type="submit"
                               style={{ backgroundImage: 'linear-gradient(to right, violet, rgb(55, 55, 243))' }}
-                              className="text-white mt-2 md:mt-8 w-full bg-blue-600 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-1 md:py-3 text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
+                              className="text-white mt-2 w-full bg-blue-600 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-1 md:py-3 text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
                               disabled={isSubmitting}
                             >
                               <span className="md:text-lg">Sign In</span>

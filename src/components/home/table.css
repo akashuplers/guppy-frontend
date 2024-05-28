@@ -1,0 +1,8 @@
+/* CustomTable.css */
+.custom-table .ant-table-thead > tr > th {
+    background-color: #f0f0f0; /* Light Gray */
+}
+
+.custom-table .ant-table-bordered .ant-table-cell {
+    border: 1px solid #e8e8e8; /* Lighter Gray */
+}
