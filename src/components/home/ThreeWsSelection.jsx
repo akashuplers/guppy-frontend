@@ -362,25 +362,42 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
     setIsSubmitting(false);
   };
 
+  // const bodyForSaveWsApi = () => {
+  //   const Who = createWsArray(primaryWhos, secondaryWhos);
+  //   const What = createWsArray(primaryWhats, secondaryWhats);
+  //   const Where = createWsArray(primaryWheres, secondaryWheres);
+  //   const body = { Who, What, Where, story_id };
+  //   return body;
+  // };
+
   const bodyForSaveWsApi = () => {
-    const Who = createWsArray(primaryWhos, secondaryWhos);
-    const What = createWsArray(primaryWhats, secondaryWhats);
-    const Where = createWsArray(primaryWheres, secondaryWheres);
+    const Who = createWsArray(whoItems);
+    const What = createWsArray(whatItems);
+    const Where = createWsArray(whereItems);
     const body = { Who, What, Where, story_id };
     return body;
   };
 
-  const createWsArray = (primaryArr, secondaryArr) => {
-    const primArr = primaryArr?.map((item) => ({
-      type: "Primary",
-      value: item,
+  // const createWsArray = (primaryArr, secondaryArr) => {
+  //   const primArr = primaryArr?.map((item) => ({
+  //     type: "Primary",
+  //     value: item,
+  //   }));
+  //   const secArr = secondaryArr?.map((item) => ({
+  //     type: "Secondary",
+  //     value: item,
+  //   }));
+  //   const combined = [...primArr, ...secArr];
+  //   return combined;
+  // };
+
+  const createWsArray = (wsList) => {
+    console.log("ws list: ", wsList);
+    let updated = wsList?.map((item) => ({
+      type: item.isRadioSelected ? "Primary" : item.isCheckboxSelected ? "Secondary" : "null",
+      value: item.name,
     }));
-    const secArr = secondaryArr?.map((item) => ({
-      type: "Secondary",
-      value: item,
-    }));
-    const combined = [...primArr, ...secArr];
-    return combined;
+    return updated;
   };
 
   const handleDiscard = () => {

@@ -13,4 +13,7 @@ export const API_ROUTES = {
     SAVE_SITUATIONS: '/story/save-situations',
     SAVE_ACTIONS: '/story/save-actions',
     DOWNLOAD_STORY: '/story/download-story',
+    FETCH_STORY_DATA: '/story/fetch-story',
+    LIST_Ws_BY_STORY_WORLD: '/story/fetch-ws',
+    LIST_STORIES_UPLOAD_BY_USER: '/story',
 }

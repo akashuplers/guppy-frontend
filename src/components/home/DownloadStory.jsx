@@ -25,15 +25,12 @@ const DownloadStory = ({ onDiscard = () => {} }) => {
     <div className="px-5 pb-5 rounded-md border">
       <div className="text-lg flex flex-col md:flex-row justify-between md:text-xl mt-5 mb-3 md:mb-4">
         <p>Download Story</p>
-        <p className="text-lg md:text-xl mt-2 md:mt-0">
-          Story World : <span className="text-violet-500">{storyWorld}</span>
-        </p>
+        {storyWorld &&
+          <p className="text-lg md:text-xl mt-2 md:mt-0">
+            Story World : <span className="text-violet-500">{storyWorld}</span>
+          </p>
+        }
       </div>
-
-      {/* <p className="text-lg underline md:text-xl font-medium mt-5 mb-3 md:mb-5">
-        Story Download
-      </p>
-      <p className="text-lg md:text-xl mb-2 text-violet-500">{storyWorld}</p> */}
 
       <div className="flex flex-col items-center">
         <img className="h-20 w-20" src={successGif} alt="success-gif" />
@@ -66,7 +63,12 @@ const DownloadStory = ({ onDiscard = () => {} }) => {
 
         {/* export button */}
         <a href={apiUrl} target="_blank" rel="noopener noreferrer">
-            <Button className="bg-blue-500 border-blue-600 text-white h-9 me-4">Export</Button>
+            <Button
+              className="bg-blue-500 border-blue-600 text-white h-9 me-4"
+              onClick={() => localStorage.removeItem("storyId")}
+            >
+              Export
+            </Button>
         </a>
 
         {/* logout button */}

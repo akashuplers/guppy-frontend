@@ -156,7 +156,8 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
           primaryWhos: [storyWorldLead?.toLowerCase()],
           token: token,
         };
-        setStoryUploadApiResponse(respObj);        
+        setStoryUploadApiResponse(respObj);
+        localStorage.setItem("storyId", JSON.stringify(story_id));
         onSuccess();
 
         // alert
