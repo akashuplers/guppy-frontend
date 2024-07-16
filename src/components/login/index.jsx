@@ -193,12 +193,12 @@ const Login = () => {
                           )}
                         </div>
 
-                        <p className="mt-2 text-sm text-center">
+                        {/* <p className="mt-2 text-sm text-center">
                           New User ?{" "}
                           <Link className="text-blue-600" to="/signup">
                             <u>Create new account</u>
                           </Link>
-                        </p>
+                        </p> */}
                       </Form>
                     )}
                   </Formik>
