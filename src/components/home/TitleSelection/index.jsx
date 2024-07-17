@@ -161,107 +161,76 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
   const titleSelectionColumns = [
     {
       dataIndex: "sentence",
-      title: "Title / Sentence",
-      render: (val) => {
-        return (
-          <p title={val?.length > 25 ? val : ""}>
-            {val?.length > 25 ? val.slice(0, 25) + "..." : val}
-          </p>
-        );
-      },
+      title: <p className="text-center">Title / Sentence</p>,
     },
     {
       dataIndex: "primaryWhos",
-      title: "Primary WHOs",
+      title: <p className="text-center">Primary WHOs</p>,
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
-          <p title={csvStr?.length > 15 ? csvStr : ""}>
-            {csvStr
-              ? csvStr.length > 15
-                ? csvStr.slice(0, 15) + "..."
-                : csvStr
-              : "NA"}
+          <p>
+            {csvStr ? csvStr : "NA"}
           </p>
         );
       },
     },
     {
       dataIndex: "secondaryWhos",
-      title: "Secondary WHOs",
+      title: <p className="text-center">Secondary WHOs</p>,
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
-          <p title={csvStr?.length > 15 ? csvStr : ""}>
-            {csvStr
-              ? csvStr.length > 15
-                ? csvStr.slice(0, 15) + "..."
-                : csvStr
-              : "NA"}
+          <p>
+            {csvStr ? csvStr : "NA"}
           </p>
         );
       },
     },
     {
       dataIndex: "primaryWhats",
-      title: "Primary WHATs",
+      title: <p className="text-center">Primary WHATs</p>,
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
-          <p title={csvStr?.length > 15 ? csvStr : ""}>
-            {csvStr
-              ? csvStr.length > 15
-                ? csvStr.slice(0, 15) + "..."
-                : csvStr
-              : "NA"}
+          <p>
+            {csvStr ? csvStr : "NA"}
           </p>
         );
       },
     },
     {
       dataIndex: "secondaryWhats",
-      title: "Secondary WHATs",
+      title: <p className="text-center">Secondary WHATs</p>,
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
-          <p title={csvStr?.length > 15 ? csvStr : ""}>
-            {csvStr
-              ? csvStr.length > 15
-                ? csvStr.slice(0, 15) + "..."
-                : csvStr
-              : "NA"}
+          <p>
+            {csvStr ? csvStr : "NA"}
           </p>
         );
       },
     },
     {
       dataIndex: "primaryWheres",
-      title: "Primary WHEREs",
+      title: <p className="text-center">Primary WHEREs</p>,
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
-          <p title={csvStr?.length > 15 ? csvStr : ""}>
-            {csvStr
-              ? csvStr.length > 15
-                ? csvStr.slice(0, 15) + "..."
-                : csvStr
-              : "NA"}
+          <p>
+            {csvStr ? csvStr : "NA"}
           </p>
         );
       },
     },
     {
       dataIndex: "secondaryWheres",
-      title: "Secondary WHEREs",
+      title: <p className="text-center">Secondary WHEREs</p>,
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
-          <p title={csvStr?.length > 15 ? csvStr : ""}>
-            {csvStr
-              ? csvStr.length > 15
-                ? csvStr.slice(0, 15) + "..."
-                : csvStr
-              : "NA"}
+          <p>
+            {csvStr ? csvStr : "NA"}
           </p>
         );
       },
