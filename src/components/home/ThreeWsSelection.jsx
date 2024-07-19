@@ -212,7 +212,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
 
   const onUpdate = (editItemObj, updatedValue) => {
     if (type === "who") {
-      const updatedObj = { ...editItemObj, name: updatedValue };
+      const updatedObj = { ...editItemObj, newName: updatedValue };
       const updatedArr = whoItems.map((ele) =>
         ele.id === editItemObj.id ? updatedObj : ele
       );
@@ -230,7 +230,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
         setSecondaryWhos(newList);
       }
     } else if (type === "what") {
-      const updatedObj = { ...editItemObj, name: updatedValue };
+      const updatedObj = { ...editItemObj, newName: updatedValue };
       const updatedArr = whatItems.map((ele) =>
         ele.id === editItemObj.id ? updatedObj : ele
       );
@@ -248,7 +248,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
         setSecondaryWhats(newList);
       }
     } else {
-      const updatedObj = { ...editItemObj, name: updatedValue };
+      const updatedObj = { ...editItemObj, newName: updatedValue };
       const updatedArr = whereItems.map((ele) =>
         ele.id === editItemObj.id ? updatedObj : ele
       );
@@ -392,10 +392,10 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   // };
 
   const createWsArray = (wsList) => {
-    console.log("ws list: ", wsList);
     let updated = wsList?.map((item) => ({
       type: item.isRadioSelected ? "Primary" : item.isCheckboxSelected ? "Secondary" : "null",
       value: item.name,
+      newValue: item.newName,
     }));
     return updated;
   };
@@ -439,14 +439,16 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-7">
         {/* WHO SECTION */}
         <div>
-          <p className="text-center border border-2 border-violet-300 rounded-md  bg-violet-50 mb-2">WHO</p>
+          <p className="text-center border border-2 border-violet-300 rounded-md bg-violet-50 mb-2">WHO</p>
           <div className="h-[24vh] overflow-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md">
             <ul className="space-y-0 md:space-y-1 mt-3">
               {whoItems?.map((item, index) => (
                 <li key={item.id}>
                   <div className="flex items-center">
                     <div
-                      title={item.name.length > 20 ? item.name : ""}
+                      title={item.newName ? item.newName.length>20 ? item.newName : ""
+                        : item.name.length > 20 ? item.name : ""
+                      }
                       className="flex items-center w-full md:w-[18vw]"
                     >
                       <input
@@ -474,9 +476,12 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
                         className="ms-2 text-md"
                       >
                         <p>
-                          {item.name.length > 20
+                          {item.newName ? item.newName.length>20 ? item.newName.slice(0,20) + "..." : item.newName
+                            :
+                            item.name.length > 20
                             ? item.name.slice(0, 20) + "..."
-                            : item.name}
+                            : item.name
+                          }
                         </p>
                       </label>
                     </div>
@@ -541,7 +546,9 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
                 <li key={item.id}>
                   <div className="flex items-center">
                     <div
-                      title={item.name.length > 20 ? item.name : ""}
+                      title={item.newName ? item.newName.length>20 ? item.newName : ""
+                        : item.name.length > 20 ? item.name : ""
+                      }                      
                       className="flex items-center w-full md:w-[18vw]"
                     >
                       <input
@@ -569,9 +576,12 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
                         className="ms-2 text-md"
                       >
                         <p>
-                          {item.name.length > 20
+                          {item.newName ? item.newName.length>20 ? item.newName.slice(0,20) + "..." : item.newName
+                            :
+                            item.name.length > 20
                             ? item.name.slice(0, 20) + "..."
-                            : item.name}
+                            : item.name
+                          }
                         </p>
                       </label>
                       
@@ -651,7 +661,9 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
                 <li key={item.id}>
                   <div className="flex items-center">
                     <div
-                      title={item.name.length > 20 ? item.name : ""}
+                      title={item.newName ? item.newName.length>20 ? item.newName : ""
+                        : item.name.length > 20 ? item.name : ""
+                      }                      
                       className="flex items-center w-full md:w-[18vw]"
                     >
                       <input
@@ -679,9 +691,12 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
                         className="ms-2 text-md"
                       >
                         <p>
-                          {item.name.length > 20
+                          {item.newName ? item.newName.length>20 ? item.newName.slice(0,20) + "..." : item.newName
+                            :
+                            item.name.length > 20
                             ? item.name.slice(0, 20) + "..."
-                            : item.name}
+                            : item.name
+                          }
                         </p>
                       </label>
 

@@ -18,7 +18,7 @@ const WsWrapper = ({list, type}) => {
             </div>
             :
             <p className='text-md p-1 bg-gray-50 text-center border rounded-md font-medium mb-5'>
-                {`${type} Not Found!`}
+                {`${type} Not Found !`}
             </p>
 
         }

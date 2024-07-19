@@ -110,7 +110,6 @@ const Home = () => {
       const output = await axios.get(apiUrl, config);
       if(output) {
         const respObj = output?.data?.data;
-        console.log("respObj: ", respObj);
 
         const { story_text, story_id, story_world_id, storyWorld, story_file_name, titles, sitautions, actions } = respObj;
         const wsDataObj = respObj?.ws[0]?.ws_data;
@@ -196,8 +195,6 @@ const Home = () => {
 
   return (
     <SidebarWithHeader>
-      {/* <div className="p-2 relative"> */}
-      {/* <div className={`flex flex-col ${isContentOverflowing ? 'sm:min-h-screen' : ''}`}> */}
       <div className={`flex flex-col sm:min-h-screen`}>
         {/* head */}
         <p className="text-xl md:text-3xl mt-1 mb-2 md:mb-0 font-medium">Guppy Stories</p>
@@ -236,27 +233,22 @@ const Home = () => {
           )}
         </div>
 
-        {/* <div className="flex justify-between px-2 md:px-8 mb-4 md:mb-8 items-center"> */}
-          <div className="flex-shrink-0 flex justify-between">
-            <button
-              // className="text-white mt-6 bg-gray-400 hover:bg-gray-500 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800"
-              className={`text-white mt-6 bg-gray-500 disabled:bg-gray-400 hover:bg-gray-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
-              onClick={handlePreviousStep}
-              disabled={currentStep === 0}
-            >
-              {"<<Prev"}
-            </button>
-            <button
-              className={`text-white ml-2 right-6 mt-6 bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
-              onClick={handleNextStep}
-              // disabled={!isFetched && ((currentStep === 0 && ( !storyWorld || !storyWorldLead )) || (currentStep===1 && titles?.length===0) || (currentStep===2 && situations?.length===0) || (currentStep===3 && actions?.length===0) || currentStep === 5)}
-              disabled={(currentStep === 0 && ( !storyWorld || !storyWorldLead )) || (currentStep===1 && titles?.length===0) || (currentStep===2 && situations?.length===0) || (currentStep===3 && actions?.length===0) || currentStep === 5}
-            >
-              Next
-            </button>
-          </div>
-        {/* </div> */}
-
+        <div className="flex-shrink-0 flex justify-between">
+          <button
+            className={`text-white mt-6 bg-gray-500 disabled:bg-gray-400 hover:bg-gray-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
+            onClick={handlePreviousStep}
+            disabled={currentStep === 0}
+          >
+            {"<<Prev"}
+          </button>
+          <button
+            className={`text-white ml-2 right-6 mt-6 bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
+            onClick={handleNextStep}
+            disabled={(currentStep === 0 && ( !storyWorld || !storyWorldLead )) || (currentStep===1 && titles?.length===0) || (currentStep===2 && situations?.length===0) || (currentStep===3 && actions?.length===0) || currentStep === 5}
+          >
+            Next
+          </button>
+        </div>
 
         {/* footer */}
         {/* <Footer className={"sm:ml-64 p-1 bg-yellow-100 border"} /> */}

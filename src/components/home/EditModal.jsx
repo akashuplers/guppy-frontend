@@ -7,7 +7,7 @@ const EditModal = ({ open, onClose = () => {}, editItemObj, onUpdate = () => {} 
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    setCurrentValue(editItemObj?.name);
+    setCurrentValue(editItemObj?.newName ? editItemObj?.newName : editItemObj?.name);
   }, []);
 
   const handleChange = (e) => {
