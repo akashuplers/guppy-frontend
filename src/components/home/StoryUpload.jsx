@@ -230,7 +230,7 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
                         as="select"
                         name="storyWorld"
                         id="storyWorld"
-                        className="bg-gray-50 block w-full md:w-[35vw] p-2 border border-gray-300 text-gray-900 sm:text-md rounded-lg focus:ring-primary-600 focus:border-primary-600 p-2"
+                        className="bg-gray-50 block cursor-pointer w-full md:w-[35vw] p-2 border border-gray-300 text-gray-900 sm:text-md rounded-lg focus:ring-primary-600 focus:border-primary-600 p-2"
                         onChange={(e) => {
                           const selectedOption = storyWorldOptions?.find(option => option._id === e.target.value);
                           setFieldValue('storyWorld', e.target.value);

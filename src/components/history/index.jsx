@@ -125,15 +125,14 @@ const UserHistory = () => {
 
             {/* body */}
             <div className='mt-8'>
-                {!isLoading &&
-                    <Table
-                        dataSource={stories}
-                        columns={historyColumns}
-                        bordered
-                    />
-                }
+              {!isLoading &&
+                <Table
+                  dataSource={stories}
+                  columns={historyColumns}
+                  bordered
+                />
+              }
             </div>
-
 
         </div>
     </SidebarWithHeader>

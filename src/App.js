@@ -4,6 +4,7 @@ import Login from "./components/login";
 import SignUp from "./components/signup";
 import { StoryUploadApiProvider } from "./contexts/ApiContext";
 import UserHistory from "./components/history";
+import MasterWsPage from "./components/master-ws";
 
 function App() {
 
@@ -15,6 +16,7 @@ function App() {
           <Route path='/home' element={<Home />} />
           <Route path='/signup' element={<SignUp />} />
           <Route path='/history' element={<UserHistory />} />
+          <Route path='/master-ws' element={<MasterWsPage />} />
         </Routes>
       </BrowserRouter>
     </StoryUploadApiProvider>
