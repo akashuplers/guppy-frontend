@@ -145,78 +145,78 @@ const MasterWsPage = () => {
 
   return (
     <SidebarWithHeader>
-        <div>
-            {/* head */}
-            <p className="text-xl md:text-3xl mt-1 mb-2 md:mb-0 font-medium">Master Ws</p>
+      <div>
+          {/* head */}
+          <p className="text-xl md:text-3xl mt-1 mb-2 md:mb-0 font-medium">Master Ws</p>
 
-            {/* body */}
-            <div className='mt-8'>
-              <Formik
-                initialValues={{
-                  storyWorld: "",
-                }}
-                validationSchema={validationSchema}
-                onSubmit={handleSubmit}
-            >
-                {({ isSubmitting, setFieldValue }) => (
-                  <Form className="flex flex-col md:flex-row gap-2 md:gap-8">
-                    <div>
-                      <label
-                        htmlFor="storyWorld"
-                        className="block mb-2 text-md md:text-lg font-medium text-gray-900"
+          {/* body */}
+          <div className='mt-8'>
+            <Formik
+              initialValues={{
+                storyWorld: "",
+              }}
+              validationSchema={validationSchema}
+              onSubmit={handleSubmit}
+          >
+              {({ isSubmitting, setFieldValue }) => (
+                <Form className="flex flex-col md:flex-row gap-2 md:gap-8">
+                  <div>
+                    <label
+                      htmlFor="storyWorld"
+                      className="block mb-2 text-md md:text-lg font-medium text-gray-900"
+                    >
+                      Story World
+                    </label>
+                    <Field
+                      as="select"
+                      name="storyWorld"
+                      id="storyWorld"
+                      className="bg-gray-50 block cursor-pointer w-full md:w-[35vw] p-2 border border-gray-300 text-gray-900 sm:text-md rounded-lg focus:ring-primary-600 focus:border-primary-600 p-2"
+                    >
+                      <option value="">Please Select...</option>
+                      {storyWorldOptions?.map((item, index) => (
+                        <option key={index} value={item?._id}>{item?.name}</option>
+                      ))}
+                    </Field>
+                    <ErrorMessage
+                      name="storyWorld"
+                      component="div"
+                      className="text-red-500 text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    {!isSubmitting ? (
+                      <button
+                        type="submit"
+                        className="text-white w-full md:w-[18vw] px-5 py-3 mt-4 md:mt-9 bg-blue-600 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
+                        disabled={isSubmitting}
                       >
-                        Story World
-                      </label>
-                      <Field
-                        as="select"
-                        name="storyWorld"
-                        id="storyWorld"
-                        className="bg-gray-50 block cursor-pointer w-full md:w-[35vw] p-2 border border-gray-300 text-gray-900 sm:text-md rounded-lg focus:ring-primary-600 focus:border-primary-600 p-2"
-                      >
-                        <option value="">Please Select...</option>
-                        {storyWorldOptions?.map((item, index) => (
-                          <option key={index} value={item?._id}>{item?.name}</option>
-                        ))}
-                      </Field>
-                      <ErrorMessage
-                        name="storyWorld"
-                        component="div"
-                        className="text-red-500 text-sm"
-                      />
-                    </div>
+                        Fetch Master Ws
+                      </button>
+                    ) : (
+                      <LoadingButtonPrimary className="mt-4 md:mt-9" title={"Fetching..."} />
+                    )}
 
-                    <div>
-                      {!isSubmitting ? (
-                        <button
-                          type="submit"
-                          className="text-white w-full md:w-[18vw] px-5 py-3 mt-4 md:mt-9 bg-blue-600 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
-                          disabled={isSubmitting}
-                        >
-                          Fetch Master Ws
-                        </button>
-                      ) : (
-                        <LoadingButtonPrimary className="mt-4 md:mt-9" title={"Fetching..."} />
-                      )}
+                  </div>
+                </Form>
+              )}
+            </Formik>
+          </div>
 
-                    </div>
-                  </Form>
-                )}
-              </Formik>
+          {/* master Ws Tabs */}
+          {isFetched &&
+            <div className='mt-10 px-5'>
+              <Tabs defaultActiveKey="1" items={items} />
             </div>
+          }
+          {notFetched &&
+            <p className='text-lg py-2 text-center bg-violet-50 border rounded-md mt-20 px-8'>
+              {notFoundMsg}
+            </p>
+          }
 
-            {/* master Ws Tabs */}
-            {isFetched &&
-              <div className='mt-10 px-5'>
-                <Tabs defaultActiveKey="1" items={items} />
-              </div>
-            }
-            {notFetched &&
-              <p className='text-lg py-2 text-center bg-violet-50 border rounded-md mt-20 px-8'>
-                {notFoundMsg}
-              </p>
-            }
-
-        </div>
+      </div>
     </SidebarWithHeader>
   )
 }

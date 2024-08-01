@@ -154,7 +154,7 @@ const Home = () => {
         } else if(respObj?.sitautions?.length>0 && respObj?.actions?.length===0) {
           setCurrentStep(3);
         } else if(respObj?.actions?.length>0) {
-          setCurrentStep(5);
+          setCurrentStep(1);
         }
       } else {
         message.error(errorMsg);
