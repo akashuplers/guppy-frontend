@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import ModifySelectionPopup from "../ModifySelectionPopup";
 import StoryTextPopup from "../StoryTextPopup";
 import "../table.css";
+import SingleTextAreaModal from "../../../utils/modals/SingleTextAreaModal";
 
 const getCSVsFromList = (list_of_strings) => {
   return list_of_strings.join(", ");
@@ -21,6 +22,9 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
   const [situationSelectionItems, setSituationSelectionItems] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showStoryModal, setShowStoryModal] = useState(false);
+  const [showCommentModal, setShowCommentModal] = useState(false);
+  const [comment, setComment] = useState('');
+  const [modalType, setModalType] = useState('');
   const navigate = useNavigate();
 
   // story upload context
@@ -30,6 +34,18 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
   useEffect(() => {
     setSituationSelectionItems(updatedSituations);
   }, []);
+
+  const onUpdate = (updatedValue) => {
+    const updatedRow = {...selectedRow, comment: updatedValue};
+    const current = [...situationSelectionItems];
+    const updated = current.map((row) => row?.id===selectedRow?.id ? updatedRow : row);
+    setSituationSelectionItems(updated);
+    if(modalType === 'Edit') {
+      message.success("Comment Updated Successfully");
+    } else {
+      message.success("Comment Added Successfully");
+    }
+  }
 
   const bodyForSaveSituationsApi = () => {
     const updated = situationSelectionItems?.map((item) => ({
@@ -164,7 +180,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
     {
       dataIndex: "sentence",
       title: <p className="text-center">Situation</p>,
-      width: 600,
+      width: 430,
       align: 'justify',
     },
     {
@@ -235,6 +251,30 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
         return (
           <p>
             {csvStr ? csvStr : "NA"}
+          </p>
+        );
+      },
+    },
+    {
+      dataIndex: "comment",
+      title: <p className="text-center">Comment</p>,
+      render: (val, record) => {
+        return (
+          <p
+            className={`cursor-pointer hover:text-blue-600 ${!val && "text-blue-600 underline"}`}
+            onClick={() => {
+              setSelectedRow(record);
+              setShowCommentModal(true);
+              setModalType(val ? 'Edit' : '');
+              setComment(val ? val : '');
+            }}
+          >
+            {val ?
+            // "Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur quasi soluta laudantium eum enim maiores aperiam eligendi officia nihil fugit neque cupiditate omnis dicta, perspiciatis porro magnam fugiat quaerat doloribus."
+            val
+            :
+            "+ Add Comment"
+            }
           </p>
         );
       },
@@ -353,6 +393,22 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
         <StoryTextPopup
           open={showStoryModal}
           onClose={() => setShowStoryModal(false)}
+        />
+      )}
+
+      {/* add comment modal */}
+      {showCommentModal && (
+        <SingleTextAreaModal
+          open={showCommentModal}
+          type={modalType}
+          label="Comment"
+          editItem={comment}
+          onUpdate={onUpdate}
+          onClose={() => {
+            setShowCommentModal(false);
+            setComment('');
+            setModalType('');
+          }}
         />
       )}
 

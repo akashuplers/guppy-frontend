@@ -7,40 +7,37 @@ const JsonBody = ({ data }) => {
       </p>
       <p className="font-medium mb-1">MASTER Ws :</p>
       <div>
-        <p>Who:</p>
-        <p>Primary:</p>
+        <p>Who Primary :</p>
         <ul className="ps-8">
           {data.master_ws.Who.primary.map((item, index) => (
             <li className="list-disc" key={index}>{item}</li>
           ))}
         </ul>
-        <p>Secondary:</p>
+        <p>Who Secondary :</p>
         <ul className="ps-8">
           {data.master_ws.Who.secondary.map((item, index) => (
             <li className="list-disc" key={index}>{item}</li>
           ))}
         </ul>
-        <p>What:</p>
-        <p>Primary:</p>
+        <p>What Primary :</p>
         <ul className="ps-8">
           {data.master_ws.What.primary.map((item, index) => (
             <li className="list-disc" key={index}>{item}</li>
           ))}
         </ul>
-        <p>Secondary:</p>
+        <p>What Secondary :</p>
         <ul className="ps-8">
           {data.master_ws.What.secondary.map((item, index) => (
             <li className="list-disc" key={index}>{item}</li>
           ))}
         </ul>
-        <p>Where:</p>
-        <p>Primary:</p>
+        <p>Where Primary :</p>
         <ul className="ps-8">
           {data.master_ws.Where.primary.map((item, index) => (
             <li className="list-disc" key={index}>{item}</li>
           ))}
         </ul>
-        <p>Secondary:</p>
+        <p>Where Secondary :</p>
         <ul className="ps-8">
           {data.master_ws.Where.secondary.map((item, index) => (
             <li className="list-disc" key={index}>{item}</li>
