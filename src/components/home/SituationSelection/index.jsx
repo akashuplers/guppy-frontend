@@ -101,7 +101,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
       const response = await axios.post(apiUrl, payload, config); // post api request
       const output = response?.data;
       if(output) {
-        const actions= output?.actions?.ideas;
+        const actions= output?.actions;
         
         // update context
         const contextObj = { ...storyUploadApiResponse };

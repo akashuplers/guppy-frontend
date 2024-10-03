@@ -312,7 +312,6 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
       const output = response?.data;
       if (output) {
         const { titles } = output;
-        const titlesArr = titles?.titles;
 
         // update context
         const contextObj = { ...storyUploadApiResponse };
@@ -324,12 +323,13 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
           secondaryWhats,
           primaryWheres,
           secondaryWheres,
-          titles: getUpdatedJson(titlesArr),
-          updatedTitles: getUpdatedJson(titlesArr),
+          titles: getUpdatedJson(titles),
+          updatedTitles: getUpdatedJson(titles),
           updatedWhos: whoItems,
           updatedWhats: whatItems,
           updatedWheres: whereItems,
         };
+
         setStoryUploadApiResponse(updatedContextObj);
 
         message.destroy(alertKey); // stop infinite loader alert

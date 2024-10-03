@@ -99,7 +99,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
       const response = await axios.post(apiUrl, payload, config); // post api request
       const output = response?.data;
       if(output) {
-        const situations = output?.situations?.ideas;
+        const situations = output?.situations;
         
         // update context
         const contextObj = { ...storyUploadApiResponse };
