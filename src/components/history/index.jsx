@@ -32,7 +32,7 @@ const UserHistory = () => {
         },
       };
       alertKey = message.loading("Fetching Stories...", 0).key;
-      const response = await axios.get(apiUrl, config); // post api request
+      const response = await axios.post(apiUrl, {}, config); // post api request
       const output = response?.data?.data;
       if(output) {
         setStories(output.slice().reverse());
