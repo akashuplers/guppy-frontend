@@ -71,6 +71,18 @@ const DownloadStory = ({ onDiscard = () => {} }) => {
             </Button>
         </a>
 
+        {/* ner harmonization button */}
+        <a> {/* call the ner harmonization api url */}
+            <Button
+              type="secondary"
+              className="bg-green-500 border-green-600 text-white hover:bg-green-600 hover:border-green-700 h-9 me-4"
+              onClick={() => console.log("ner harmonization in progress")}
+            >
+              Run Ner Harmonization
+            </Button>
+        </a>
+
+
         {/* logout button */}
         <Popconfirm
             title="Logout"
