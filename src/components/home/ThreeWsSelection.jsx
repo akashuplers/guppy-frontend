@@ -400,6 +400,18 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
     return updated;
   };
 
+  const addNewFields = () => {
+    const newField = {
+      isCheckboxSelected: false,
+      isRadioSelected: false,
+      name: "text",
+    };
+    
+    setWhoItems((prev) => [{id: whoItems.length + 1, ...newField}, ...prev]);
+    setWhatItems((prev) => [{id: whatItems.length + 1, ...newField}, ...prev]);
+    setWhereItems((prev) => [{id: whereItems.length + 1, ...newField}, ...prev]);
+  };
+
   const handleDiscard = () => {
     resetAll();
     onDiscard();
@@ -427,12 +439,20 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
       </div>
 
       {fileName && (
-        <p className="text-md md:text-lg mb-4 md:mb-6">
-          File Uploaded :{" "}
-          <span title="Click to see story text" className="font-medium text-blue-500 cursor-pointer" onClick={() => setShowStoryModal(true)} >
-            {fileName}
-          </span>
-        </p>
+        <div className="flex justify-between">
+          <p className="text-md md:text-lg mb-4 md:mb-6">
+            File Uploaded :{" "}
+            <span title="Click to see story text" className="font-medium text-blue-500 cursor-pointer" onClick={() => setShowStoryModal(true)}>
+              {fileName}
+            </span>
+          </p>
+          <button
+            className={`text-white mb-4 right-6 bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800`}
+            onClick={addNewFields}
+          >
+            Add New Fields
+          </button>
+        </div>
       )}
 
       {/* body */}

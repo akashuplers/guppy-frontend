@@ -5,11 +5,14 @@ import { Table, message } from 'antd';
 import { API_BASE_PATH, API_ROUTES } from '../../constants/api-endpoints';
 import axios from 'axios';
 import ShareModal from '../home/ShareModal';
+import { Dropdown, Space } from 'antd';
+import { FilterOutlined } from '@ant-design/icons';
 
 const UserHistory = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [stories, setStories] = useState([]);
+  const [filteredStories, setFilteredStories] = useState([]);
   const [isShareModalOpen, setShareModalOpen] = useState(false);
   const [storyId, setStoryId] = useState(null);
   const [users, setUsers] = useState([]);
@@ -30,6 +33,26 @@ const UserHistory = () => {
     if(storyId && shareIds)
       handleSharedUsers();
   }, [storyId]);
+
+  const onClick = ({ key }) => {
+    if(key==="all")
+      setFilteredStories(stories);
+    else
+      setFilteredStories(stories.filter(story => story.story_world===key));
+  };
+
+  const getItems = () => {
+    const uniqueStories = Array.from(new Set(stories.map(story => story.story_world)))
+      .map(storyWorld => ({
+        label: storyWorld,
+        key: storyWorld,
+      }));
+      uniqueStories.push({label: "all", key: "all"});
+    
+    return uniqueStories;
+  };  
+  
+  const items = getItems();
 
   const fetchUsers = async (token) => {
     try {
@@ -71,6 +94,7 @@ const handleSharedUsers = () => {
       const output = response?.data?.data;
       if(output) {
         setStories(output.slice().reverse());
+        setFilteredStories(output.slice().reverse());
         message.destroy(alertKey);
         message.success("Stories Fetched Successfully !");
       } else {
@@ -116,6 +140,17 @@ const handleSharedUsers = () => {
     {
         dataIndex: "story_file_name",
         title: "Story File Name"
+    },
+    {
+      dataIndex: "story_world",
+      title: (<Dropdown menu={{ items, onClick }}>
+      <a onClick={(e) => e.preventDefault()}>
+        <Space>
+          Story World
+          <FilterOutlined style={{ fontSize: "12px",color: "#555", paddingTop: "5px" }} />
+        </Space>
+      </a>
+    </Dropdown>)
     },
     {
         dataIndex: "story_id",
@@ -184,7 +219,7 @@ const handleSharedUsers = () => {
             <div className='mt-8'>
               {!isLoading &&
                 <Table
-                  dataSource={stories}
+                  dataSource={filteredStories}
                   columns={historyColumns}
                   bordered
                 />

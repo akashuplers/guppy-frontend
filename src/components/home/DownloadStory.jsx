@@ -75,7 +75,7 @@ const DownloadStory = ({ onDiscard = () => {} }) => {
         <a> {/* call the ner harmonization api url */}
             <Button
               type="secondary"
-              className="bg-green-500 border-green-600 text-white hover:bg-green-600 hover:border-green-700 h-9 me-4"
+              className="bg-blue-500 border-blue-600 text-white h-9 me-4"
               onClick={() => console.log("ner harmonization in progress")}
             >
               Run Ner Harmonization
