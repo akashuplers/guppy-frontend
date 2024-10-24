@@ -17,4 +17,5 @@ export const API_ROUTES = {
     LIST_Ws_BY_STORY_WORLD: '/story/fetch-ws',
     LIST_STORIES_UPLOAD_BY_USER: '/story',
     FETCH_MASTER_Ws: '/story/fetch-master-ws',
+    LIST_USERS: '/story/list-users'
 }
