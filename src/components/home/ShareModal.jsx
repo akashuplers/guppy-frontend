@@ -1,10 +1,13 @@
 
-import { Button, Modal } from "antd";
-import React, { useEffect, useState } from "react";
+import { Button, message, Modal } from "antd";
+import React, { useState } from "react";
+import { API_BASE_PATH, API_ROUTES } from '../../constants/api-endpoints';
+import axios from 'axios';
 
-const ShareModal = ({ open, storyId, users, onClose = () => {}}) => {
+const ShareModal = ({ open, storyDetails, users, updateUsers = () => {}, onClose = () => {}}) => {
 
   const [selectedUserIds, setSelectedUserIds] = useState([]);
+  const token = JSON.parse(localStorage.getItem("accessToken"));
 
   const handleCheckboxChange = (userId) => {
     setSelectedUserIds((prev) => {
@@ -18,9 +21,30 @@ const ShareModal = ({ open, storyId, users, onClose = () => {}}) => {
     });
     };
 
-  useEffect(() => {
-    console.log('selecteduserids',selectedUserIds);
-  },[selectedUserIds])
+  const shareStoryToUsers = async () => {
+    try {
+        const apiUrl = `${API_BASE_PATH}${API_ROUTES.SHARE}${storyDetails?.storyId}`;
+        const config = {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        };
+        
+        const body = { userIds: selectedUserIds };
+        const output = await axios.post(apiUrl, body, config);
+
+        message.success(output.data.message);
+
+        updateUsers(selectedUserIds);
+        setSelectedUserIds([]);
+    } catch (error) {
+        console.error("Error:", error);
+        const errorMsg = error.response?.data?.message || 'An error occurred. Please try again.';
+        message.error(errorMsg);
+    }
+};
+
 
   return (
     <Modal
@@ -30,7 +54,7 @@ const ShareModal = ({ open, storyId, users, onClose = () => {}}) => {
       footer={[
         <div className="flex gap-4 justify-center">
             
-          <Button onClick={() => {}} type="primary" className="bg-blue-50 border-blue-500 text-blue-500">
+          <Button onClick={shareStoryToUsers} type="primary" className="bg-blue-50 border-blue-500 text-blue-500">
             Share
           </Button>
           <Button
@@ -44,7 +68,9 @@ const ShareModal = ({ open, storyId, users, onClose = () => {}}) => {
       ]}
     >
         <div>
-            <p className="text-xl md:text-2xl mt-1 mb-5 font-medium">Share Story via Users</p>
+          <p className="text-xl md:text-2xl mb-5 font-medium">Share Story via Users
+            <span className="text-sm text-gray-500 ml-2">({storyDetails?.storyFileName})</span></p>
+
             <div className="max-h-52 overflow-y-auto p-2">
                 {users.map(user => (
                 <div key={user._id} className="flex items-center gap-2 mb-2">

@@ -14,9 +14,11 @@ const UserHistory = () => {
   const [stories, setStories] = useState([]);
   const [filteredStories, setFilteredStories] = useState([]);
   const [isShareModalOpen, setShareModalOpen] = useState(false);
-  const [storyId, setStoryId] = useState(null);
+  const [storyDetails, setStoryDetails] = useState(null);
   const [users, setUsers] = useState([]);
+  const [tempUsers, setTempUsers] = useState([]);
   const [shareIds, setShareIds] = useState([]);
+  const [updatedShareIds, setUpdatedShareIds] = useState([]);
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const errorMsg = "Error In Fetching Saved Response";
 
@@ -30,9 +32,9 @@ const UserHistory = () => {
   }, []);
 
   useEffect(() => {
-    if(storyId && shareIds)
+    if(shareIds)
       handleSharedUsers();
-  }, [storyId]);
+  }, [shareIds, updatedShareIds]);
 
   const onClick = ({ key }) => {
     if(key==="all")
@@ -65,18 +67,18 @@ const UserHistory = () => {
         };
         const output = await axios.get(apiUrl, config);
         setUsers(output.data?.data);
-        console.log('users',output);
+        setTempUsers(output.data?.data);
     } catch (error) {
         console.log("error: ", error);
         message.error(errorMsg);
     }
-}
+  }
 
-const handleSharedUsers = () => {
-  const sharedUserIds = shareIds.map(share => share.userId);
-  const finalUsers = users.filter(user => !sharedUserIds.includes(user._id));
-  setUsers(finalUsers);
-}
+  const handleSharedUsers = () => {
+    const finalUsers = users.filter(user => !shareIds.includes(user._id) && !updatedShareIds.includes(user._id));
+    setTempUsers(finalUsers);
+  }
+
   const fetchStories = async (token) => {
     setIsLoading(true);
     let alertKey;
@@ -179,7 +181,7 @@ const handleSharedUsers = () => {
                   onClick={() => {
                     localStorage.setItem("storyId", JSON.stringify(record?.story_id));
                     navigate('/home');
-                  } }
+                  }}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none">
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M9 6C9 4.34315 7.65685 3 6 3H4C2.34315 3 1 4.34315 1 6V8C1 9.65685 2.34315 11 4 11H6C7.65685 11 9 9.65685 9 8V6ZM7 6C7 5.44772 6.55228 5 6 5H4C3.44772 5 3 5.44772 3 6V8C3 8.55228 3.44772 9 4 9H6C6.55228 9 7 8.55228 7 8V6Z" fill="#0F0F0F" />
@@ -190,13 +192,16 @@ const handleSharedUsers = () => {
                 </button>
                 <button
                   title="Share story"
-                  onClick={() => 
-                    {
-                    setShareModalOpen(true); 
-                    setStoryId(record?.story_id);
-                    console.log('kukka',record);
-                    setShareIds(record?.shareIds);
-                  }}
+                  onClick={() => {
+                    setShareModalOpen(true);
+                    setStoryDetails({ 
+                      storyId: record?.story_id || '', 
+                      storyFileName: record?.story_file_name || ''
+                    });
+                    const ids = record?.shareIds || []; 
+                    setShareIds(ids.map(share => share.userId));
+                    setUpdatedShareIds([]);
+                }}                
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none">
                       <path fill-rule="evenodd" clip-rule="evenodd" d="M19.6495 0.799565C18.4834 -0.72981 16.0093 0.081426 16.0093 1.99313V3.91272C12.2371 3.86807 9.65665 5.16473 7.9378 6.97554C6.10034 8.9113 5.34458 11.3314 5.02788 12.9862C4.86954 13.8135 5.41223 14.4138 5.98257 14.6211C6.52743 14.8191 7.25549 14.7343 7.74136 14.1789C9.12036 12.6027 11.7995 10.4028 16.0093 10.5464V13.0069C16.0093 14.9186 18.4834 15.7298 19.6495 14.2004L23.3933 9.29034C24.2022 8.2294 24.2022 6.7706 23.3933 5.70966L19.6495 0.799565ZM7.48201 11.6095C9.28721 10.0341 11.8785 8.55568 16.0093 8.55568H17.0207C17.5792 8.55568 18.0319 9.00103 18.0319 9.55037L18.0317 13.0069L21.7754 8.09678C22.0451 7.74313 22.0451 7.25687 21.7754 6.90322L18.0317 1.99313V4.90738C18.0317 5.4567 17.579 5.90201 17.0205 5.90201H16.0093C11.4593 5.90201 9.41596 8.33314 9.41596 8.33314C8.47524 9.32418 7.86984 10.502 7.48201 11.6095Z" fill="#0F0F0F" />
@@ -226,7 +231,7 @@ const handleSharedUsers = () => {
               }
             </div>
 
-            <ShareModal open={isShareModalOpen} storyId={storyId} users={users} onClose={() => setShareModalOpen(false)}/>
+            <ShareModal open={isShareModalOpen} storyDetails={storyDetails} users={tempUsers} onClose={() => setShareModalOpen(false)} updateUsers={(ids) => setUpdatedShareIds(ids)}/>
         </div>
     </SidebarWithHeader>
   )
