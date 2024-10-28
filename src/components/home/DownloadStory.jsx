@@ -10,13 +10,16 @@ const DownloadStory = ({ onDiscard = () => {} }) => {
   const { storyUploadApiResponse } = useContext(StoryUploadApiContext);
 
   const navigate = useNavigate();
-  const { storyWorld, storyWorldId } = storyUploadApiResponse;
+  const { storyWorld, storyWorldId, story_id } = storyUploadApiResponse;
   const [showResetPopConfirm, setShowResetPopConfirm] = useState(false);
   const [showLogoutPopConfirm, setShowLogoutPopConfirm] = useState(false);
-  const apiUrl = API_BASE_PATH + API_ROUTES.DOWNLOAD_STORY + `?id=${storyWorldId}`;
+  const [selectedVersion, setSelectedVersion] = useState('older');
+  const userId = localStorage.getItem("userId");
+  const apiUrl = API_BASE_PATH + API_ROUTES.DOWNLOAD_STORY + `?id=${storyWorldId}` + `&storyId=${story_id}` + `&userId=${userId}` + `&saveOlderVersion=${selectedVersion === "older"}`;
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('userId');
     navigate("/");
     message.success("You Have Been Logged Out Successfully !");
   }
@@ -37,6 +40,30 @@ const DownloadStory = ({ onDiscard = () => {} }) => {
         <p className="text-md md:text-lg mb-4 md:mb-6">
           Your Data Has Been Saved Successfully.
         </p>
+      </div>
+
+      <div className="flex flex-col items-center gap-2">
+          <label className="text-sm">
+              <input
+                  type="radio"
+                  value="older"
+                  checked={selectedVersion === 'older'}
+                  onChange={() => setSelectedVersion('older')}
+                  className="w-4 h-4 mr-3 mb-1 text-green-600 border-gray-300 disabled:bg-gray-200 focus:ring-blue-500 focus:ring-2"
+              />
+              Older Version
+          </label>
+
+          <label className="text-sm">
+              <input
+                  type="radio"
+                  value="newer"
+                  checked={selectedVersion === 'newer'}
+                  onChange={() => setSelectedVersion('newer')}
+                  className="w-4 h-4 ml-1 mr-3 mb-1 text-green-600 border-gray-300 disabled:bg-gray-200 focus:ring-blue-500 focus:ring-2"
+              />
+              Newer Version
+          </label>
       </div>
 
       <div className="flex justify-center mt-3">

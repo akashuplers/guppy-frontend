@@ -57,17 +57,19 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   }, []);
 
   const handleWhoRadioChange = (item) => {
-    const updatedArr = whoItems.map((ele) => {
-      // If the current item is the one being clicked, set its isRadioSelected to true
-      // Otherwise, set its isRadioSelected to false
-      return {
-        ...ele,
-        isRadioSelected: ele.id === item.id,
-      };
-    });
-  
+    if(item.isRadioSelected) {
+      const filteredArr = primaryWhos.filter(
+        (ele) => ele.toLowerCase() !== item.name.toLowerCase()
+      );
+      setPrimaryWhos(filteredArr);
+    } else {
+      setPrimaryWhos([...primaryWhos, item?.name]);
+    }
+    const updatedItem = { ...item, isRadioSelected: !item.isRadioSelected };
+    const updatedArr = whoItems.map((ele) =>
+      ele.id === item.id ? updatedItem : ele
+    );
     setWhoItems(updatedArr);
-    setPrimaryWhos([item.name]);
   };
 
   const handleWhoCheckboxChange = (item) => {
@@ -392,23 +394,56 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   // };
 
   const createWsArray = (wsList) => {
-    let updated = wsList?.map((item) => ({
+    let updated = wsList?.map((item) => {if(item.isNewField){ return {
       type: item.isRadioSelected ? "Primary" : item.isCheckboxSelected ? "Secondary" : "null",
-      value: item.name,
-      newValue: item.newName,
-    }));
+      value: item.newName ?? item.name,
+      id: '',
+      updated: false,
+      ner: false,
+    }
+  } else {
+      return {
+        type: item.isRadioSelected ? "Primary" : item.isCheckboxSelected ? "Secondary" : "null",
+        value: item.name,
+        newValue: item.newName,
+        updated: item.newName !== undefined,
+        ner: false,
+        id: ''
+      }
+    }});
     return updated;
   };
 
-  const addNewFields = () => {
+  const addNewWho = () => {
     const newField = {
       isCheckboxSelected: false,
       isRadioSelected: false,
       name: "text",
+      isNewField: true
     };
     
     setWhoItems((prev) => [{id: whoItems.length + 1, ...newField}, ...prev]);
+  };
+
+  const addNewWhat = () => {
+    const newField = {
+      isCheckboxSelected: false,
+      isRadioSelected: false,
+      name: "text",
+      isNewField: true
+    };
+    
     setWhatItems((prev) => [{id: whatItems.length + 1, ...newField}, ...prev]);
+  };
+
+  const addNewWhere = () => {
+    const newField = {
+      isCheckboxSelected: false,
+      isRadioSelected: false,
+      name: "text",
+      isNewField: true
+    };
+
     setWhereItems((prev) => [{id: whereItems.length + 1, ...newField}, ...prev]);
   };
 
@@ -446,12 +481,6 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
               {fileName}
             </span>
           </p>
-          <button
-            className={`text-white mb-4 right-6 bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800`}
-            onClick={addNewFields}
-          >
-            Add New Fields
-          </button>
         </div>
       )}
 
@@ -459,7 +488,19 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-7">
         {/* WHO SECTION */}
         <div>
-          <p className="text-center border border-2 border-violet-300 rounded-md bg-violet-50 mb-2">WHO</p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4">
+              WHO
+            </p>
+
+            <button
+              className={`text-white bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-2 py-2 text-center focus:ring-primary-800`}
+              onClick={addNewWho}
+            >
+              Add New Who
+            </button>
+          </div>
+
           <div className="h-[24vh] overflow-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md">
             <ul className="space-y-0 md:space-y-1 mt-3">
               {whoItems?.map((item, index) => (
@@ -504,6 +545,20 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
                           }
                         </p>
                       </label>
+
+                      {/* clear radio selection icon */}
+                      {item.isRadioSelected &&
+                        <button
+                          title="Clear Selection"
+                          className="ms-3 text-blue-600"
+                          onClick={() => handleWhoRadioChange(item)}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-circle" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                          </svg>
+                        </button>
+                      }
                     </div>
                     {/* edit icon */}
                     <button
@@ -559,7 +614,18 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
 
         {/* WHAT SECTION */}
         <div>
-          <p className="text-center border border-2 border-violet-300 rounded-md  bg-violet-50 mb-2">WHAT</p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4">
+              WHAT
+            </p>
+
+            <button
+              className={`text-white bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-2 py-2 text-center focus:ring-primary-800`}
+              onClick={addNewWhat}
+            >
+              Add New What
+            </button>
+          </div>
           <div className="h-[24vh] overflow-y-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md">
             <ul className="space-y-0 md:space-y-1 mt-3">
               {whatItems?.map((item, index) => (
@@ -674,7 +740,18 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
 
         {/* WHERE SECTION */}
         <div>
-          <p className="text-center border border-2 border-violet-300 rounded-md  bg-violet-50 mb-2">WHERE</p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4">
+              WHERE
+            </p>
+
+            <button
+              className={`text-white bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-2 py-2 text-center focus:ring-primary-800`}
+              onClick={addNewWhere}
+            >
+              Add New Where
+            </button>
+          </div>
           <div className="h-[24vh] overflow-y-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md">
             <ul className="space-y-0 md:space-y-1 mt-3">
               {whereItems?.map((item, index) => (

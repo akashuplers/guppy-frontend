@@ -21,6 +21,7 @@ const SidebarWithHeader = ({children}) => {
   const handleMenuClick = ({key}) => {
     if(key === '3') {
       localStorage.removeItem('accessToken');
+      localStorage.removeItem('userId');
       navigate('/');
       message.success("You Have Been Logged Out Successfully !");
     }
