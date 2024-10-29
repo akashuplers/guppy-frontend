@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useRef, useContext, useEffect, useState } from "react";
 import FooterButtons from "./FooterButtons";
 import DeleteConfirmationDialog from "../../utils/modals/DeleteConfirmationDialog";
 import { message } from "antd";
@@ -26,6 +26,9 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   const [secondaryWheres, setSecondaryWheres] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showStoryModal, setShowStoryModal] = useState(false);
+  const scrollableWhoDivRef = useRef(null);
+  const scrollableWhatDivRef = useRef(null);
+  const scrollableWhereDivRef = useRef(null);
 
   // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
@@ -415,7 +418,11 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
     return updated;
   };
 
-  const addNewWho = () => {
+  const addNewWho = (event) => {
+    if (scrollableWhoDivRef.current) {
+      scrollableWhoDivRef.current.scrollTop = 0;
+    }
+    event.currentTarget.blur();
     const newField = {
       isCheckboxSelected: false,
       isRadioSelected: false,
@@ -426,7 +433,11 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
     setWhoItems((prev) => [{id: whoItems.length + 1, ...newField}, ...prev]);
   };
 
-  const addNewWhat = () => {
+  const addNewWhat = (event) => {
+    if (scrollableWhatDivRef.current) {
+      scrollableWhatDivRef.current.scrollTop = 0;
+    }
+    event.currentTarget.blur();
     const newField = {
       isCheckboxSelected: false,
       isRadioSelected: false,
@@ -437,7 +448,11 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
     setWhatItems((prev) => [{id: whatItems.length + 1, ...newField}, ...prev]);
   };
 
-  const addNewWhere = () => {
+  const addNewWhere = (event) => {
+    if (scrollableWhereDivRef.current) {
+      scrollableWhereDivRef.current.scrollTop = 0;
+    }
+    event.currentTarget.blur();
     const newField = {
       isCheckboxSelected: false,
       isRadioSelected: false,
@@ -502,7 +517,9 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
             </button>
           </div>
 
-          <div className="h-[24vh] overflow-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md">
+          <div 
+            ref={scrollableWhoDivRef} 
+            className="h-[24vh] overflow-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md">
             <ul className="space-y-0 md:space-y-1 mt-3">
               {whoItems?.map((item, index) => (
                 <li key={item.id}>
@@ -627,7 +644,9 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
               Add New What
             </button>
           </div>
-          <div className="h-[24vh] overflow-y-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md">
+          <div 
+            ref={scrollableWhatDivRef} 
+            className="h-[24vh] overflow-y-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md">
             <ul className="space-y-0 md:space-y-1 mt-3">
               {whatItems?.map((item, index) => (
                 <li key={item.id}>
@@ -753,7 +772,9 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
               Add New Where
             </button>
           </div>
-          <div className="h-[24vh] overflow-y-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md">
+          <div 
+            ref={scrollableWhereDivRef} 
+            className="h-[24vh] overflow-y-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md">
             <ul className="space-y-0 md:space-y-1 mt-3">
               {whereItems?.map((item, index) => (
                 <li key={item.id}>
