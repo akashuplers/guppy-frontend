@@ -80,7 +80,7 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
   const getWhosUpdatedJson = (arr, storyWorldLead) => {
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
-        id: index + 1,
+        id: item.id,
         name: item.value,
         isRadioSelected: item.value?.toLowerCase()===storyWorldLead?.toLowerCase(),
         isCheckboxSelected: false,
@@ -93,7 +93,7 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
   const getUpdatedJson = (arr) => {
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
-        id: index + 1,
+        id: item.id,
         name: item.value,
         isRadioSelected: false,
         isCheckboxSelected: false,

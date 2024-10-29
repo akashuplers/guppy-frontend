@@ -409,7 +409,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
         newValue: item.newName,
         updated: item.newName !== undefined,
         ner: false,
-        id: ''
+        id: item.id ?? ''
       }
     }});
     return updated;
