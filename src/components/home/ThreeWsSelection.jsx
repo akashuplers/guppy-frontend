@@ -398,6 +398,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
       type: item.isRadioSelected ? "Primary" : item.isCheckboxSelected ? "Secondary" : "null",
       value: item.newName ?? item.name,
       id: '',
+      new: true,
       updated: false,
       ner: false,
     }
