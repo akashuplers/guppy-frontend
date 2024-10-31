@@ -49,6 +49,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
 
   const bodyForSaveSituationsApi = () => {
     const updated = situationSelectionItems?.map((item) => ({
+      id: item.isNewField ? '' : item.id,
       idea: item.sentence,
       Classification: "Situation",
       Who_Primary: item.primaryWhos,
@@ -57,6 +58,8 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
       What_Secondary: item.secondaryWhats,
       Where_Primary: item.primaryWheres,
       Where_Secondary: item.secondaryWheres,
+      ...(item.isNewField ? {new: true, updated: false}: item.isEditField && {updated: true}),
+      ...(item.comment && {comment: item.comment})
     }));
     const body = {
       story_id: story_id,
@@ -68,7 +71,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
   const getUpdatedJson = (arr) => {
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
-        id: index + 1,
+        id: item.id,
         sentence: item.idea,
         primaryWhos: item.Who_Primary,
         secondaryWhos: item.Who_Secondary,
@@ -76,10 +79,29 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
         secondaryWhats: item.What_Secondary,
         primaryWheres: item.Where_Primary,
         secondaryWheres: item.Where_Secondary,
+        comment: item.comment
       }));
       return updated;
     }
     return [];
+  }
+
+  const getUpdatedSituations = (newSituations) => {
+    return newSituations.map((situation, index) => {
+      return {
+        id: situation.id,
+        idea: situation.idea,
+        classification: situation.Classification,
+        primaryWhos: situation.Who_Primary,
+        primaryWhats: situation.What_Primary,
+        primaryWheres: situation.Where_Primary,
+        secondaryWhos: situation.Who_Secondary,
+        secondaryWhats: situation.What_Secondary,
+        secondaryWheres: situation.Where_Secondary,
+        ...(situation.comment && {comment: situation.comment})
+      }
+      
+    })
   }
 
   const onSave = async () => {
@@ -102,12 +124,13 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
       const output = response?.data;
       if(output) {
         const actions= output?.actions;
+        setSituationSelectionItems(getUpdatedSituations(output?.updatedSituations?.ideas));
         
         // update context
         const contextObj = { ...storyUploadApiResponse };
         const updatedContextObj = {
           ...contextObj,
-          updatedSituations: situationSelectionItems,
+          updatedSituations: getUpdatedSituations(output?.updatedSituations?.ideas),
           actions: getUpdatedJson(actions),
           updatedActions: getUpdatedJson(actions),
         };
@@ -163,6 +186,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
       secondaryWhats: [],
       primaryWheres: [],
       secondaryWheres: [],
+      isNewField: true
     };
     const curData = [newObj, ...situationSelectionItems];
     setSituationSelectionItems(curData);

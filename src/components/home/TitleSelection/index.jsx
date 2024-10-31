@@ -49,6 +49,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
 
   const bodyForSaveTitlesApi = () => {
     const updated = titleSelectionItems?.map((item) => ({
+      id: item.isNewField ? '' : item.id,
       Title: item.sentence,
       Who_Primary: item.primaryWhos,
       Who_Secondary: item.secondaryWhos,
@@ -56,6 +57,8 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
       What_Secondary: item.secondaryWhats,
       Where_Primary: item.primaryWheres,
       Where_Secondary: item.secondaryWheres,
+      ...(item.isNewField ? {new: true, updated: false} : item.isEditField && {updated: true}),
+      ...(item.comment && {comment: item.comment})
     }));
     const body = {
       titles: updated,
@@ -67,7 +70,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
   const getUpdatedJson = (arr) => {
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
-        id: index + 1,
+        id: item.id,
         sentence: item.idea,
         primaryWhos: item.Who_Primary,
         secondaryWhos: item.Who_Secondary,
@@ -75,10 +78,28 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
         secondaryWhats: item.What_Secondary,
         primaryWheres: item.Where_Primary,
         secondaryWheres: item.Where_Secondary,
+        comment: item.comment
       }));
       return updated;
     }
     return [];
+  }
+
+  const getUpdatedTitles = (newTitles) => {
+    return newTitles.map(title => {
+      return {
+        id: title.id,
+        sentence: title.Title,
+        primaryWhos: title.Who_Primary,
+        primaryWhats: title.What_Primary,
+        primaryWheres: title.Where_Primary,
+        secondaryWhos: title.Who_Secondary,
+        secondaryWhats: title.What_Secondary,
+        secondaryWheres: title.Where_Secondary,
+        ...(title.comment && {comment: title.comment})
+      }
+      
+    })
   }
 
   const onSave = async () => {
@@ -100,12 +121,13 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
       const output = response?.data;
       if(output) {
         const situations = output?.situations;
-        
+        const newTitles = output?.updatedTitles?.titles;
+        setTitleSelectionItems(getUpdatedTitles(newTitles));
         // update context
         const contextObj = { ...storyUploadApiResponse };
         const updatedContextObj = {
           ...contextObj,
-          updatedTitles: titleSelectionItems,
+          updatedTitles: getUpdatedTitles(newTitles),
           situations: getUpdatedJson(situations),
           updatedSituations: getUpdatedJson(situations),
         };
@@ -161,6 +183,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
       secondaryWhats: [],
       primaryWheres: [],
       secondaryWheres: [],
+      isNewField: true
     };
     const curData = [newObj, ...titleSelectionItems];
     setTitleSelectionItems(curData);

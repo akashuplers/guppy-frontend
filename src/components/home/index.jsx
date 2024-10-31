@@ -33,7 +33,7 @@ const Home = () => {
   const getUpdatedJsonWs = (arr) => {
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
-        id: index + 1,
+        id: item.id,
         name: item.value,
         isRadioSelected: item.type?.toLowerCase()==='primary' ? true : false,
         isCheckboxSelected: item.type?.toLowerCase()==='secondary' ? true : false,
@@ -66,7 +66,7 @@ const Home = () => {
     const arr = list[0]?.titles || [];
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
-        id: index + 1,
+        id: item.id,
         sentence: item.Title,
         primaryWhos: item.Who_Primary,
         secondaryWhos: item.Who_Secondary,
@@ -84,7 +84,7 @@ const Home = () => {
     const arr = list[0]?.ideas || [];
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
-        id: index + 1,
+        id: item.id,
         sentence: item.idea,
         primaryWhos: item.Who_Primary,
         secondaryWhos: item.Who_Secondary,
@@ -244,7 +244,7 @@ const Home = () => {
           <button
             className={`text-white ml-2 right-6 mt-6 bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
             onClick={handleNextStep}
-            disabled={(currentStep === 0 && ( !storyWorld || !storyWorldLead )) || (currentStep===1 && titles?.length===0) || (currentStep===2 && situations?.length===0) || (currentStep===3 && actions?.length===0) || currentStep === 5}
+            disabled={(currentStep === 0 && ( !storyWorld || !storyWorldLead )) || (currentStep===1 && titles?.length===0) || (currentStep===2 && situations?.length===0) || currentStep === 5}
           >
             Next
           </button>

@@ -26,6 +26,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   const [secondaryWheres, setSecondaryWheres] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showStoryModal, setShowStoryModal] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const scrollableWhoDivRef = useRef(null);
   const scrollableWhatDivRef = useRef(null);
   const scrollableWhereDivRef = useRef(null);
@@ -57,7 +58,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
     setSecondaryWhats(secondaryWhats);
     setPrimaryWheres(primaryWheres);
     setSecondaryWheres(secondaryWheres);
-  }, []);
+  }, [isSaved]);
 
   const handleWhoRadioChange = (item) => {
     if(item.isRadioSelected) {
@@ -282,7 +283,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   const getUpdatedJson = (arr) => {
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
-        id: index + 1,
+        id: item.id,
         sentence: item.Title,
         primaryWhos: item.Who_Primary,
         secondaryWhos: item.Who_Secondary,
@@ -290,12 +291,57 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
         secondaryWhats: item.What_Secondary,
         primaryWheres: item.Where_Primary,
         secondaryWheres: item.Where_Secondary,
+        comment: item.comment
       }));
       return updated;
     }
     return [];
   }
 
+  const getWhoValues = (whoResponse) => {
+    return whoResponse.map(who => {
+      const whoItem = whoItems.find(item => 
+        item.newName ? item.newName === who.value : item.name === who.value
+      );
+
+      return {
+        id: who.id,
+        isRadioSelected: whoItem.isRadioSelected ?? false,
+        isCheckboxSelected: whoItem.isCheckboxSelected ?? false,
+        name: who.value
+      }
+    })
+  }
+
+  const getWhatValues = (whatResponse) => {
+    return whatResponse.map(what => {
+      const whatItem = whatItems.find(item => 
+        item.newName ? item.newName === what.value : item.name === what.value
+      );
+      
+      return {
+        id: what.id,
+        isRadioSelected: whatItem.isRadioSelected ?? false,
+        isCheckboxSelected: whatItem.isCheckboxSelected ?? false,
+        name: what.value
+      }
+    })
+  }
+
+  const getWhereValues = (whereResponse) => {
+    return whereResponse.map(where => {
+      const whereItem = whereItems.find(item => 
+        item.newName ? item.newName === where.value : item.name === where.value
+      );
+      
+      return {
+        id: where.id,
+        isRadioSelected: whereItem.isRadioSelected ?? false,
+        isCheckboxSelected: whereItem.isCheckboxSelected ?? false,
+        name: where.value
+      }
+    })
+  }
   const onSave = async () => {
     setIsSubmitting(true);
     let alertKey;
@@ -316,8 +362,11 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
       const response = await axios.post(apiUrl, payload, config); // post api request
       const output = response?.data;
       if (output) {
-        const { titles } = output;
-
+        const { titles, updatedWs } = output;
+        const { ws_data } = updatedWs;
+        setWhoItems(getWhoValues(ws_data.Who));
+        setWhatItems(getWhatValues(ws_data.What));
+        setWhereItems(getWhereValues(ws_data.Where));
         // update context
         const contextObj = { ...storyUploadApiResponse };
         const updatedContextObj = {
@@ -330,12 +379,13 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
           secondaryWheres,
           titles: getUpdatedJson(titles),
           updatedTitles: getUpdatedJson(titles),
-          updatedWhos: whoItems,
-          updatedWhats: whatItems,
-          updatedWheres: whereItems,
+          updatedWhos: getWhoValues(ws_data.Who),
+          updatedWhats: getWhatValues(ws_data.What),
+          updatedWheres: getWhereValues(ws_data.Where),
         };
 
         setStoryUploadApiResponse(updatedContextObj);
+        setIsSaved(true);
 
         message.destroy(alertKey); // stop infinite loader alert
         message.success("Ws Saved Successfully !");

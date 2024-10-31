@@ -20,6 +20,7 @@ const DownloadStory = ({ onDiscard = () => {} }) => {
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('userId');
+    localStorage.removeItem('storyId');
     navigate("/");
     message.success("You Have Been Logged Out Successfully !");
   }

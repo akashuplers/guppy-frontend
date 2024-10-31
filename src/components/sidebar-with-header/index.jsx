@@ -22,6 +22,7 @@ const SidebarWithHeader = ({children}) => {
     if(key === '3') {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('userId');
+      localStorage.removeItem('storyId');
       navigate('/');
       message.success("You Have Been Logged Out Successfully !");
     }

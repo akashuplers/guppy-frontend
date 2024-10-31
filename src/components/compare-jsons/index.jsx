@@ -10,7 +10,7 @@ const CompareJsons = () => {
 
             {/* body */}
             <div className="mt-8">
-                <div className="grid grid-cols-1 lg:grid-cols-2 divide-x-4">
+                <div className="flex flex-col-1 md:flex-row lg:flex-col-2 divide-x-4">
                     <JsonSection />
                     <JsonSection />
                 </div>

@@ -26,7 +26,7 @@ const validationSchema = Yup.object().shape({
 
 const JsonSection = () => {
   return (
-    <div className="ps-8">
+    <div className="ps-8 mr-4">
       {/* filter section */}
       <Formik
         initialValues={{
@@ -84,6 +84,8 @@ const JsonSection = () => {
                 </AntForm.Item>
               </div>
 
+            </div>
+            <div className="flex flex-col md:flex-row gap-2 md:gap-8">
               <div>
                 <p className="mb-1">Json Version</p>
                 <AntForm.Item
@@ -106,16 +108,17 @@ const JsonSection = () => {
                     <Option value="option3">Json Version 3</Option>
                   </Field>
                 </AntForm.Item>
+                </div>  
+                <AntForm.Item>
+                  <Button
+                    type="primary"
+                    className="bg-blue-50 border-blue-500 text-blue-500 mt-6"
+                  >
+                    Display Json
+                  </Button>
+                </AntForm.Item>
               </div>
-            </div>
-            <AntForm.Item>
-              <Button
-                type="primary"
-                className="bg-blue-50 border-blue-500 text-blue-500"
-              >
-                Display Json
-              </Button>
-            </AntForm.Item>
+
           </Form>
         )}
       </Formik>

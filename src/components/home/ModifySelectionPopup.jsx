@@ -135,7 +135,7 @@ const ModifySelectionPopup = ({
 
   const handleUpdate = () => {
     const updatedObj = {
-        id: modifyItemObj.id,
+        id: modifyItemObj.isNewField ? '' : modifyItemObj.id,
         sentence: currentValue,
         primaryWhos,
         secondaryWhos: secondaryWhoSelectedOptions,
@@ -143,6 +143,7 @@ const ModifySelectionPopup = ({
         secondaryWhats: secondaryWhatSelectedOptions,
         primaryWheres: primaryWhereSelectedOptions,
         secondaryWheres: secondaryWhereSelectedOptions,
+        ...(modifyItemObj.isNewField ? {isNewField: true} : {isEditField: true}),
     }
     onModify(updatedObj);
     onClose();

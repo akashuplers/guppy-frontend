@@ -49,6 +49,7 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
 
   const bodyForSaveActionsApi = () => {
     const updated = actionSelectionItems?.map((item) => ({
+      id: item.isNewField ? '' : item.id,
       idea: item.sentence,
       Classification: "Action",
       Who_Primary: item.primaryWhos,
@@ -57,6 +58,8 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
       What_Secondary: item.secondaryWhats,
       Where_Primary: item.primaryWheres,
       Where_Secondary: item.secondaryWheres,
+      ...(item.isNewField ? {new: true, updated: false}: item.isEditField && {updated: true}),
+      ...(item.comment && {comment: item.comment})
     }));
     const body = {
       story_id: story_id,
@@ -64,6 +67,24 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
     };
     return body;
   };
+
+  const getUpdatedActions = (newActions) => {
+    return newActions.map((action, index) => {
+      return {
+        id: action.id,
+        idea: action.idea,
+        classification: action.Classification,
+        primaryWhos: action.Who_Primary,
+        primaryWhats: action.What_Primary,
+        primaryWheres: action.Where_Primary,
+        secondaryWhos: action.Who_Secondary,
+        secondaryWhats: action.What_Secondary,
+        secondaryWheres: action.Where_Secondary,
+        ...(action.comment && {comment: action.comment})
+      }
+      
+    })
+  }
 
   const onSave = async () => {
     setIsSubmitting(true);
@@ -83,11 +104,12 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
       const response = await axios.post(apiUrl, payload, config); // post api request
       const output = response?.data;
       if(output) {
+        setActionSelectionItems(getUpdatedActions(output?.updatedActions?.ideas));
         // update context
         const contextObj = { ...storyUploadApiResponse };
         const updatedContextObj = {
           ...contextObj,
-          updatedActions: actionSelectionItems,
+          updatedActions: getUpdatedActions(output?.updatedActions?.ideas),
         };
         setStoryUploadApiResponse(updatedContextObj);
         message.destroy(alertKey);
@@ -140,6 +162,7 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
       secondaryWhats: [],
       primaryWheres: [],
       secondaryWheres: [],
+      isNewField: true
     };
     const curData = [newObj, ...actionSelectionItems];
     setActionSelectionItems(curData);
