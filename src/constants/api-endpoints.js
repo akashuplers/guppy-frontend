@@ -18,5 +18,8 @@ export const API_ROUTES = {
     LIST_STORIES_UPLOAD_BY_USER: '/story',
     FETCH_MASTER_Ws: '/story/fetch-master-ws',
     LIST_USERS: '/story/list-users',
+    LIST_STORIES: '/story/list-stories/',
+    LIST_VERSIONS: '/story/list-versions/',
+    FETCH_VERSION: '/story/version/',
     SHARE: '/story/share/'
 }

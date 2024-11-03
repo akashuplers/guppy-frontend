@@ -18,13 +18,14 @@ const { Option } = Select;
 //     return !!story || !!storyWorld || !!jsonVersion;
 // });
 
-const validationSchema = Yup.object().shape({
-  story: Yup.string(),
-  storyWorld: Yup.string(),
-  jsonVersion: Yup.string(),
-});
+const getValidationSchema = (isLeftScreen) =>
+  Yup.object().shape({
+    story: isLeftScreen ? Yup.string().required("Story is required") : Yup.string(),
+    storyWorld: isLeftScreen ? Yup.string().required("Story World is required") : Yup.string(),
+    jsonVersion1: Yup.string().required("Json Version is required"),
+  });
 
-const JsonSection = () => {
+const JsonSection = ({isLeftScreen}) => {
   return (
     <div className="ps-8 mr-4">
       {/* filter section */}
@@ -32,9 +33,9 @@ const JsonSection = () => {
         initialValues={{
           story: "",
           storyWorld: "",
-          jsonVersion: "",
+          jsonVersion1: "",
         }}
-        validationSchema={validationSchema}
+        validationSchema={getValidationSchema(isLeftScreen)}
         onSubmit={(values) => {
           console.log("Form submitted:", values);
           if (!values) {
@@ -46,43 +47,39 @@ const JsonSection = () => {
         {({ errors, touched }) => (
           <Form className="mt-4">
             <div className="flex flex-col md:flex-row gap-2 md:gap-8">
-              <div>
-                <p className="mb-1">Story</p>
-                <AntForm.Item
-                  validateStatus={touched.story && errors.story ? "error" : ""}
-                  help={touched.story && errors.story ? errors.story : null}
-                >
-                  <Field style={{ width: 200 }} name="story" as={FormikSelect}>
-                    <Option value="option1">Story 1</Option>
-                    <Option value="option2">Story 2</Option>
-                    <Option value="option3">Story 3</Option>
-                  </Field>
-                </AntForm.Item>
-              </div>
-
-              <div>
-                <p className="mb-1">Story World</p>
-                <AntForm.Item
-                  validateStatus={
-                    touched.storyWorld && errors.storyWorld ? "error" : ""
-                  }
-                  help={
-                    touched.storyWorld && errors.storyWorld
-                      ? errors.storyWorld
-                      : null
-                  }
-                >
-                  <Field
-                    style={{ width: 200 }}
-                    name="storyWorld"
-                    as={FormikSelect}
+            {isLeftScreen && 
+              <><div>
+                  <p className="mb-1">Story</p>
+                  <AntForm.Item
+                    validateStatus={touched.story && errors.story ? "error" : ""}
+                    help={touched.story && errors.story ? errors.story : null}
                   >
-                    <Option value="option1">Story World 1</Option>
-                    <Option value="option2">Story World 2</Option>
-                    <Option value="option3">Story World 3</Option>
-                  </Field>
-                </AntForm.Item>
-              </div>
+                    <Field style={{ width: 200 }} name="story" as={FormikSelect}>
+                      <Option value="option1">Story 1</Option>
+                      <Option value="option2">Story 2</Option>
+                      <Option value="option3">Story 3</Option>
+                    </Field>
+                  </AntForm.Item>
+                </div><div>
+                    <p className="mb-1">Story World</p>
+                    <AntForm.Item
+                      validateStatus={touched.storyWorld && errors.storyWorld ? "error" : ""}
+                      help={touched.storyWorld && errors.storyWorld
+                        ? errors.storyWorld
+                        : null}
+                    >
+                      <Field
+                        style={{ width: 200 }}
+                        name="storyWorld"
+                        as={FormikSelect}
+                      >
+                        <Option value="option1">Story World 1</Option>
+                        <Option value="option2">Story World 2</Option>
+                        <Option value="option3">Story World 3</Option>
+                      </Field>
+                    </AntForm.Item>
+                  </div></>
+            }
 
             </div>
             <div className="flex flex-col md:flex-row gap-2 md:gap-8">
@@ -90,17 +87,17 @@ const JsonSection = () => {
                 <p className="mb-1">Json Version</p>
                 <AntForm.Item
                   validateStatus={
-                    touched.jsonVersion && errors.jsonVersion ? "error" : ""
+                    touched.jsonVersion1 && errors.jsonVersion1 ? "error" : ""
                   }
                   help={
-                    touched.jsonVersion && errors.jsonVersion
-                      ? errors.jsonVersion
+                    touched.jsonVersion1 && errors.jsonVersion1
+                      ? errors.jsonVersion1
                       : null
                   }
                 >
                   <Field
                     style={{ width: 200 }}
-                    name="jsonVersion"
+                    name="jsonVersion1"
                     as={FormikSelect}
                   >
                     <Option value="option1">Json Version 1</Option>
@@ -109,14 +106,16 @@ const JsonSection = () => {
                   </Field>
                 </AntForm.Item>
                 </div>  
-                <AntForm.Item>
-                  <Button
-                    type="primary"
-                    className="bg-blue-50 border-blue-500 text-blue-500 mt-6"
-                  >
-                    Display Json
-                  </Button>
-                </AntForm.Item>
+                {
+                isLeftScreen &&
+                  <AntForm.Item>
+                    <button type="submit"
+                        className="text-white md:w-[10vw] px-5 py-3 mt-5 bg-blue-600 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
+                        >
+                      Display Json
+                    </button>
+                  </AntForm.Item>
+                }
               </div>
 
           </Form>
