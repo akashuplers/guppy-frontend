@@ -9,15 +9,15 @@ import { useNavigate } from 'react-router-dom';
 
 const CompareJsons = () => {
   const navigate = useNavigate();
-  const [selectedStory, setSelectedStory] = useState({label: 'Story'});
-  const [selectedStoryWorld, setSelectedStoryWorld] = useState({label: 'Story World'});
+  const [selectedStory, setSelectedStory] = useState({label: 'Story', key: 'story'});
+  const [selectedStoryWorld, setSelectedStoryWorld] = useState({label: 'Story World', key: 'story world'});
   const [storyWorldItems, setStoryWorldItems] = useState([]);
   const [storyItems, setStoryItems] = useState([]);
   const [versionItems, setVersionItems] = useState([]);
   const [leftVersionData, setLeftVersionData] = useState([]);
   const [rightVersionData, setRightVersionData] = useState([]);
-  const [selectedVersion1, setSelectedVersion1] = useState({label: 'Json Version'});
-  const [selectedVersion2, setSelectedVersion2] = useState({label: 'Json Version'});
+  const [selectedVersion1, setSelectedVersion1] = useState({label: 'Json Version', key: 'version1'});
+  const [selectedVersion2, setSelectedVersion2] = useState({label: 'Json Version', key: 'version2'});
   const [isStoryLoading, setIsStoryLoading] = useState(false);
   const [isStoryWorldLoading, setIsStoryWorldLoading] = useState(false);
   const [isVersionLoading, setIsVersionLoading] = useState(false);
@@ -110,7 +110,11 @@ const CompareJsons = () => {
           key: id,
         }));
 
-        setStoryWorldItems(storyWorlds);
+        setStoryWorldItems(
+          storyWorldItems.length > 0 
+            ? storyWorlds 
+            : [{ label: 'Story World', key: 'story world' }]
+        );
         message.destroy(alertKey);
         message.success("Stories Fetched Successfully !");
       } else {
@@ -161,7 +165,11 @@ const CompareJsons = () => {
           label: story.story_file_name,
           key: story.story_id,
         }));
-        setStoryItems(stories);
+        setStoryItems(
+          storyItems.length > 0 
+            ? stories 
+            : [{ label: 'Story', key: 'story' }]
+        );
         message.destroy(alertKey);
         message.success("Stories Fetched Successfully !");
       } else {
@@ -212,7 +220,11 @@ const CompareJsons = () => {
           label: story.version,
           key: story.version_id,
         }));
-        setVersionItems(storyVersions);
+        setVersionItems(
+          storyVersions.length > 0 
+            ? storyVersions 
+            : [{ label: 'Json Version', key: 'version' }]
+        );
         message.destroy(alertKey);
         message.success("Stories Fetched Successfully !");
       } else {
@@ -287,6 +299,7 @@ const CompareJsons = () => {
         {/* Body */}
         <div className="mt-8">
           <div className="flex gap-5 justify-center items-center">
+            <p className="text-sm text-gray-600 font-medium mb-1">Story World</p>
             <Dropdown
                 menu={{
                   items: storyWorldItems.length > 0 ? storyWorldItems : [{label: "No Story Worlds", key: "No Story World"}],
@@ -299,7 +312,7 @@ const CompareJsons = () => {
                   </div>
                 )}
             >
-              <Button className="bg-white border border-gray-300 rounded-lg shadow-lg px-4 py-2 pt-1 text-gray-700 hover:bg-gray-100 focus:bg-gray-200 transition duration-150">
+              <Button className="bg-white border border-gray-300 rounded-lg shadow-lg px-4 py-1 pt-0 text-gray-700 hover:bg-gray-100 focus:bg-gray-200 transition duration-150">
                 <Space>
                   <span
                     style={{
@@ -318,6 +331,7 @@ const CompareJsons = () => {
               </Button>
             </Dropdown>
 
+            <p className="text-sm text-gray-600 font-medium mb-1">Story</p>
             <Dropdown
               menu={{
                 items: storyItems.length > 0 ? storyItems : [{label: "No Stories", key: "No Stories"}],
@@ -330,7 +344,7 @@ const CompareJsons = () => {
                 </div>
               )}
             >
-              <Button className="bg-white border border-gray-300 rounded-lg shadow-lg px-4 py-2 pt-1 text-gray-700 hover:bg-gray-100 focus:bg-gray-200 transition duration-150">
+              <Button className="bg-white border border-gray-300 rounded-lg shadow-lg px-4 py-1 pt-0 text-gray-700 hover:bg-gray-100 focus:bg-gray-200 transition duration-150">
                 <Space>
                   <span
                     style={{
@@ -368,70 +382,76 @@ const CompareJsons = () => {
           <div className="flex flex-col-1 mt-2 md:flex-row lg:flex-col-2 divide-x-4 justify-center items-center">
             <div className="flex flex-col md:flex-row gap-2 md:gap-8 m-4">
               {leftVersionData.length > 0 && (isLeftVersionLoading ? <LoadingOutlined /> : <JsonBody data={leftVersionData} />)}
-              <Dropdown
-                menu={{
-                  items: versionItems.length > 0 ? versionItems : [{label: "No Versions For this Story", key: "No Version"}],
-                  onClick: (e) => handleJsonVersion1Click(e, versionItems),
-                }}
-                style={{ width: 200 }}
-                dropdownRender={(menu) => (
-                  <div style={{ maxHeight: '50vh', overflowY: 'auto', backgroundColor: 'white' }}>
-                    {menu}
-                  </div>
-                )}
-              >
-                <Button className="bg-white border border-gray-300 rounded-lg shadow-lg px-4 py-2 pt-1 text-gray-700 hover:bg-gray-100 focus:bg-gray-200 transition duration-150">
-                  <Space>
-                    <span
-                      style={{
-                        maxWidth: '100px',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        display: 'inline-block',
-                        verticalAlign: 'middle'
-                      }}
-                    >
-                      {selectedVersion1.label}
-                    </span>
-                    {isVersionLoading ? <LoadingOutlined /> : <DownOutlined />}
-                  </Space>
-                </Button>
-              </Dropdown>
+              <div className="flex flex-col gap-2">
+                <p className="text-sm text-gray-600 font-medium mb-1 ml-6">Json Version</p>
+                <Dropdown
+                  menu={{
+                    items: versionItems.length > 0 ? versionItems : [{label: "No Versions For this Story", key: "No Version"}],
+                    onClick: (e) => handleJsonVersion1Click(e, versionItems),
+                  }}
+                  style={{ width: 200 }}
+                  dropdownRender={(menu) => (
+                    <div style={{ maxHeight: '50vh', overflowY: 'auto', backgroundColor: 'white' }}>
+                      {menu}
+                    </div>
+                  )}
+                >
+                  <Button className="bg-white border border-gray-300 rounded-lg shadow-lg px-4 py-1 pt-0 text-gray-700 hover:bg-gray-100 focus:bg-gray-200 transition duration-150">
+                    <Space>
+                      <span
+                        style={{
+                          maxWidth: '100px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          display: 'inline-block',
+                          verticalAlign: 'middle'
+                        }}
+                      >
+                        {selectedVersion1.label}
+                      </span>
+                      {isVersionLoading ? <LoadingOutlined /> : <DownOutlined />}
+                    </Space>
+                  </Button>
+                </Dropdown>
+              </div>
             </div>
 
             <div className="flex flex-col md:flex-row gap-2 md:gap-8 m-4 ps-8">
             {rightVersionData.length > 0 && (isRightVersionLoading ? <LoadingOutlined /> : <JsonBody data={rightVersionData} />)}
-            <Dropdown
-                menu={{
-                  items: versionItems.length > 0 ? versionItems : [{label: "No Versions For this Story", key: "No Version"}],
-                  onClick: (e) => handleJsonVersion2Click(e, versionItems),
-                }}
-                style={{ width: 200 }}
-                dropdownRender={(menu) => (
-                  <div style={{ maxHeight: '50vh', overflowY: 'auto', backgroundColor: 'white' }}>
-                    {menu}
-                  </div>
-                )}
-              >
-                <Button className="bg-white border border-gray-300 rounded-lg shadow-lg px-4 py-2 pt-1 text-gray-700 hover:bg-gray-100 focus:bg-gray-200 transition duration-150">
-                  <Space>
-                    <span
-                      style={{
-                        maxWidth: '100px',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        display: 'inline-block',
-                        verticalAlign: 'middle'
-                      }}
-                    >
-                      {selectedVersion2.label}
-                    </span>
-                    {isVersionLoading ? <LoadingOutlined /> : <DownOutlined />}
-                  </Space>
-                </Button>
-            </Dropdown>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-gray-600 font-medium mb-1 ml-6">Json Version</p>
+              <Dropdown
+                  menu={{
+                    items: versionItems.length > 0 ? versionItems : [{label: "No Versions For this Story", key: "No Version"}],
+                    onClick: (e) => handleJsonVersion2Click(e, versionItems),
+                  }}
+                  style={{ width: 200 }}
+                  dropdownRender={(menu) => (
+                    <div style={{ maxHeight: '50vh', overflowY: 'auto', backgroundColor: 'white' }}>
+                      {menu}
+                    </div>
+                  )}
+                >
+                  <Button className="bg-white border border-gray-300 rounded-lg shadow-lg px-4 py-1 pt-0 text-gray-700 hover:bg-gray-100 focus:bg-gray-200 transition duration-150">
+                    <Space>
+                      <span
+                        style={{
+                          maxWidth: '100px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          display: 'inline-block',
+                          verticalAlign: 'middle'
+                        }}
+                      >
+                        {selectedVersion2.label}
+                      </span>
+                      {isVersionLoading ? <LoadingOutlined /> : <DownOutlined />}
+                    </Space>
+                  </Button>
+              </Dropdown>
+            </div>
             </div>
           </div>
         </div>
