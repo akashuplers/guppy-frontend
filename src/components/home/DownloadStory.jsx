@@ -21,13 +21,27 @@ const DownloadStory = ({ onDiscard = () => {} }) => {
   const [selectedType, setSelectedType] = useState('all');
   const [isVersionSelectOpen, setIsVersionSelectOpen] = useState(true);
   const [versionItems, setVersionItems] = useState([]);
+  const [isExportDisabled, setIsExportDisabled] = useState(true);
   const [selectedJsonVersion, setSelectedJsonVersion] = useState({label: 'Json Version', key: "json version"});
   const userId = localStorage.getItem("userId");
-  const apiUrl = API_BASE_PATH + API_ROUTES.DOWNLOAD_STORY + `?id=${storyWorldId}` + `&storyId=${story_id}` + `&userId=${userId}` 
-  + `&saveOlderVersion=${selectedVersion === "older"}`
-  + `&versionId=${selectedJsonVersion.key}`
-  + (selectedType !== "all" && `?type=${selectedType}`);
-  const token = JSON.parse(localStorage.getItem("accessToken"));
+  const [apiUrl, setApiUrl] = useState('');
+    const token = JSON.parse(localStorage.getItem("accessToken"));
+
+  useEffect(() => {
+    let url = `${API_BASE_PATH}${API_ROUTES.DOWNLOAD_STORY}?id=${storyWorldId}&storyId=${story_id}&userId=${userId}`;
+    
+    if (selectedVersion === "older") {
+      url += `&saveOlderVersion=true`;
+    }
+    if (selectedJsonVersion.key !== "json version") {
+      url += `&versionId=${selectedJsonVersion.key}`;
+    }
+    if (selectedType !== "all") {
+      url += `?type=${selectedType}`;
+    }
+
+    setApiUrl(url);
+  }, [storyWorldId, story_id, userId, selectedVersion, selectedJsonVersion, selectedType]);
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
@@ -45,6 +59,7 @@ const handleJsonVersionClick = (e, items) => {
     const selectedItem = items.find(item => item.key === e.key);
     if (selectedItem) {
       setSelectedJsonVersion(selectedItem);
+      setIsExportDisabled(false);
     }
 };
 
@@ -63,17 +78,14 @@ const fetchVersionByStory = async (story_id) => {
       alertKey = message.loading("Fetching Versions...", 0).key;
       const response = await axios.get(apiUrl, config); 
       const output = response?.data?.data;
+      output.length === 0 && setIsExportDisabled(false);
       if (output?.length) {
         const storyVersions = output.slice().reverse().map(storyVersion => ({
           label: storyVersion.version,
           key: storyVersion._id,
         }));
       
-        setVersionItems(
-          storyVersions.length > 0 
-            ? storyVersions 
-            : [{ label: 'Json Version', key: 'version' }]
-        );
+        setVersionItems(storyVersions);
       
         message.success("Versions Fetched Successfully!");
       }
@@ -113,7 +125,7 @@ const fetchVersionByStory = async (story_id) => {
       <div className="flex flex-col items-center">
         <img className="h-20 w-20" src={successGif} alt="success-gif" />
         <p className="text-md md:text-lg mb-4 md:mb-6">
-          Your Data Has Been Saved Successfully.
+          Almost Done! Choose Version to Save
         </p>
       </div>
       <div className="flex flex-col items-center mb-5">
@@ -219,12 +231,11 @@ const fetchVersionByStory = async (story_id) => {
             <Button
               className="bg-blue-500 border-blue-600 text-white h-9 me-4"
               onClick={() => localStorage.removeItem("storyId")}
-              disabled={selectedJsonVersion.label==="Json Version"}
+              disabled={isExportDisabled}
             >
               Export
             </Button>
         </a>
-        {console.log(apiUrl,'apiUrl')}
 
         {/* ner harmonization button */}
         <a> {/* call the ner harmonization api url */}

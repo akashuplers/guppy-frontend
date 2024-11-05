@@ -8,6 +8,7 @@ import ShareModal from '../home/ShareModal';
 import { Dropdown, Space } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 import DownloadVersionSelectPopup from '../home/DownloadVersionSelectPopup';
+import DeleteConfirmationDialog from '../../utils/modals/DeleteConfirmationDialog';
 
 const UserHistory = () => {
   const navigate = useNavigate();
@@ -21,22 +22,30 @@ const UserHistory = () => {
   const [shareIds, setShareIds] = useState([]);
   const [updatedShareIds, setUpdatedShareIds] = useState([]);
   const [showVersionModal, setShowVersionModal] = useState(false);
+  const [isStoryDeleted, setIsStoryDeleted] = useState(false);
+  const [showDeleteStoryModal, setShowDeleteStoryModal] = useState(false);
   const [selectedStoryId, setSelectedStoryId] = useState('');
-  const [selectedStoryWorldId, setSelectedStoryWorldId] = useState('');
   const [selectedVersionId, setSelectedVersionId] = useState('');
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const errorMsg = "Error In Fetching Saved Response";
-  const userId = localStorage.getItem("userId");
   const downloadLinkRef = useRef(null);
 
   useEffect(() => {
     if(!tokenVal) {
         navigate('/');
     } else {
-        fetchStories(tokenVal);
-        fetchUsers(tokenVal);
+        fetchStories();
+        fetchUsers();
     }
   }, []);
+
+  useEffect(() => {
+    if(!tokenVal) {
+        navigate('/');
+    } else {
+      isStoryDeleted && fetchStories();
+    }
+  }, [isStoryDeleted]);
 
   useEffect(() => {
     if(shareIds)
@@ -63,13 +72,13 @@ const UserHistory = () => {
   
   const items = getItems();
 
-  const fetchUsers = async (token) => {
+  const fetchUsers = async () => {
     try {
         const apiUrl = API_BASE_PATH + API_ROUTES.LIST_USERS;
         const config = {
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${tokenVal}`,
         },
         };
         const output = await axios.get(apiUrl, config);
@@ -81,12 +90,33 @@ const UserHistory = () => {
     }
   }
 
+  const deleteStoryById = async () => {
+    try {
+      const apiUrl = API_BASE_PATH + API_ROUTES.STORY + `/${selectedStoryId}`;
+      const config = {
+      headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenVal}`,
+      },
+      };
+      const response = await axios.delete(apiUrl, config);
+      if(response.data?.message){
+        message.success({content: response.data?.message, duration: 20});
+        setIsStoryDeleted(true);
+      }
+  } catch (error) {
+      console.log("error: ", error);
+      message.error(errorMsg);
+  }
+    setShowDeleteStoryModal(false);
+  }
+
   const handleSharedUsers = () => {
     const finalUsers = users.filter(user => !shareIds.includes(user._id) && !updatedShareIds.includes(user._id));
     setTempUsers(finalUsers);
   }
 
-  const fetchStories = async (token) => {
+  const fetchStories = async () => {
     setIsLoading(true);
     let alertKey;
     try {
@@ -95,7 +125,7 @@ const UserHistory = () => {
 
       const config = {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${tokenVal}`,
         },
       };
       alertKey = message.loading("Fetching Stories...", 0).key;
@@ -141,7 +171,7 @@ const UserHistory = () => {
   };
 
   const handleVersionDownload = () => {
-    const apiUrl = `${API_BASE_PATH}${API_ROUTES.DOWNLOAD_STORY}?id=${selectedStoryWorldId}&storyId=${selectedStoryId}&userId=${userId}&versionId=${selectedVersionId}`;
+    const apiUrl = `${API_BASE_PATH}${API_ROUTES.DOWNLOAD_VERSION_STORY}/${selectedVersionId}`;
     downloadLinkRef.current.href = apiUrl;
     downloadLinkRef.current.click(); 
     setShowVersionModal(false);
@@ -234,8 +264,6 @@ const UserHistory = () => {
                 <button
                   title="Download story"
                   onClick={() => {
-                    setSelectedStoryId(record?.story_id);
-                    setSelectedStoryWorldId(record?.story_world_id);
                     setShowVersionModal(true);
                   }}                
                 >
@@ -244,16 +272,18 @@ const UserHistory = () => {
                     <path d="M3.75 15C3.75 14.5858 3.41422 14.25 3 14.25C2.58579 14.25 2.25 14.5858 2.25 15V15.0549C2.24998 16.4225 2.24996 17.5248 2.36652 18.3918C2.48754 19.2919 2.74643 20.0497 3.34835 20.6516C3.95027 21.2536 4.70814 21.5125 5.60825 21.6335C6.47522 21.75 7.57754 21.75 8.94513 21.75H15.0549C16.4225 21.75 17.5248 21.75 18.3918 21.6335C19.2919 21.5125 20.0497 21.2536 20.6517 20.6516C21.2536 20.0497 21.5125 19.2919 21.6335 18.3918C21.75 17.5248 21.75 16.4225 21.75 15.0549V15C21.75 14.5858 21.4142 14.25 21 14.25C20.5858 14.25 20.25 14.5858 20.25 15C20.25 16.4354 20.2484 17.4365 20.1469 18.1919C20.0482 18.9257 19.8678 19.3142 19.591 19.591C19.3142 19.8678 18.9257 20.0482 18.1919 20.1469C17.4365 20.2484 16.4354 20.25 15 20.25H9C7.56459 20.25 6.56347 20.2484 5.80812 20.1469C5.07435 20.0482 4.68577 19.8678 4.40901 19.591C4.13225 19.3142 3.9518 18.9257 3.85315 18.1919C3.75159 17.4365 3.75 16.4354 3.75 15Z" fill="#0F0F0F"/>
                   </svg>
                 </button>
-                {/* <button
+                <button
                   title="Delete story"
                   onClick={() => {
-                    console.log('hi');
+                    setSelectedStoryId(record?.story_id);
+                    setShowDeleteStoryModal(true);
+                    setIsStoryDeleted(false);
                 }}
                 >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none">
                   <path d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6M14 10V17M10 10V17" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                </button> */}
+                </button>
               </div>
             )
         }
@@ -279,6 +309,13 @@ const UserHistory = () => {
             <a ref={downloadLinkRef} style={{ display: 'none' }} download></a>
             <ShareModal open={isShareModalOpen} storyDetails={storyDetails} users={tempUsers} onClose={() => setShareModalOpen(false)} updateUsers={(ids) => setUpdatedShareIds(ids)}/>
             {showVersionModal && <DownloadVersionSelectPopup open={showVersionModal} story_id={selectedStoryId} handleVersionSelect = {handleVersionSelect} handleDownload = {handleVersionDownload} onClose={() => setShowVersionModal(false)}/>}
+            {showDeleteStoryModal && 
+              <DeleteConfirmationDialog
+                open={showDeleteStoryModal}
+                onClose={() => setShowDeleteStoryModal(false)}
+                onConfirm={() => deleteStoryById()}
+              />
+            }
         </div>
     </SidebarWithHeader>
   )

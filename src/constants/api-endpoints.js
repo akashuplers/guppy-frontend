@@ -21,5 +21,7 @@ export const API_ROUTES = {
     LIST_STORIES: '/story/list-stories/',
     LIST_VERSIONS: '/story/list-versions/',
     FETCH_VERSION: '/story/version/',
-    SHARE: '/story/share/'
+    SHARE: '/story/share/',
+    DOWNLOAD_VERSION_STORY: "/story/download-version",
+    STORY: '/story'
 }
