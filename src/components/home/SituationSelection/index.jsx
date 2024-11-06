@@ -50,7 +50,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
   const bodyForSaveSituationsApi = () => {
     const updated = situationSelectionItems?.map((item) => ({
       id: item.isNewField ? '' : item.id,
-      idea: item.sentence,
+      idea: item.idea,
       Classification: "Situation",
       Who_Primary: item.primaryWhos,
       Who_Secondary: item.secondaryWhos,
@@ -65,6 +65,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
       story_id: story_id,
       ideas: updated,
     };
+    console.log('save',body);
     return body;
   };
 
@@ -72,7 +73,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
         id: item.id,
-        sentence: item.idea,
+        idea: item.idea,
         primaryWhos: item.Who_Primary,
         secondaryWhos: item.Who_Secondary,
         primaryWhats: item.What_Primary,
@@ -87,6 +88,21 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
   }
 
   const getUpdatedSituations = (newSituations) => {
+    console.log('updated1',newSituations.map((situation, index) => {
+      return {
+        id: situation.id,
+        idea: situation.idea,
+        classification: situation.Classification,
+        primaryWhos: situation.Who_Primary,
+        primaryWhats: situation.What_Primary,
+        primaryWheres: situation.Where_Primary,
+        secondaryWhos: situation.Who_Secondary,
+        secondaryWhats: situation.What_Secondary,
+        secondaryWheres: situation.Where_Secondary,
+        ...(situation.comment && {comment: situation.comment})
+      }
+      
+    }))
     return newSituations.map((situation, index) => {
       return {
         id: situation.id,
@@ -179,7 +195,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
   const handleAddRow = () => {
     const newObj = {
       id: situationSelectionItems?.length + 1,
-      sentence: "",
+      idea: "",
       primaryWhos,
       secondaryWhos: [],
       primaryWhats: [],
@@ -202,7 +218,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
 
   const situationSelectionColumns = [
     {
-      dataIndex: "sentence",
+      dataIndex: "idea",
       title: <p className="text-center">Situation</p>,
       width: 430,
       align: 'justify',

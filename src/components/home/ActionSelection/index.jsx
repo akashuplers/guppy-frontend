@@ -50,7 +50,7 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
   const bodyForSaveActionsApi = () => {
     const updated = actionSelectionItems?.map((item) => ({
       id: item.isNewField ? '' : item.id,
-      idea: item.sentence,
+      idea: item.idea,
       Classification: "Action",
       Who_Primary: item.primaryWhos,
       Who_Secondary: item.secondaryWhos,
@@ -155,7 +155,7 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
   const handleAddRow = () => {
     const newObj = {
       id: actionSelectionItems?.length + 1,
-      sentence: "",
+      idea: "",
       primaryWhos,
       secondaryWhos: [],
       primaryWhats: [],
@@ -178,7 +178,7 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
 
   const actionSelectionColumns = [
     {
-      dataIndex: "sentence",
+      dataIndex: "idea",
       title: <p className="text-center">Action</p>,
       width: 430,
       align: 'justify',

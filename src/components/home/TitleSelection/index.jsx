@@ -50,7 +50,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
   const bodyForSaveTitlesApi = () => {
     const updated = titleSelectionItems?.map((item) => ({
       id: item.isNewField ? '' : item.id,
-      Title: item.sentence,
+      Title: item.title,
       Who_Primary: item.primaryWhos,
       Who_Secondary: item.secondaryWhos,
       What_Primary: item.primaryWhats,
@@ -71,7 +71,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
         id: item.id,
-        sentence: item.idea,
+        idea: item.idea,
         primaryWhos: item.Who_Primary,
         secondaryWhos: item.Who_Secondary,
         primaryWhats: item.What_Primary,
@@ -89,7 +89,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
     return newTitles.map(title => {
       return {
         id: title.id,
-        sentence: title.Title,
+        title: title.Title,
         primaryWhos: title.Who_Primary,
         primaryWhats: title.What_Primary,
         primaryWheres: title.Where_Primary,
@@ -176,7 +176,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
   const handleAddRow = () => {
     const newObj = {
       id: titleSelectionItems?.length + 1,
-      sentence: "",
+      title: "",
       primaryWhos,
       secondaryWhos: [],
       primaryWhats: [],
@@ -199,7 +199,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
 
   const titleSelectionColumns = [
     {
-      dataIndex: "sentence",
+      dataIndex: "title",
       title: <p className="text-center">Title / Sentence</p>,
       width: 330,
       align: 'justify',

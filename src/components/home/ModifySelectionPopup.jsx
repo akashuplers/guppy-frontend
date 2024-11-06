@@ -31,12 +31,14 @@ const ModifySelectionPopup = ({
   const { primaryWhos, secondaryWhos, primaryWhats, secondaryWhats, primaryWheres, secondaryWheres } = storyUploadApiResponse;
 
   useEffect(() => {
-    setCurrentValue(modifyItemObj.sentence);
     if(type === "title") {
+        setCurrentValue(modifyItemObj.title);
         setPopupTitle("Title/Sentence");
     } else if(type === "situation") {
+        setCurrentValue(modifyItemObj.idea);
         setPopupTitle("Situation");
     } else {
+        setCurrentValue(modifyItemObj.idea);
         setPopupTitle("Action");
     }
 
@@ -136,7 +138,7 @@ const ModifySelectionPopup = ({
   const handleUpdate = () => {
     const updatedObj = {
         id: modifyItemObj.isNewField ? '' : modifyItemObj.id,
-        sentence: currentValue,
+        ...(modifyItemObj.title ? {title: currentValue} : {idea: currentValue}),
         primaryWhos,
         secondaryWhos: secondaryWhoSelectedOptions,
         primaryWhats: primaryWhatSelectedOptions,
@@ -177,7 +179,7 @@ const ModifySelectionPopup = ({
         {/* sentence */}
         <div>
           <label
-            htmlFor="sentence"
+            htmlFor="title"
             className="block mb-2 mt-5 text-md md:text-lg font-medium text-gray-900"
           >
             {popupTitle}

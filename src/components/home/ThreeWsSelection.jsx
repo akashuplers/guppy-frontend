@@ -284,7 +284,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
         id: item.id,
-        sentence: item.Title,
+        title: item.Title,
         primaryWhos: item.Who_Primary,
         secondaryWhos: item.Who_Secondary,
         primaryWhats: item.What_Primary,
