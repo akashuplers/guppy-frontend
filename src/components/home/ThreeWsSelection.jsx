@@ -61,13 +61,14 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   }, [isSaved]);
 
   const handleWhoRadioChange = (item) => {
+    const name = item?.newName ?? item?.name;
     if(item.isRadioSelected) {
       const filteredArr = primaryWhos.filter(
-        (ele) => ele.toLowerCase() !== item.name.toLowerCase()
+        (ele) => ele.toLowerCase() !== name.toLowerCase()
       );
       setPrimaryWhos(filteredArr);
     } else {
-      setPrimaryWhos([...primaryWhos, item?.name]);
+      setPrimaryWhos([...primaryWhos, name]);
     }
     const updatedItem = { ...item, isRadioSelected: !item.isRadioSelected };
     const updatedArr = whoItems.map((ele) =>
@@ -77,13 +78,14 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   };
 
   const handleWhoCheckboxChange = (item) => {
+    const name = item?.newName ?? item?.name;
     if (item.isCheckboxSelected) {
       const filteredArr = secondaryWhos.filter(
-        (ele) => ele.toLowerCase() !== item.name.toLowerCase()
+        (ele) => ele.toLowerCase() !== name.toLowerCase()
       );
       setSecondaryWhos(filteredArr);
     } else {
-      setSecondaryWhos([...secondaryWhos, item?.name]);
+      setSecondaryWhos([...secondaryWhos, name]);
     }
     const updatedItem = {
       ...item,
@@ -96,13 +98,14 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   };
 
   const handleWhatRadioChange = (item) => {
+    const name = item?.newName ?? item?.name;
     if(item.isRadioSelected) {
       const filteredArr = primaryWhats.filter(
-        (ele) => ele.toLowerCase() !== item.name.toLowerCase()
+        (ele) => ele.toLowerCase() !== name.toLowerCase()
       );
       setPrimaryWhats(filteredArr);
     } else {
-      setPrimaryWhats([...primaryWhats, item?.name]);
+      setPrimaryWhats([...primaryWhats, name]);
     }
     const updatedItem = { ...item, isRadioSelected: !item.isRadioSelected };
     const updatedArr = whatItems.map((ele) =>
@@ -112,13 +115,14 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   };
 
   const handleWhatCheckboxChange = (item) => {
+    const name = item?.newName ?? item?.name;
     if (item.isCheckboxSelected) {
       const filteredArr = secondaryWhats.filter(
-        (ele) => ele.toLowerCase() !== item.name.toLowerCase()
+        (ele) => ele.toLowerCase() !== name.toLowerCase()
       );
       setSecondaryWhats(filteredArr);
     } else {
-      setSecondaryWhats([...secondaryWhats, item?.name]);
+      setSecondaryWhats([...secondaryWhats, name]);
     }
     const updatedItem = {
       ...item,
@@ -131,13 +135,14 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   };
 
   const handleWhereRadioChange = (item) => {
+    const name = item?.newName ?? item?.name;
     if(item.isRadioSelected) {
       const filteredArr = primaryWheres.filter(
-        (ele) => ele.toLowerCase() !== item.name.toLowerCase()
+        (ele) => ele.toLowerCase() !== name.toLowerCase()
       );
       setPrimaryWheres(filteredArr);
     } else {
-      setPrimaryWheres([...primaryWheres, item?.name]);
+      setPrimaryWheres([...primaryWheres, name]);
     }
 
     const updatedItem = { ...item, isRadioSelected: !item.isRadioSelected };
@@ -148,13 +153,14 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   };
 
   const handleWhereCheckboxChange = (item) => {
+    const name = item?.newName ?? item?.name;
     if (item.isCheckboxSelected) {
       const filteredArr = secondaryWheres.filter(
-        (ele) => ele.toLowerCase() !== item.name.toLowerCase()
+        (ele) => ele.toLowerCase() !== name.toLowerCase()
       );
       setSecondaryWheres(filteredArr);
     } else {
-      setSecondaryWheres([...secondaryWheres, item?.name]);
+      setSecondaryWheres([...secondaryWheres, name]);
     }
     const updatedItem = {
       ...item,

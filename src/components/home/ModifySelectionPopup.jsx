@@ -146,6 +146,7 @@ const ModifySelectionPopup = ({
         primaryWheres: primaryWhereSelectedOptions,
         secondaryWheres: secondaryWhereSelectedOptions,
         ...(modifyItemObj.isNewField ? {isNewField: true} : {isEditField: true}),
+        ...(modifyItemObj.comment && {comment: modifyItemObj.comment})
     }
     onModify(updatedObj);
     onClose();
