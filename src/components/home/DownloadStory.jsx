@@ -25,14 +25,12 @@ const DownloadStory = ({ onDiscard = () => {} }) => {
   const [selectedJsonVersion, setSelectedJsonVersion] = useState({label: 'Json Version', key: "json version"});
   const userId = localStorage.getItem("userId");
   const [apiUrl, setApiUrl] = useState('');
-    const token = JSON.parse(localStorage.getItem("accessToken"));
+  const token = JSON.parse(localStorage.getItem("accessToken"));
 
   useEffect(() => {
-    let url = `${API_BASE_PATH}${API_ROUTES.DOWNLOAD_STORY}?id=${storyWorldId}&storyId=${story_id}&userId=${userId}`;
+    let url = `${API_BASE_PATH}${API_ROUTES.DOWNLOAD_STORY}?id=${storyWorldId}&storyId=${story_id}&userId=${userId}&saveOlderVersion=${selectedVersion === "older"}`;
     
-    if (selectedVersion === "older") {
-      url += `&saveOlderVersion=true`;
-    }
+    setIsExportDisabled(selectedVersion==="older");
     if (selectedJsonVersion.key !== "json version") {
       url += `&versionId=${selectedJsonVersion.key}`;
     }
@@ -128,38 +126,40 @@ const fetchVersionByStory = async (story_id) => {
           Almost Done! Choose Version to Save
         </p>
       </div>
-      <div className="flex flex-col items-center mb-5">
-        <Dropdown
-            menu={{
-              items: versionItems.length > 0 ? versionItems : [{label: "No Versions For this Story", key: "No Version"}],
-              onClick: (e) => handleJsonVersionClick(e, versionItems),
-            }}
-            style={{ width: 200 }}
-            dropdownRender={(menu) => (
-              <div style={{ maxHeight: '50vh', overflowY: 'auto', backgroundColor: 'white' }}>
-                {menu}
-              </div>
-            )}
-          >
-            <Button className="bg-white border border-gray-300 rounded-lg shadow-lg px-4 py-1 pt-0 text-gray-700 hover:bg-gray-100 focus:bg-gray-200 transition duration-150">
-              <Space>
-                <span
-                  style={{
-                    maxWidth: '100px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    display: 'inline-block',
-                    verticalAlign: 'middle'
-                  }}
-                >
-                  {selectedJsonVersion.label}
-                </span>
-                {isVersionLoading ? <LoadingOutlined /> : <DownOutlined />}
-              </Space>
-            </Button>
-          </Dropdown>
+      {selectedVersion === "older" && 
+        <div className="flex flex-col items-center mb-5">
+          <Dropdown
+              menu={{
+                items: versionItems.length > 0 ? versionItems : [{label: "No Versions For this Story", key: "No Version"}],
+                onClick: (e) => handleJsonVersionClick(e, versionItems),
+              }}
+              style={{ width: 200 }}
+              dropdownRender={(menu) => (
+                <div style={{ maxHeight: '50vh', overflowY: 'auto', backgroundColor: 'white' }}>
+                  {menu}
+                </div>
+              )}
+            >
+              <Button className="bg-white border border-gray-300 rounded-lg shadow-lg px-4 py-1 pt-0 text-gray-700 hover:bg-gray-100 focus:bg-gray-200 transition duration-150">
+                <Space>
+                  <span
+                    style={{
+                      maxWidth: '100px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      display: 'inline-block',
+                      verticalAlign: 'middle'
+                    }}
+                  >
+                    {selectedJsonVersion.label}
+                  </span>
+                  {isVersionLoading ? <LoadingOutlined /> : <DownOutlined />}
+                </Space>
+              </Button>
+            </Dropdown>
         </div>
+      }
         
         <div className="flex flex-col items-center gap-2">
           <p className="text-sm text-gray-600 font-medium">

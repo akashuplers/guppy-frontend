@@ -33,8 +33,16 @@ const CompareJsons = () => {
     }
   }, []);
 
+  useEffect( () => {
+    if(selectedVersion1.label === "No Versions" || selectedVersion2.label === "No Versions")
+    {
+      setRightVersionData([]);
+      setLeftVersionData([]);
+    }
+  },[selectedVersion1, selectedVersion2])
+
   const getButtonDisableState = () => {
-    const isDisabled = selectedStory.label !== "Story" && selectedStoryWorld.label !== "Story World" && selectedVersion1.label !== "Json Version" && selectedVersion2.label !== "Json Version";
+    const isDisabled = selectedStory.label !== "Story" && selectedStoryWorld.label !== "Story World" && selectedVersion1.label !== "Json Version" && selectedVersion2.label !== "Json Version" && selectedVersion1.label !== "No Versions" && selectedVersion2.label !== "No Versions";
     return isDisabled;  }
 
   const handleStoryItemClick = (e, items) => {
@@ -111,9 +119,9 @@ const CompareJsons = () => {
         }));
 
         setStoryWorldItems(
-          storyWorldItems.length > 0 
+          storyWorlds.length > 0 
             ? storyWorlds 
-            : [{ label: 'Story World', key: 'story world' }]
+            : [{ label: 'No Story Worlds', key: 'story world' }]
         );
         message.destroy(alertKey);
         message.success("Stories Fetched Successfully !");
@@ -166,9 +174,9 @@ const CompareJsons = () => {
           key: story.story_id,
         }));
         setStoryItems(
-          storyItems.length > 0 
+          stories.length > 0 
             ? stories 
-            : [{ label: 'Story', key: 'story' }]
+            : [{ label: 'No Stories', key: 'story' }]
         );
         message.destroy(alertKey);
         message.success("Stories Fetched Successfully !");
@@ -223,7 +231,7 @@ const CompareJsons = () => {
         setVersionItems(
           storyVersions.length > 0 
             ? storyVersions 
-            : [{ label: 'Json Version', key: 'version' }]
+            : [{ label: 'No Versions', key: 'version' }]
         );
         message.destroy(alertKey);
         message.success("Stories Fetched Successfully !");
@@ -311,6 +319,7 @@ const CompareJsons = () => {
                     {menu}
                   </div>
                 )}
+                disabled={selectedStoryWorld.label === "No Story Worlds"}
             >
               <Button className="bg-white border border-gray-300 rounded-lg shadow-lg px-4 py-1 pt-0 text-gray-700 hover:bg-gray-100 focus:bg-gray-200 transition duration-150">
                 <Space>
@@ -343,6 +352,7 @@ const CompareJsons = () => {
                   {menu}
                 </div>
               )}
+              disabled={selectedStory.label === "No Stories"}
             >
               <Button className="bg-white border border-gray-300 rounded-lg shadow-lg px-4 py-1 pt-0 text-gray-700 hover:bg-gray-100 focus:bg-gray-200 transition duration-150">
                 <Space>
@@ -386,7 +396,7 @@ const CompareJsons = () => {
                 <p className="text-sm text-gray-600 font-medium mb-1 ml-6">Json Version</p>
                 <Dropdown
                   menu={{
-                    items: versionItems.length > 0 ? versionItems : [{label: "No Versions For this Story", key: "No Version"}],
+                    items: versionItems.length > 0 ? versionItems : [{label: "No Versions", key: "No Version"}],
                     onClick: (e) => handleJsonVersion1Click(e, versionItems),
                   }}
                   style={{ width: 200 }}
@@ -395,6 +405,7 @@ const CompareJsons = () => {
                       {menu}
                     </div>
                   )}
+                  disabled={selectedVersion1.label === "No Versions"}
                 >
                   <Button className="bg-white border border-gray-300 rounded-lg shadow-lg px-4 py-1 pt-0 text-gray-700 hover:bg-gray-100 focus:bg-gray-200 transition duration-150">
                     <Space>
@@ -423,7 +434,7 @@ const CompareJsons = () => {
               <p className="text-sm text-gray-600 font-medium mb-1 ml-6">Json Version</p>
               <Dropdown
                   menu={{
-                    items: versionItems.length > 0 ? versionItems : [{label: "No Versions For this Story", key: "No Version"}],
+                    items: versionItems.length > 0 ? versionItems : [{label: "No Versions", key: "No Version"}],
                     onClick: (e) => handleJsonVersion2Click(e, versionItems),
                   }}
                   style={{ width: 200 }}
@@ -432,6 +443,7 @@ const CompareJsons = () => {
                       {menu}
                     </div>
                   )}
+                  disabled={selectedVersion2.label === "No Versions"}
                 >
                   <Button className="bg-white border border-gray-300 rounded-lg shadow-lg px-4 py-1 pt-0 text-gray-700 hover:bg-gray-100 focus:bg-gray-200 transition duration-150">
                     <Space>

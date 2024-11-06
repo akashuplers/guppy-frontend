@@ -177,7 +177,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
     const newObj = {
       id: titleSelectionItems?.length + 1,
       title: "",
-      primaryWhos,
+      primaryWhos: [],
       secondaryWhos: [],
       primaryWhats: [],
       secondaryWhats: [],

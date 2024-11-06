@@ -138,7 +138,7 @@ const ModifySelectionPopup = ({
   const handleUpdate = () => {
     const updatedObj = {
         id: modifyItemObj.isNewField ? '' : modifyItemObj.id,
-        ...(modifyItemObj.title ? {title: currentValue} : {idea: currentValue}),
+        ...(type === "title" ? {title: currentValue} : {idea: currentValue}),
         primaryWhos,
         secondaryWhos: secondaryWhoSelectedOptions,
         primaryWhats: primaryWhatSelectedOptions,

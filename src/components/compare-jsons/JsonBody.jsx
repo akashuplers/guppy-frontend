@@ -2,7 +2,7 @@
 const JsonBody = (jsonData) => {
   const data = JSON.parse(jsonData.data);
   return (
-    <div>
+    <div style={{ minWidth: '50vh', overflowX: 'auto', backgroundColor: 'white' }}>
       <p className="font-medium mb-2">
         Story World : {data.StoryWorld}
       </p>
