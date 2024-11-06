@@ -41,6 +41,12 @@ const CompareJsons = () => {
     }
   },[selectedVersion1, selectedVersion2])
 
+  useEffect(()=> {
+    setSelectedVersion1({label: 'Json Version', key: 'version1'});
+    setSelectedVersion2({label: 'Json Version', key: 'version2'});
+  },
+  [selectedStoryWorld,selectedStory])
+
   const getButtonDisableState = () => {
     const isDisabled = selectedStory.label !== "Story" && selectedStoryWorld.label !== "Story World" && selectedVersion1.label !== "Json Version" && selectedVersion2.label !== "Json Version" && selectedVersion1.label !== "No Versions" && selectedVersion2.label !== "No Versions";
     return isDisabled;  }
