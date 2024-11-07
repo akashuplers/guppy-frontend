@@ -91,7 +91,7 @@ const JsonBody = (jsonData) => {
       )) : <div>No Titles</div>
     }
       <p className="mt-6 mb-3 font-medium">SITUATIONS :</p>
-      {data.Ideas.updatedIdeas.length > 0 && data.Ideas.updatedIdeas.map((ideaItem, index) => (
+      {data.Ideas.updatedIdeas.length > 0 ? data.Ideas.updatedIdeas.map((ideaItem, index) => (
       <>
         <p className="mb-2 font-medium">Idea: {`${index + 1}. ${ideaItem.idea}`}</p>
         <div key={index} className="flex-row ml-12 mb-2">
@@ -135,7 +135,8 @@ const JsonBody = (jsonData) => {
           </div>
         </div>
       </>
-      ))}
+      )) : <div>No Situations</div>
+      }
     </div>
   );
 };

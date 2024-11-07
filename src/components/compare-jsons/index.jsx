@@ -395,7 +395,7 @@ const CompareJsons = () => {
             </button>
           </div>
 
-          <div className="flex flex-col-1 mt-2 md:flex-row lg:flex-col-2 divide-x-4 justify-center items-center">
+          <div className="flex flex-col-1 mt-2 md:flex-row lg:flex-col-2 divide-x-4 justify-center items-start">
             <div className="flex flex-col md:flex-row gap-2 md:gap-8 m-4">
               {leftVersionData.length > 0 && (isLeftVersionLoading ? <LoadingOutlined /> : <JsonBody data={leftVersionData} />)}
               <div className="flex flex-col gap-2">
@@ -434,7 +434,7 @@ const CompareJsons = () => {
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-2 md:gap-8 m-4 ps-8">
+            <div className="flex flex-col md:flex-row gap-2 md:gap-8 m-4 ps-8 items-start">
             {rightVersionData.length > 0 && (isRightVersionLoading ? <LoadingOutlined /> : <JsonBody data={rightVersionData} />)}
             <div className="flex flex-col gap-2">
               <p className="text-sm text-gray-600 font-medium mb-1 ml-6">Json Version</p>
