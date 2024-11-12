@@ -1,8 +1,10 @@
 import { Dropdown, Popconfirm, message } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { StoryUploadApiContext } from "../../contexts/ApiContext";
 
 const SidebarWithHeader = ({children}) => {
+  const { isAnythingChanged, handleSaveModalOpen, saveModalOpen } = useContext(StoryUploadApiContext);
 
   const [email, setEmail] = useState('');
   const [abbreviation, setAbbreviation] = useState(false);
@@ -66,6 +68,22 @@ const SidebarWithHeader = ({children}) => {
   const menuProps = {
     items,
     onClick: handleMenuClick,
+  };
+
+  const handleStoryUpload = () => {
+    if(isAnythingChanged)
+    {
+      handleSaveModalOpen(true);
+      if(!saveModalOpen)
+      {
+        localStorage.removeItem("storyId"); 
+        window.location.href = "/home"; 
+      }
+    }
+    else {
+    localStorage.removeItem("storyId"); 
+    window.location.href = "/home"; 
+    }
   };
 
   return (
@@ -229,7 +247,7 @@ const SidebarWithHeader = ({children}) => {
             </li>
             <li>
               <a
-                href="/home"
+                onClick={handleStoryUpload}
                 className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className="bi bi-cloud-upload-fill" viewBox="0 0 16 16">

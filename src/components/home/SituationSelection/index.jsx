@@ -15,7 +15,7 @@ const getCSVsFromList = (list_of_strings) => {
   return list_of_strings.join(", ");
 };
 
-const SituationSelection = ({ onDiscard = () => {} }) => {
+const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSuccess = () => {}}) => {
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState({});
@@ -28,12 +28,18 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
   const navigate = useNavigate();
 
   // story upload context
-  const { storyUploadApiResponse, setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
+  const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, situations, updatedSituations, primaryWhos } = storyUploadApiResponse;
 
   useEffect(() => {
     setSituationSelectionItems(updatedSituations);
   }, []);
+
+  useEffect(() => {
+    if(saveSituations){
+      onSave();
+    }
+  }, [saveSituations]);
 
   const onUpdate = (updatedValue) => {
     const updatedRow = {...selectedRow, comment: updatedValue};
@@ -45,6 +51,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
     } else {
       message.success("Comment Added Successfully");
     }
+    handleAnythingChanged(true);
   }
 
   const bodyForSaveSituationsApi = () => {
@@ -153,6 +160,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
         setStoryUploadApiResponse(updatedContextObj);
         message.destroy(alertKey);
         message.success("Situations Saved Successfully !");
+            handleSaveSuccess(true);
       } else {
         message.destroy(alertKey);
         message.error("Error In Saving Situations ! Unable To Fetch Response !");
@@ -185,11 +193,13 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
     );
     setSituationSelectionItems(modified);
     message.success("Updated Successfully !");
+    handleAnythingChanged(true);
   };
 
   const onReset = () => {
     setSituationSelectionItems(situations);
     message.success("Reset Successfully !");
+    handleAnythingChanged(true);
   };
 
   const handleAddRow = () => {
@@ -207,6 +217,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
     const curData = [newObj, ...situationSelectionItems];
     setSituationSelectionItems(curData);
     message.success("New Row Added Successfully !");
+    handleAnythingChanged(true);
   };
 
   const handleDelete = () => {
@@ -214,6 +225,7 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
     const updated = curData.filter((ele) => ele.id !== selectedRow.id);
     setSituationSelectionItems(updated);
     message.success("Deleted Successfully !");
+    handleAnythingChanged(true);
   };
 
   const situationSelectionColumns = [

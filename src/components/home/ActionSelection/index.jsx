@@ -15,7 +15,7 @@ const getCSVsFromList = (list_of_strings) => {
   return list_of_strings.join(", ");
 };
 
-const ActionSelection = ({ onDiscard = () => {} }) => {
+const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess = () => {}}) => {
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState({});
@@ -28,12 +28,18 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
   const navigate = useNavigate();
 
   // story upload context
-  const { storyUploadApiResponse, setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
+  const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, actions, updatedActions, primaryWhos } = storyUploadApiResponse;
 
   useEffect(() => {
     setActionSelectionItems(updatedActions);
   }, []);
+
+  useEffect(() => {
+    if(saveActions){
+      onSave();
+    }
+  }, [saveActions]);
 
   const onUpdate = (updatedValue) => {
     const updatedRow = {...selectedRow, comment: updatedValue};
@@ -45,6 +51,7 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
     } else {
       message.success("Comment Added Successfully");
     }
+    handleAnythingChanged(true);
   }
 
   const bodyForSaveActionsApi = () => {
@@ -114,6 +121,7 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
         setStoryUploadApiResponse(updatedContextObj);
         message.destroy(alertKey);
         message.success("Actions Saved Successfully !");
+        handleSaveSuccess(true);
       } else {
         message.error("Error In Saving Actions ! Unable To Fetch Response !");
       }
@@ -145,11 +153,13 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
     );
     setActionSelectionItems(modified);
     message.success("Updated Successfully !");
+    handleAnythingChanged(true);
   };
 
   const onReset = () => {
     setActionSelectionItems(actions);
     message.success("Reset Successfully !");
+    handleAnythingChanged(true);
   };
 
   const handleAddRow = () => {
@@ -167,6 +177,7 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
     const curData = [newObj, ...actionSelectionItems];
     setActionSelectionItems(curData);
     message.success("New Row Added Successfully !");
+    handleAnythingChanged(true);
   };
 
   const handleDelete = () => {
@@ -174,6 +185,7 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
     const updated = curData.filter((ele) => ele.id !== selectedRow.id);
     setActionSelectionItems(updated);
     message.success("Deleted Successfully !");
+    handleAnythingChanged(true);
   };
 
   const actionSelectionColumns = [

@@ -9,7 +9,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import StoryTextPopup from "./StoryTextPopup";
 
-const ThreeWsSelection = ({ onDiscard = () => {} }) => {
+const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = () => {}}) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletionItem, setDeletionItem] = useState({});
   const [type, setType] = useState("");
@@ -32,7 +32,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
   const scrollableWhereDivRef = useRef(null);
 
   // story upload context
-  const { storyUploadApiResponse, setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
+  const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const navigate = useNavigate();
   const {
     story_id,
@@ -60,6 +60,12 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
     setSecondaryWheres(secondaryWheres);
   }, [isSaved]);
 
+  useEffect(() => {
+    if(saveWs){
+      onSave();
+    }
+  }, [saveWs]);
+
   const handleWhoRadioChange = (item) => {
     const name = item?.newName ?? item?.name;
     if(item.isRadioSelected) {
@@ -75,6 +81,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
       ele.id === item.id ? updatedItem : ele
     );
     setWhoItems(updatedArr);
+    handleAnythingChanged(true);
   };
 
   const handleWhoCheckboxChange = (item) => {
@@ -95,6 +102,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
       ele.id === item.id ? updatedItem : ele
     );
     setWhoItems(updatedArr);
+    handleAnythingChanged(true);
   };
 
   const handleWhatRadioChange = (item) => {
@@ -112,6 +120,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
       ele.id === item.id ? updatedItem : ele
     );
     setWhatItems(updatedArr);
+    handleAnythingChanged(true);
   };
 
   const handleWhatCheckboxChange = (item) => {
@@ -132,6 +141,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
       ele.id === item.id ? updatedItem : ele
     );
     setWhatItems(updatedArr);
+    handleAnythingChanged(true);
   };
 
   const handleWhereRadioChange = (item) => {
@@ -150,6 +160,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
       ele.id === item.id ? updatedItem : ele
     );
     setWhereItems(updatedArr);
+    handleAnythingChanged(true);
   };
 
   const handleWhereCheckboxChange = (item) => {
@@ -170,6 +181,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
       ele.id === item.id ? updatedItem : ele
     );
     setWhereItems(updatedArr);
+    handleAnythingChanged(true);
   };
 
   const onDelete = (deletionItem) => {
@@ -220,6 +232,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
       }
     }
     message.success("Deleted Successfully !");
+    handleAnythingChanged(true);
   };
 
   const onUpdate = (editItemObj, updatedValue) => {
@@ -279,11 +292,13 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
       }
     }
     message.success("Updated Successfully !");
+    handleAnythingChanged(true);
   };
 
   const onReset = () => {
     resetAll();
     message.success("Reset Successfully !");
+    handleAnythingChanged(true);
   };
 
   const getUpdatedJson = (arr) => {
@@ -395,6 +410,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
 
         message.destroy(alertKey); // stop infinite loader alert
         message.success("Ws Saved Successfully !");
+        handleSaveSuccess(true);
 
       } else {
         message.destroy(alertKey); // stop infinite loader alert
@@ -487,6 +503,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
     };
     
     setWhoItems((prev) => [{id: whoItems.length + 1, ...newField}, ...prev]);
+    handleAnythingChanged(true);
   };
 
   const addNewWhat = (event) => {
@@ -502,6 +519,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
     };
     
     setWhatItems((prev) => [{id: whatItems.length + 1, ...newField}, ...prev]);
+    handleAnythingChanged(true);
   };
 
   const addNewWhere = (event) => {
@@ -517,6 +535,7 @@ const ThreeWsSelection = ({ onDiscard = () => {} }) => {
     };
 
     setWhereItems((prev) => [{id: whereItems.length + 1, ...newField}, ...prev]);
+    handleAnythingChanged(true);
   };
 
   const handleDiscard = () => {

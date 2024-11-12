@@ -15,7 +15,7 @@ const getCSVsFromList = (list_of_strings) => {
   return list_of_strings?.join(", ");
 };
 
-const TitleSelection = ({ onDiscard = () => {} }) => {
+const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = () => {}}) => {
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState({});
@@ -28,12 +28,18 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
   const navigate = useNavigate();
 
   // story upload context
-  const { storyUploadApiResponse, setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
+  const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
 
   useEffect(() => {
     setTitleSelectionItems(updatedTitles);
   }, []);
+
+  useEffect(() => {
+    if(saveTitles){
+      onSave();
+    }
+  }, [saveTitles]);
 
   const onUpdate = (updatedValue) => {
     const updatedRow = {...selectedRow, comment: updatedValue};
@@ -45,6 +51,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
     } else {
       message.success("Comment Added Successfully");
     }
+    handleAnythingChanged(true);
   }
 
   const bodyForSaveTitlesApi = () => {
@@ -132,6 +139,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
           updatedSituations: getUpdatedJson(situations),
         };
         setStoryUploadApiResponse(updatedContextObj);
+        handleSaveSuccess(true);
         message.destroy(alertKey);
         message.success("Titles Saved Successfully !");
       } else {
@@ -166,11 +174,13 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
     );
     setTitleSelectionItems(modified);
     message.success("Updated Successfully !");
+    handleAnythingChanged(true);
   };
 
   const onReset = () => {
     setTitleSelectionItems(titles);
     message.success("Reset Successfully !");
+    handleAnythingChanged(true);
   };
 
   const handleAddRow = () => {
@@ -188,6 +198,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
     const curData = [newObj, ...titleSelectionItems];
     setTitleSelectionItems(curData);
     message.success("New Row Added Successfully !");
+    handleAnythingChanged(true);
   };
 
   const handleDelete = () => {
@@ -195,6 +206,7 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
     const updated = curData.filter((ele) => ele.id !== selectedRow.id);
     setTitleSelectionItems(updated);
     message.success("Deleted Successfully !");
+    handleAnythingChanged(true);
   };
 
   const titleSelectionColumns = [
