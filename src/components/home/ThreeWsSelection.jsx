@@ -26,6 +26,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
   const [secondaryWheres, setSecondaryWheres] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showStoryModal, setShowStoryModal] = useState(false);
+  const [selectedPrimaryWho, setSelectedPrimaryWho] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
   const scrollableWhoDivRef = useRef(null);
   const scrollableWhatDivRef = useRef(null);
@@ -58,6 +59,9 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
     setSecondaryWhats(secondaryWhats);
     setPrimaryWheres(primaryWheres);
     setSecondaryWheres(secondaryWheres);
+    const selectedId = updatedWhos.find(item => item.isRadioSelected === true)?.id;
+    setSelectedPrimaryWho(selectedId);
+
   }, [isSaved]);
 
   useEffect(() => {
@@ -73,7 +77,9 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
         (ele) => ele.toLowerCase() !== name.toLowerCase()
       );
       setPrimaryWhos(filteredArr);
+      setSelectedPrimaryWho(null);
     } else {
+      setSelectedPrimaryWho(item.id);
       setPrimaryWhos([...primaryWhos, name]);
     }
     const updatedItem = { ...item, isRadioSelected: !item.isRadioSelected };
@@ -607,7 +613,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                     >
                       <input
                         checked={item.isRadioSelected}
-                        disabled={item.isCheckboxSelected}
+                        disabled={item.isCheckboxSelected || (selectedPrimaryWho && item.id !== selectedPrimaryWho)}
                         onChange={() => handleWhoRadioChange(item)}
                         id={`link-radio-${index}`}
                         type="radio"

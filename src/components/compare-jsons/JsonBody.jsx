@@ -111,7 +111,7 @@ const JsonBody = (jsonData) => {
             </ul>
           </div>
         </div>
-      )) : <div>No Titles</div>
+      )) : <div>No Titles! Save Ws in Previous Page to find Titles</div>
       }
 
       <p className="mt-6 mb-3 font-medium">SITUATIONS :</p>
@@ -159,7 +159,7 @@ const JsonBody = (jsonData) => {
           </div>
         </div>
       </>
-      )) : <div>No Situations</div>
+      )) : <div>No Situations! Save Titles in Previous Page to find Situations</div>
       }
 
       <p className="mt-6 mb-3 font-medium">ACTIONS :</p>
@@ -207,7 +207,7 @@ const JsonBody = (jsonData) => {
             </div>
           </div>
         </>
-        )) : <div>No Actions</div>
+        )) : <div>No Actions! Save Situations in Previous Page to find Actions</div>
       }
     </div>
   );

@@ -30,7 +30,10 @@ const DownloadStory = ({ onDiscard = () => {} }) => {
   useEffect(() => {
     let url = `${API_BASE_PATH}${API_ROUTES.DOWNLOAD_STORY}?id=${storyWorldId}&storyId=${story_id}&userId=${userId}&saveOlderVersion=${selectedVersion === "older"}`;
     
-    setIsExportDisabled(selectedVersion==="older");
+    if (selectedJsonVersion.key === "json version") {
+      setIsExportDisabled(selectedVersion==="older");
+    }
+
     if (selectedJsonVersion.key !== "json version") {
       url += `&versionId=${selectedJsonVersion.key}`;
     }

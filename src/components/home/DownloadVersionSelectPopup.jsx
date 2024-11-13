@@ -84,7 +84,7 @@ const DownloadVersionSelectPopup = ({ open, story_id, handleDownload = () => {},
       footer={[
         <div className="text-center">
           <Button onClick={onClose} className="custom-btn me-2 md:me-4 bg-gray-400 border-gray-500 text-white">Cancel</Button>
-          <Button onClick={handleDownload} className="custom-btn me-2 md:me-4 bg-blue-400 border-blue-500 text-white">Download</Button>
+          <Button disabled={selectedVersion.label === "Json Version"} onClick={handleDownload} className="custom-btn me-2 md:me-4 bg-blue-400 border-blue-500 text-white">Download</Button>
         </div>
       ]}
     >
