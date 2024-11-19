@@ -160,7 +160,8 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSu
         setStoryUploadApiResponse(updatedContextObj);
         message.destroy(alertKey);
         message.success("Situations Saved Successfully !");
-            handleSaveSuccess(true);
+        handleSaveSuccess(true);
+        handleAnythingChanged(false);
       } else {
         message.destroy(alertKey);
         message.error("Error In Saving Situations ! Unable To Fetch Response !");

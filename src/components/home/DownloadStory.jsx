@@ -122,14 +122,14 @@ const getHarmonizationResponse = async (storyWorldId) => {
       },
     };
 
-    alertKey = message.loading("Fetching Data...", 0).key;
+    alertKey = message.loading("Running Harmonization...", 0).key;
     const response = await axios.get(apiUrl, config); 
     const harmonization = response?.data;  
     message.destroy(alertKey);  
     if (harmonization && harmonization.message) {
-      message.success(harmonization.message || "Data fetched successfully!");
+      message.success(harmonization.message || "Harmonization done successfully!");
     } else {
-      message.info("No data available.");
+      message.info("Harmonization is not complete!");
     }
     
   } catch (error) {

@@ -122,6 +122,7 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
         message.destroy(alertKey);
         message.success("Actions Saved Successfully !");
         handleSaveSuccess(true);
+        handleAnythingChanged(false);
       } else {
         message.error("Error In Saving Actions ! Unable To Fetch Response !");
       }

@@ -417,6 +417,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
         message.destroy(alertKey); // stop infinite loader alert
         message.success("Ws Saved Successfully !");
         handleSaveSuccess(true);
+        handleAnythingChanged(false);
 
       } else {
         message.destroy(alertKey); // stop infinite loader alert
@@ -481,7 +482,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
       id: '',
       new: true,
       updated: false,
-      ner: false,
+      ner: item.newName ? false : item?.ner,
     }
   } else {
       return {

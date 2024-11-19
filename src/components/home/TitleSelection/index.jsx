@@ -140,6 +140,7 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
         };
         setStoryUploadApiResponse(updatedContextObj);
         handleSaveSuccess(true);
+        handleAnythingChanged(false);
         message.destroy(alertKey);
         message.success("Titles Saved Successfully !");
       } else {
