@@ -232,7 +232,7 @@ const handleHarmonizationClick = () => {
               <span className="ml-2">Inserted</span>
             </label>
 
-            <label className="flex items-center text-sm">
+            <label className="text-sm flex items-center">
               <input
                 type="radio"
                 value="updated"
@@ -262,7 +262,7 @@ const handleHarmonizationClick = () => {
         >
             <Button
                 type="secondary"
-                className="bg-gray-200 border-gray-600 hover:bg-gray-300 h-9 me-4"
+                className="border-gray-600 bg-gray-200 hover:bg-gray-300 h-9 me-4"
             >
                 Restart From Uploads
             </Button>
@@ -271,7 +271,7 @@ const handleHarmonizationClick = () => {
         {/* export button */}
         <a href={apiUrl} target="_blank" rel="noopener noreferrer">
             <Button
-              className="text-white bg-blue-500 border-blue-600 h-9 me-4"
+              className="bg-blue-500 border-blue-600 text-white h-9 me-4"
               onClick={() => localStorage.removeItem("storyId")}
               disabled={isExportDisabled}
             >
@@ -283,7 +283,7 @@ const handleHarmonizationClick = () => {
         <a> {/* call the ner harmonization api url */}
             <Button
               type="secondary"
-              className="text-white bg-blue-500 border-blue-600 h-9 me-4"
+              className="bg-blue-500 border-blue-600 text-white h-9 me-4"
               onClick={handleHarmonizationClick}
             >
               Run Ner Harmonization
