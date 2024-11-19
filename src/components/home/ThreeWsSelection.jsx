@@ -482,7 +482,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
       id: '',
       new: true,
       updated: false,
-      ner: item.newName ? false : item?.ner,
+      ner: item.ner ?? false,
     }
   } else {
       return {
@@ -490,7 +490,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
         value: item.name,
         newValue: item.newName,
         updated: item.newName !== undefined,
-        ner: false,
+        ner: item.ner ?? false,
         id: item.id ?? ''
       }
     }});

@@ -21,14 +21,14 @@ const Home = () => {
   const [activeStep, setActiveStep] = useState(null);
   const [isContentOverflowing, setIsContentOverflowing] = useState(false);
   const errorMsg = "Error In Fetching Saved Response";
+  const storyId = JSON.parse(localStorage.getItem("storyId"));
+  const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
 
   // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse, saveModalOpen, isAnythingChanged, handleAnythingChanged, handleSaveModalOpen } = useContext(StoryUploadApiContext);
   const { storyWorld, storyWorldLead, titles, situations, actions } = storyUploadApiResponse;
 
   useEffect(() => {
-    const storyId = JSON.parse(localStorage.getItem("storyId"));
-    const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
     if(storyId && tokenVal) {
       fetchStoryData(storyId, tokenVal);
     }
@@ -36,6 +36,12 @@ const Home = () => {
       setCurrentStep(0);
     }
   }, []);
+
+  useEffect(() => {
+    if(currentStep === 1){
+      fetchStoryData(storyId, tokenVal);
+    }
+  }, [currentStep])
 
   useEffect(() => {
     if(isSaveSuccess){
@@ -55,6 +61,7 @@ const Home = () => {
         name: item.value,
         isRadioSelected: item.type?.toLowerCase()==='primary' ? true : false,
         isCheckboxSelected: item.type?.toLowerCase()==='secondary' ? true : false,
+        ner: item.ner ?? false
       }));
       return updated;
     }
