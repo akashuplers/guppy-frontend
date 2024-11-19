@@ -152,19 +152,19 @@ const handleHarmonizationClick = () => {
 
 
   return (
-    <div className="px-5 pb-5 border rounded-md">
-      <div className="flex flex-col justify-between mt-5 mb-3 text-lg md:flex-row md:text-xl md:mb-4">
+    <div className="px-5 pb-5 rounded-md border">
+      <div className="text-lg flex flex-col md:flex-row justify-between md:text-xl mt-5 mb-3 md:mb-4">
         <p>Download Story</p>
         {storyWorld &&
-          <p className="mt-2 text-lg md:text-xl md:mt-0">
+          <p className="text-lg md:text-xl mt-2 md:mt-0">
             Story World : <span className="text-violet-500">{storyWorld}</span>
           </p>
         }
       </div>
 
       <div className="flex flex-col items-center">
-        <img className="w-20 h-20" src={successGif} alt="success-gif" />
-        <p className="mb-4 text-md md:text-lg md:mb-6">
+        <img className="h-20 w-20" src={successGif} alt="success-gif" />
+        <p className="text-md md:text-lg mb-4 md:mb-6">
           Almost Done! Choose Version to Save
         </p>
       </div>
@@ -182,7 +182,7 @@ const handleHarmonizationClick = () => {
                 </div>
               )}
             >
-              <Button className="px-4 py-1 pt-0 text-gray-700 transition duration-150 bg-white border border-gray-300 rounded-lg shadow-lg hover:bg-gray-100 focus:bg-gray-200">
+              <Button className="bg-white border border-gray-300 rounded-lg shadow-lg px-4 py-1 pt-0 text-gray-700 hover:bg-gray-100 focus:bg-gray-200 transition duration-150">
                 <Space>
                   <span
                     style={{
@@ -204,13 +204,13 @@ const handleHarmonizationClick = () => {
       }
         
         <div className="flex flex-col items-center gap-2">
-          <p className="text-sm font-medium text-gray-600">
+          <p className="text-sm text-gray-600 font-medium">
             Select Type <span className="text-red-500">*</span>
           </p>
           
           <div className="flex flex-row items-center gap-4">
 
-            <label className="flex items-center text-sm">
+            <label className="text-sm flex items-center">
               <input
                 type="radio"
                 value="all"
@@ -221,7 +221,7 @@ const handleHarmonizationClick = () => {
               <span className="ml-2">All</span>
             </label>
 
-            <label className="flex items-center text-sm">
+            <label className="text-sm flex items-center">
               <input
                 type="radio"
                 value="inserted"
