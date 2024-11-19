@@ -112,6 +112,48 @@ const fetchVersionByStory = async (story_id) => {
     setIsVersionLoading(false);
 }
 
+const getHarmonizationResponse = async (storyWorldId) => {
+  let alertKey;
+  try {
+    const apiUrl = `${API_BASE_PATH}${API_ROUTES.HARMONIZATION}${storyWorldId}`;
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    alertKey = message.loading("Running Harmonization...", 0).key;
+    const response = await axios.get(apiUrl, config); 
+    const harmonization = response?.data;  
+    message.destroy(alertKey);  
+    if (harmonization && harmonization.message) {
+      message.success(harmonization.message || "Harmonization done successfully!");
+    } else {
+      message.info("Harmonization is not complete!");
+    }
+    
+  } catch (error) {
+    console.error("Error:", error);
+    const statusCode = error?.response?.status;
+    if (statusCode === 401) {
+      message.error("Not Authorized! You need to login first!");
+      navigate("/");  
+    } else if (statusCode === 500) {
+      message.error("Internal Server Error!");
+    } else {
+      const errorMessage = error?.response?.data?.message;
+      message.error(errorMessage || "Error in fetching data!");
+    }
+  } 
+};
+
+const handleHarmonizationClick = () => {
+  if(storyWorldId) {
+    getHarmonizationResponse(storyWorldId);
+  }
+};
+
+
   return (
     <div className="px-5 pb-5 rounded-md border">
       <div className="text-lg flex flex-col md:flex-row justify-between md:text-xl mt-5 mb-3 md:mb-4">
@@ -245,7 +287,7 @@ const fetchVersionByStory = async (story_id) => {
             <Button
               type="secondary"
               className="bg-blue-500 border-blue-600 text-white h-9 me-4"
-              onClick={() => console.log("ner harmonization in progress")}
+              onClick={handleHarmonizationClick}
             >
               Run Ner Harmonization
             </Button>

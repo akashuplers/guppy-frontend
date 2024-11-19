@@ -23,5 +23,6 @@ export const API_ROUTES = {
     FETCH_VERSION: '/story/version/',
     SHARE: '/story/share/',
     DOWNLOAD_VERSION_STORY: "/story/download-version",
-    STORY: '/story'
+    STORY: '/story',
+    HARMONIZATION: '/story/harmonization/'
 }
