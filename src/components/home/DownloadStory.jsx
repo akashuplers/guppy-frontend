@@ -109,20 +109,62 @@ const fetchVersionByStory = async (story_id) => {
     setIsVersionLoading(false);
 }
 
+const getHarmonizationResponse = async (storyWorldId) => {
+  let alertKey;
+  try {
+    const apiUrl = `${API_BASE_PATH}${API_ROUTES.HARMONIZATION}${storyWorldId}`;
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    alertKey = message.loading("Fetching Data...", 0).key;
+    const response = await axios.get(apiUrl, config); 
+    const harmonization = response?.data;  
+    message.destroy(alertKey);  
+    if (harmonization && harmonization.message) {
+      message.success(harmonization.message || "Data fetched successfully!");
+    } else {
+      message.info("No data available.");
+    }
+    
+  } catch (error) {
+    console.error("Error:", error);
+    const statusCode = error?.response?.status;
+    if (statusCode === 401) {
+      message.error("Not Authorized! You need to login first!");
+      navigate("/");  
+    } else if (statusCode === 500) {
+      message.error("Internal Server Error!");
+    } else {
+      const errorMessage = error?.response?.data?.message;
+      message.error(errorMessage || "Error in fetching data!");
+    }
+  } 
+};
+
+const handleHarmonizationClick = () => {
+  if(storyWorldId) {
+    getHarmonizationResponse(storyWorldId);
+  }
+};
+
+
   return (
-    <div className="px-5 pb-5 rounded-md border">
-      <div className="text-lg flex flex-col md:flex-row justify-between md:text-xl mt-5 mb-3 md:mb-4">
+    <div className="px-5 pb-5 border rounded-md">
+      <div className="flex flex-col justify-between mt-5 mb-3 text-lg md:flex-row md:text-xl md:mb-4">
         <p>Download Story</p>
         {storyWorld &&
-          <p className="text-lg md:text-xl mt-2 md:mt-0">
+          <p className="mt-2 text-lg md:text-xl md:mt-0">
             Story World : <span className="text-violet-500">{storyWorld}</span>
           </p>
         }
       </div>
 
       <div className="flex flex-col items-center">
-        <img className="h-20 w-20" src={successGif} alt="success-gif" />
-        <p className="text-md md:text-lg mb-4 md:mb-6">
+        <img className="w-20 h-20" src={successGif} alt="success-gif" />
+        <p className="mb-4 text-md md:text-lg md:mb-6">
           Almost Done! Choose Version to Save
         </p>
       </div>
@@ -140,7 +182,7 @@ const fetchVersionByStory = async (story_id) => {
                 </div>
               )}
             >
-              <Button className="bg-white border border-gray-300 rounded-lg shadow-lg px-4 py-1 pt-0 text-gray-700 hover:bg-gray-100 focus:bg-gray-200 transition duration-150">
+              <Button className="px-4 py-1 pt-0 text-gray-700 transition duration-150 bg-white border border-gray-300 rounded-lg shadow-lg hover:bg-gray-100 focus:bg-gray-200">
                 <Space>
                   <span
                     style={{
@@ -162,13 +204,13 @@ const fetchVersionByStory = async (story_id) => {
       }
         
         <div className="flex flex-col items-center gap-2">
-          <p className="text-sm text-gray-600 font-medium">
+          <p className="text-sm font-medium text-gray-600">
             Select Type <span className="text-red-500">*</span>
           </p>
           
           <div className="flex flex-row items-center gap-4">
 
-            <label className="text-sm flex items-center">
+            <label className="flex items-center text-sm">
               <input
                 type="radio"
                 value="all"
@@ -179,7 +221,7 @@ const fetchVersionByStory = async (story_id) => {
               <span className="ml-2">All</span>
             </label>
 
-            <label className="text-sm flex items-center">
+            <label className="flex items-center text-sm">
               <input
                 type="radio"
                 value="inserted"
@@ -190,7 +232,7 @@ const fetchVersionByStory = async (story_id) => {
               <span className="ml-2">Inserted</span>
             </label>
 
-            <label className="text-sm flex items-center">
+            <label className="flex items-center text-sm">
               <input
                 type="radio"
                 value="updated"
@@ -220,7 +262,7 @@ const fetchVersionByStory = async (story_id) => {
         >
             <Button
                 type="secondary"
-                className="border-gray-600 bg-gray-200 hover:bg-gray-300 h-9 me-4"
+                className="bg-gray-200 border-gray-600 hover:bg-gray-300 h-9 me-4"
             >
                 Restart From Uploads
             </Button>
@@ -229,7 +271,7 @@ const fetchVersionByStory = async (story_id) => {
         {/* export button */}
         <a href={apiUrl} target="_blank" rel="noopener noreferrer">
             <Button
-              className="bg-blue-500 border-blue-600 text-white h-9 me-4"
+              className="text-white bg-blue-500 border-blue-600 h-9 me-4"
               onClick={() => localStorage.removeItem("storyId")}
               disabled={isExportDisabled}
             >
@@ -241,8 +283,8 @@ const fetchVersionByStory = async (story_id) => {
         <a> {/* call the ner harmonization api url */}
             <Button
               type="secondary"
-              className="bg-blue-500 border-blue-600 text-white h-9 me-4"
-              onClick={() => console.log("ner harmonization in progress")}
+              className="text-white bg-blue-500 border-blue-600 h-9 me-4"
+              onClick={handleHarmonizationClick}
             >
               Run Ner Harmonization
             </Button>
