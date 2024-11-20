@@ -62,7 +62,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
     const selectedId = updatedWhos.find(item => item.isRadioSelected === true)?.id;
     setSelectedPrimaryWho(selectedId);
 
-  }, [isSaved]);
+  }, [storyUploadApiResponse, isSaved]);
 
   useEffect(() => {
     if(saveWs){
@@ -376,6 +376,8 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
       // api call
       const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_Ws;
       const payload = bodyForSaveWsApi();
+      
+      console.log('payload',payload);
 
       const config = {
         headers: {
