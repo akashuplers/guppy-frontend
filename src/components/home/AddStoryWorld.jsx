@@ -69,11 +69,11 @@ const AddStoryWorld = ({ token, onAddStoryWorld = () => { } }) => {
         onSubmit={handleSubmit}
       >
         {({ isSubmitting, setFieldValue }) => (
-          <Form className="flex flex-col md:flex-row gap-2 md:gap-5">
+          <Form className="flex flex-col gap-2 md:flex-row md:gap-5">
             <div>
                 <label
                     htmlFor="name"
-                    className="block mb-2 text-md md:text-lg font-medium text-gray-900"
+                    className="block mb-2 font-medium text-gray-900 text-md md:text-lg"
                 >
                     Name
                 </label>
@@ -86,14 +86,14 @@ const AddStoryWorld = ({ token, onAddStoryWorld = () => { } }) => {
                 <ErrorMessage
                     name="name"
                     component="div"
-                    className="text-red-500 text-sm"
+                    className="text-sm text-red-500"
                 />
             </div>
             
             <div>
                 <label
                     htmlFor="storyWorldLead"
-                    className="block mb-2 text-md md:text-lg font-medium text-gray-900"
+                    className="block mb-2 font-medium text-gray-900 text-md md:text-lg"
                 >
                     Story World Lead
                 </label>
@@ -106,7 +106,7 @@ const AddStoryWorld = ({ token, onAddStoryWorld = () => { } }) => {
                 <ErrorMessage
                     name="storyWorldLead"
                     component="div"
-                    className="text-red-500 text-sm"
+                    className="text-sm text-red-500"
                 />
             </div>
 
