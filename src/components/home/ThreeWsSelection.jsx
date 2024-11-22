@@ -62,7 +62,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
     const selectedId = updatedWhos.find(item => item.isRadioSelected === true)?.id;
     setSelectedPrimaryWho(selectedId);
 
-  }, [isSaved]);
+  }, [storyUploadApiResponse, isSaved]);
 
   useEffect(() => {
     if(saveWs){
@@ -376,6 +376,8 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
       // api call
       const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_Ws;
       const payload = bodyForSaveWsApi();
+      
+      console.log('payload',payload);
 
       const config = {
         headers: {
@@ -482,7 +484,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
       id: '',
       new: true,
       updated: false,
-      ner: item.newName ? false : item?.ner,
+      ner: item.ner ?? false,
     }
   } else {
       return {
@@ -490,7 +492,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
         value: item.name,
         newValue: item.newName,
         updated: item.newName !== undefined,
-        ner: false,
+        ner: item.ner ?? false,
         id: item.id ?? ''
       }
     }});
@@ -562,6 +564,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
     setSecondaryWheres([]);
   };
 
+  
   const onDragStart = (evt, itemId) => {
     evt.dataTransfer.setData("text/plain", itemId);
   };

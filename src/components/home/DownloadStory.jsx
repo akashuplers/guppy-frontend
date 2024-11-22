@@ -25,6 +25,7 @@ const DownloadStory = ({ onDiscard = () => {} }) => {
   const [selectedJsonVersion, setSelectedJsonVersion] = useState({label: 'Json Version', key: "json version"});
   const userId = localStorage.getItem("userId");
   const [apiUrl, setApiUrl] = useState('');
+  const nerUrl = `${API_BASE_PATH}${API_ROUTES.HARMONIZATION}${storyWorldId}`;
   const token = JSON.parse(localStorage.getItem("accessToken"));
 
   useEffect(() => {
@@ -111,48 +112,6 @@ const fetchVersionByStory = async (story_id) => {
     }
     setIsVersionLoading(false);
 }
-
-const getHarmonizationResponse = async (storyWorldId) => {
-  let alertKey;
-  try {
-    const apiUrl = `${API_BASE_PATH}${API_ROUTES.HARMONIZATION}${storyWorldId}`;
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-
-    alertKey = message.loading("Running Harmonization...", 0).key;
-    const response = await axios.get(apiUrl, config); 
-    const harmonization = response?.data;  
-    message.destroy(alertKey);  
-    if (harmonization && harmonization.message) {
-      message.success(harmonization.message || "Harmonization done successfully!");
-    } else {
-      message.info("Harmonization is not complete!");
-    }
-    
-  } catch (error) {
-    console.error("Error:", error);
-    const statusCode = error?.response?.status;
-    if (statusCode === 401) {
-      message.error("Not Authorized! You need to login first!");
-      navigate("/");  
-    } else if (statusCode === 500) {
-      message.error("Internal Server Error!");
-    } else {
-      const errorMessage = error?.response?.data?.message;
-      message.error(errorMessage || "Error in fetching data!");
-    }
-  } 
-};
-
-const handleHarmonizationClick = () => {
-  if(storyWorldId) {
-    getHarmonizationResponse(storyWorldId);
-  }
-};
-
 
   return (
     <div className="px-5 pb-5 rounded-md border">
@@ -283,11 +242,10 @@ const handleHarmonizationClick = () => {
         </a>
 
         {/* ner harmonization button */}
-        <a> {/* call the ner harmonization api url */}
+        <a href={nerUrl} target="_blank" rel="noopener noreferrer"> {/* call the ner harmonization api url */}
             <Button
               type="secondary"
               className="bg-blue-500 border-blue-600 text-white h-9 me-4"
-              onClick={handleHarmonizationClick}
             >
               Run Ner Harmonization
             </Button>

@@ -71,19 +71,19 @@ const SidebarWithHeader = ({children}) => {
   };
 
   const handleStoryUpload = () => {
-    if(isAnythingChanged)
-    {
-      handleSaveModalOpen(true);
-      if(!saveModalOpen)
-      {
-        localStorage.removeItem("storyId"); 
-        window.location.href = "/home"; 
-      }
-    }
-    else {
+    // if(isAnythingChanged)
+    // {
+    //   handleSaveModalOpen(true);
+    //   if(!saveModalOpen)
+    //   {
+    //     localStorage.removeItem("storyId"); 
+    //     window.location.href = "/home"; 
+    //   }
+    // }
+    // else {
     localStorage.removeItem("storyId"); 
     window.location.href = "/home"; 
-    }
+    // }
   };
 
   return (
