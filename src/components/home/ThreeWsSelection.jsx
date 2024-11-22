@@ -623,17 +623,17 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
  };
 
   return (
-    <div className="px-5 pb-5 border rounded-md">
-      <div className="flex flex-col justify-between mt-5 mb-3 text-lg md:flex-row md:text-xl md:mb-4">
+    <div className="px-5 pb-5 rounded-md border">
+      <div className="text-lg flex flex-col md:flex-row justify-between md:text-xl mt-5 mb-3 md:mb-4">
         <p>Step-2 : Three W's Selection</p>
-        <p className="mt-2 text-lg md:text-xl md:mt-0">
+        <p className="text-lg md:text-xl mt-2 md:mt-0">
           Story World : <span className="text-violet-500">{storyWorld}</span>
         </p>
       </div>
 
       {fileName && (
         <div className="flex justify-between">
-          <p className="mb-4 text-md md:text-lg md:mb-6">
+          <p className="text-md md:text-lg mb-4 md:mb-6">
             File Uploaded :{" "}
             <span title="Click to see story text" className="font-medium text-blue-500 cursor-pointer" onClick={() => setShowStoryModal(true)}>
               {fileName}
@@ -647,7 +647,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
         {/* WHO SECTION */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="flex-grow px-4 mr-2 text-center border border-2 rounded-md border-violet-300 bg-violet-50">
+            <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4">
               WHO
             </p>
 
@@ -686,7 +686,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                         type="radio"
                         value={item.name}
                         title="Primary-Who"
-                        className="w-4 h-4 text-green-600 border-gray-300 me-3 disabled:bg-gray-200 focus:ring-blue-500 focus:ring-2"
+                        className="w-4 h-4 me-3 text-green-600 border-gray-300 disabled:bg-gray-200 focus:ring-blue-500 focus:ring-2"
                       />
                       <input
                         checked={item.isCheckboxSelected}
@@ -696,7 +696,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                         type="checkbox"
                         value={item.name}
                         title="Secondary-Who"
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded disabled:bg-gray-200 focus:ring-blue-500 focus:ring-2"
+                        className="w-4 h-4 text-blue-600 border-gray-300 disabled:bg-gray-200 rounded focus:ring-blue-500 focus:ring-2"
                       />
                       <label
                         htmlFor={`link-radio-${index}`}
@@ -716,7 +716,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                       {item.isRadioSelected &&
                         <button
                           title="Clear Selection"
-                          className="text-blue-600 ms-3"
+                          className="ms-3 text-blue-600"
                           onClick={() => handleWhoRadioChange(item)}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-circle" viewBox="0 0 16 16">
@@ -736,7 +736,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                       }}
                     >
                       <svg
-                        className="ml-6 font-bold text-gray-900 cursor-pointer hover:text-blue-600 bi bi-pencil-square"
+                        className="ml-6 cursor-pointer text-gray-900 hover:text-blue-600 font-bold bi bi-pencil-square"
                         xmlns="http://www.w3.org/2000/svg"
                         width="16"
                         height="16"
@@ -761,7 +761,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                       }}
                     >
                       <svg
-                        className="ml-6 text-red-600 cursor-pointer hover:text-red-400 font-boldbi bi-trash3"
+                        className="ml-6 cursor-pointer text-red-600 hover:text-red-400 font-boldbi bi-trash3"
                         xmlns="http://www.w3.org/2000/svg"
                         width="16"
                         height="16"
@@ -781,7 +781,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
         {/* WHAT SECTION */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="flex-grow px-4 mr-2 text-center border border-2 rounded-md border-violet-300 bg-violet-50">
+            <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4">
               WHAT
             </p>
 
@@ -819,7 +819,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                         type="radio"
                         value={item.name}
                         title="Primary-What"
-                        className="w-4 h-4 text-green-600 border-gray-300 me-3 disabled:bg-gray-200 focus:ring-blue-500 focus:ring-2"
+                        className="w-4 h-4 me-3 text-green-600 disabled:bg-gray-200 border-gray-300 focus:ring-blue-500 focus:ring-2"
                       />
                       <input
                         checked={item.isCheckboxSelected}
@@ -829,7 +829,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                         type="checkbox"
                         value={item.name}
                         title="Secondary-What"
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded disabled:bg-gray-200 focus:ring-blue-500 focus:ring-2"
+                        className="w-4 h-4 text-blue-600 disabled:bg-gray-200 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                       />
                       <label
                         htmlFor={`link-radio-${index}`}
@@ -849,7 +849,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                       {item.isRadioSelected &&
                         <button
                           title="Clear Selection"
-                          className="text-blue-600 ms-3"
+                          className="ms-3 text-blue-600"
                           onClick={() => handleWhatRadioChange(item)}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-circle" viewBox="0 0 16 16">
@@ -870,7 +870,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                       }}
                     >
                       <svg
-                        className="ml-6 font-bold text-gray-900 cursor-pointer hover:text-blue-600 bi bi-pencil-square"
+                        className="ml-6 cursor-pointer text-gray-900 hover:text-blue-600 font-bold bi bi-pencil-square"
                         xmlns="http://www.w3.org/2000/svg"
                         width="16"
                         height="16"
@@ -895,7 +895,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                       }}
                     >
                       <svg
-                        className="ml-6 text-red-600 cursor-pointer hover:text-red-400 font-boldbi bi-trash3"
+                        className="ml-6 cursor-pointer text-red-600 hover:text-red-400 font-boldbi bi-trash3"
                         xmlns="http://www.w3.org/2000/svg"
                         width="16"
                         height="16"
@@ -915,7 +915,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
         {/* WHERE SECTION */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="flex-grow px-4 mr-2 text-center border border-2 rounded-md border-violet-300 bg-violet-50">
+            <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4">
               WHERE
             </p>
 
@@ -953,7 +953,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                         type="radio"
                         value={item.name}
                         title="Primary-Where"
-                        className="w-4 h-4 text-green-600 border-gray-300 me-3 disabled:bg-gray-200 focus:ring-blue-500 focus:ring-2"
+                        className="w-4 h-4 me-3 text-green-600 disabled:bg-gray-200 border-gray-300 focus:ring-blue-500 focus:ring-2"
                       />
                       <input
                         checked={item.isCheckboxSelected}
@@ -963,7 +963,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                         type="checkbox"
                         value={item.name}
                         title="Secondary-Where"
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded disabled:bg-gray-200 focus:ring-blue-500 focus:ring-2"
+                        className="w-4 h-4 text-blue-600 disabled:bg-gray-200 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                       />
                       <label
                         htmlFor={`link-radio-${index}`}
@@ -983,7 +983,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                       {item.isRadioSelected &&
                         <button
                           title="Clear Selection"
-                          className="text-blue-600 ms-3"
+                          className="ms-3 text-blue-600"
                           onClick={() => handleWhereRadioChange(item)}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-circle" viewBox="0 0 16 16">
@@ -1003,7 +1003,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                       }}
                     >
                       <svg
-                        className="ml-6 font-bold text-gray-900 cursor-pointer hover:text-blue-600 bi bi-pencil-square"
+                        className="ml-6 cursor-pointer text-gray-900 hover:text-blue-600 font-bold bi bi-pencil-square"
                         xmlns="http://www.w3.org/2000/svg"
                         width="16"
                         height="16"
@@ -1028,7 +1028,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                       }}
                     >
                       <svg
-                        className="ml-6 text-red-600 cursor-pointer hover:text-red-400 font-boldbi bi-trash3"
+                        className="ml-6 cursor-pointer text-red-600 hover:text-red-400 font-boldbi bi-trash3"
                         xmlns="http://www.w3.org/2000/svg"
                         width="16"
                         height="16"
