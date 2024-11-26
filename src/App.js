@@ -6,6 +6,7 @@ import { StoryUploadApiProvider } from "./contexts/ApiContext";
 import UserHistory from "./components/history";
 import MasterWsPage from "./components/master-ws";
 import CompareJsons from "./components/compare-jsons";
+// import MasterWssPage from "./components/master-wss";
 
 function App() {
 
@@ -17,6 +18,7 @@ function App() {
           <Route path='/home' element={<Home />} />
           <Route path='/signup' element={<SignUp />} />
           <Route path='/history' element={<UserHistory />} />
+          {/* <Route path='/master-wss' element={<MasterWssPage />} /> */}
           <Route path='/master-ws' element={<MasterWsPage />} />
           <Route path='/compare-jsons' element={<CompareJsons />} />
         </Routes>

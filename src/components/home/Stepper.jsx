@@ -11,6 +11,9 @@ const Stepper = ({ currentStep }) => (
                 title: "3 W's Selection",
             },
             {
+                title: "Master W's",
+            },
+            {
                 title: "Title Selection",
             },
             {

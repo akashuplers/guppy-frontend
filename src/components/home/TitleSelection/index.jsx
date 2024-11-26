@@ -30,6 +30,7 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
   // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
+console.log("storyWorld", titleSelectionItems);
 
   useEffect(() => {
     setTitleSelectionItems(updatedTitles);
@@ -328,7 +329,7 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
               }}
             >
               <svg
-                className="cursor-pointer hover:text-blue-600 text-gray-900 font-bold bi bi-pencil-square"
+                className="font-bold text-gray-900 cursor-pointer hover:text-blue-600 bi bi-pencil-square"
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
                 height="16"
@@ -351,7 +352,7 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
               }}
             >
               <svg
-                className="ml-5 cursor-pointer hover:text-red-400 text-red-600 font-boldbi bi-trash3"
+                className="ml-5 text-red-600 cursor-pointer hover:text-red-400 font-boldbi bi-trash3"
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
                 height="16"
@@ -368,17 +369,17 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
   ];
 
   return (
-    <div className="px-5 pb-5 rounded-md border">
+    <div className="px-5 pb-5 border rounded-md">
 
-      <div className="text-lg flex flex-col md:flex-row justify-between md:text-xl mt-5 mb-3 md:mb-4">
-        <p>Step-3 : Title Selection</p>
-        <p className="text-lg md:text-xl mt-2 md:mt-0">
+      <div className="flex flex-col justify-between mt-5 mb-3 text-lg md:flex-row md:text-xl md:mb-4">
+        <p>Step-4 : Title Selection</p>
+        <p className="mt-2 text-lg md:text-xl md:mt-0">
           Story World : <span className="text-violet-500">{storyWorld}</span>
         </p>
       </div>
 
       {fileName && (
-        <p className="text-md md:text-lg mb-4 md:mb-6">
+        <p className="mb-4 text-md md:text-lg md:mb-6">
           File Uploaded :{" "}
           <span title="Click to see story text" className="font-medium text-blue-500 cursor-pointer" onClick={() => setShowStoryModal(true)} >
             {fileName}
@@ -388,8 +389,8 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
 
       {/* body */}
       <div>
-        <div className="flex justify-end items-center mb-3">
-          <Button className="bg-blue-500 text-white h-9" onClick={handleAddRow}>
+        <div className="flex items-center justify-end mb-3">
+          <Button className="text-white bg-blue-500 h-9" onClick={handleAddRow}>
             ADD NEW
           </Button>
         </div>
