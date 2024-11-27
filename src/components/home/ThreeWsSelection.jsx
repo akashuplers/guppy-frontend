@@ -564,6 +564,64 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
     setSecondaryWheres([]);
   };
 
+  
+  const onDragStart = (evt, itemId) => {
+    evt.dataTransfer.setData("text/plain", itemId);
+  };
+
+  const onDragEnd = (evt) => {
+    evt.currentTarget.classList.remove("dragged");
+  };
+
+  const onDragEnter = (evt) => {
+    evt.preventDefault();
+    const element = evt.currentTarget;
+    element.classList.add("dragged-over"); 
+    evt.dataTransfer.dropEffect = "move"; 
+  };
+
+  const onDragLeave = (evt) => {
+    const element = evt.currentTarget;
+    element.classList.remove("dragged-over"); 
+  };
+
+  const onDragOver = (evt) => {
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = "move";
+  };
+
+ const onDrop = (evt, target) => {
+   evt.preventDefault();
+   const data = evt.dataTransfer.getData("text/plain"); 
+   let draggedItem;
+   let sourceItems = [];
+   let setSourceItems = () => {}; 
+   if (whoItems.some(item => item.id.toString() === data)) {
+     draggedItem = whoItems.find((item) => item.id.toString() === data);
+     sourceItems = whoItems;
+     setSourceItems = setWhoItems;
+   } else if (whatItems.some(item => item.id.toString() === data)) {
+     draggedItem = whatItems.find((item) => item.id.toString() === data);
+     sourceItems = whatItems;
+     setSourceItems = setWhatItems;
+   } else if (whereItems.some(item => item.id.toString() === data)) {
+     draggedItem = whereItems.find((item) => item.id.toString() === data);
+     sourceItems = whereItems;
+     setSourceItems = setWhereItems;
+   }
+   if (draggedItem) {
+     const updatedSourceItems = sourceItems.filter((item) => item.id !== draggedItem.id);
+     setSourceItems(updatedSourceItems); 
+     if (target === "what") {
+       setWhatItems((prevItems) => [...prevItems, draggedItem]);
+     } else if (target === "where") {
+       setWhereItems((prevItems) => [...prevItems, draggedItem]);
+     } else if (target === "who") {
+       setWhoItems((prevItems) => [...prevItems, draggedItem]);
+     }
+   }
+ };
+
   return (
     <div className="px-5 pb-5 rounded-md border">
       <div className="text-lg flex flex-col md:flex-row justify-between md:text-xl mt-5 mb-3 md:mb-4">
@@ -603,10 +661,16 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
 
           <div 
             ref={scrollableWhoDivRef} 
-            className="h-[24vh] overflow-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md">
-            <ul className="space-y-0 md:space-y-1 mt-3">
+            className="h-[24vh] overflow-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md"
+            onDragLeave={onDragLeave}
+            onDragEnter={onDragEnter}
+            onDragEnd={onDragEnd}
+            onDragOver={onDragOver}
+            onDrop={(e) => onDrop(e, 'who')}>
+            <ul className="mt-3 space-y-0 md:space-y-1">
               {whoItems?.map((item, index) => (
-                <li key={item.id}>
+                <li key={item.id} draggable onDragStart={(e) => onDragStart(e, item.id)} onDragEnd={onDragEnd}  // Pass item id to onDragStart
+               >
                   <div className="flex items-center">
                     <div
                       title={item.newName ? item.newName.length>20 ? item.newName : ""
@@ -730,10 +794,16 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
           </div>
           <div 
             ref={scrollableWhatDivRef} 
-            className="h-[24vh] overflow-y-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md">
-            <ul className="space-y-0 md:space-y-1 mt-3">
+            className="h-[24vh] overflow-y-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md"
+            onDragLeave={onDragLeave}
+            onDragEnter={onDragEnter}
+            onDragEnd={onDragEnd}
+            onDragOver={onDragOver}
+            onDrop={(e) => onDrop(e, 'what')}
+            >
+            <ul className="mt-3 space-y-0 md:space-y-1">
               {whatItems?.map((item, index) => (
-                <li key={item.id}>
+                <li key={item.id} draggable onDragStart={(e) => onDragStart(e, item.id)} onDragEnd={onDragEnd}>
                   <div className="flex items-center">
                     <div
                       title={item.newName ? item.newName.length>20 ? item.newName : ""
@@ -858,10 +928,16 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
           </div>
           <div 
             ref={scrollableWhereDivRef} 
-            className="h-[24vh] overflow-y-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md">
-            <ul className="space-y-0 md:space-y-1 mt-3">
+            className="h-[24vh] overflow-y-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md"
+            onDragLeave={onDragLeave}
+            onDragEnter={onDragEnter}
+            onDragEnd={onDragEnd}
+            onDragOver={onDragOver}
+            onDrop={(e) => onDrop(e, 'where')}
+            >
+            <ul className="mt-3 space-y-0 md:space-y-1">
               {whereItems?.map((item, index) => (
-                <li key={item.id}>
+                <li key={item.id} draggable onDragStart={(e) => onDragStart(e, item.id)} onDragEnd={onDragEnd}>
                   <div className="flex items-center">
                     <div
                       title={item.newName ? item.newName.length>20 ? item.newName : ""
