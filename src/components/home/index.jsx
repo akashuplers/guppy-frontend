@@ -29,7 +29,6 @@ console.log("currentStep",currentStep);
   // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse, saveModalOpen, isAnythingChanged, handleAnythingChanged, handleSaveModalOpen } = useContext(StoryUploadApiContext);
   const { storyWorld, storyWorldLead, titles, situations, actions } = storyUploadApiResponse;
-console.log("storyUploadApiResponse, setStoryUploadApiResponse, saveModalOpen, isAnythingChanged, handleAnythingChanged, handleSaveModalOpen", saveModalOpen, isAnythingChanged, handleAnythingChanged, handleSaveModalOpen);
 
   useEffect(() => {
     if(storyId && tokenVal) {
