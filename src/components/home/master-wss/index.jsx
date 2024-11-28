@@ -11,6 +11,8 @@ import { Dropdown, Space } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 import DownloadVersionSelectPopup from '../DownloadVersionSelectPopup';
 import DeleteConfirmationDialog from '../../../utils/modals/DeleteConfirmationDialog';
+import { MultiSelect } from "react-multi-select-component";
+
 import LoadingButtonPrimary from '../../../utils/LoadingButtonPrimary';
 import ModifySelectionPopup from '../ModifySelectionPopup';
 import FooterButtons from '../FooterButtons';
@@ -37,9 +39,29 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const errorMsg = "Error In Fetching Saved Response";
   const downloadLinkRef = useRef(null);
+  const [selected, setSelected] = useState([]);
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
 
+  // const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
+  // const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
+console.log("titles",titles);
+console.log("storyUploadApiResponse",storyUploadApiResponse);
+console.log("setStoryUploadApiResponse",setStoryUploadApiResponse);
+console.log("handleAnythingChanged",handleAnythingChanged);
+
+const options = [
+  { label: "Grapes 🍇", value: "grapes" },
+  { label: "Mango 🥭", value: "mango" },
+];
+
+const filterData = [
+  {id:1, wsForm: "Who's", type:"Primary", clusterHead: "Maharaja", clusterValue: "Highness", },
+  {id:2, wsForm: "What's", type:"Secondary", clusterHead: "Tenali", clusterValue: "Brave", },
+  {id:3, wsForm: "Where's", type:"Primary", clusterHead: "Maharaja", clusterValue: "Highnesss", },
+  {id:4, wsForm: "Who's", type:"Secondary", clusterHead: "Maharaja", clusterValue: "Royal", }
+
+]
 
   useEffect(() => {
     if (!tokenVal) {
@@ -248,20 +270,20 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
       width: 60,
     },
     {
-      dataIndex: "story_file_name",
+      dataIndex: "wsForm",
       title: "W's Form"
     },
     {
-      dataIndex: "story_id",
+      dataIndex: "type",
       title: "Type"
     },
     {
-      dataIndex: "story_id",
+      dataIndex: "clusterHead",
       title: "Cluster Head"
     },
     {
-      dataIndex: "story_file_name",
-      title: "Cluster Values"
+      dataIndex: "clusterValue",
+      title: "Cluster Value"
     },
     {
       dataIndex: "action",
@@ -348,12 +370,6 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
     { id: 1, name: "Who's" },
     { id: 2, name: "What's" },
     { id: 3, name: "Where's" },
-  ]
-
-  const storyWorldsOptions = [
-    { id: 1, name: "Abcs" },
-    { id: 2, name: "lkkhf" },
-    { id: 3, name: "lopjkd" },
   ]
 
   const onReset = () => {
@@ -555,53 +571,29 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
               />
             </div>
 
-            <div className="flex-1 min-w-[200px]">
-              <label
-                htmlFor="storyWorld"
-                className="block mb-2 font-medium text-gray-900 text-md md:text-lg"
-              >
-                Select Cluster Values
-              </label>
-
-              <Field
-                as="select"
-                name="storyWorld"
-                id="storyWorld"
-                className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 sm:text-md focus:ring-primary-600 focus:border-primary-600"
-                multiple
-                onChange={(e) => {
-                  const selectedOptions = Array.from(e.target.selectedOptions);
-                  const selectedValues = selectedOptions.map(option => option.value);
-
-                  // Set the selected values in form state
-                  setFieldValue('storyWorld', selectedValues);
-
-                  // Handle 'lead_who' for multiple selected story worlds (if needed)
-                  const selectedLeads = storyWorldsOptions?.filter(option =>
-                    selectedValues.includes(option._id)
-                  ).map(option => option.lead_who);
-
-                  setFieldValue('storyWorldLead', selectedLeads);
-                  setFieldValue('storyLeadWho', selectedLeads); // Adjust this logic as required
-                }}
-              >
-                <option value="">Please Select...</option>
-                {storyWorldsOptions?.map((item, index) => (
-                  <option key={index} value={item?._id}>
-                    {item?.name}
-                  </option>
-                ))}
-              </Field>
-
-              <ErrorMessage
-                name="storyWorld"
-                component="div"
-                className="text-sm text-red-500"
-              />
-            </div>
-
-
-
+              <div className="flex-1 min-w-[200px]">
+                <label
+                  htmlFor="storyWorld"
+                  className="block mb-2 font-medium text-gray-900 text-md md:text-lg"
+                >
+                  Select Cluster Values
+                </label>
+                <div >
+                  <MultiSelect
+                    id="storyWorld"
+                    options={options}
+                    value={selected}
+                    onChange={setSelected}
+                    labelledBy="Please Select"
+                  />
+                </div>
+                {/* Error Message */}
+                <ErrorMessage
+                  name="storyWorld" // Make sure this matches the form field name
+                  component="div"
+                  className="mt-1 text-sm text-red-500" // Added margin for better spacing
+                />
+              </div>
           </Form>
 
         )}
@@ -610,7 +602,7 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
       <div className='mt-8'>
         {!isLoading &&
           <Table
-            dataSource={filteredStories}
+            dataSource={filterData}
             columns={historyColumns}
             bordered
           />
