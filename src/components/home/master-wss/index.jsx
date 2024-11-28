@@ -40,6 +40,7 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
   const errorMsg = "Error In Fetching Saved Response";
   const downloadLinkRef = useRef(null);
   const [selected, setSelected] = useState([]);
+  const [selectedRow, setSelectedRow] = useState({});
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
 
@@ -55,13 +56,15 @@ const options = [
   { label: "Mango 🥭", value: "mango" },
 ];
 
-const filterData = [
+const filteredata = [
   {id:1, wsForm: "Who's", type:"Primary", clusterHead: "Maharaja", clusterValue: "Highness", },
   {id:2, wsForm: "What's", type:"Secondary", clusterHead: "Tenali", clusterValue: "Brave", },
   {id:3, wsForm: "Where's", type:"Primary", clusterHead: "Maharaja", clusterValue: "Highnesss", },
   {id:4, wsForm: "Who's", type:"Secondary", clusterHead: "Maharaja", clusterValue: "Royal", }
 
 ]
+
+const [filterData, setFilteredData] = useState(filteredata)
 
   useEffect(() => {
     if (!tokenVal) {
@@ -272,6 +275,14 @@ const filterData = [
     {
       dataIndex: "wsForm",
       title: "W's Form"
+      //  render: (val) => {
+      //   const csvStr = getCSVsFromList(val);
+      //   return (
+      //     <p>
+      //       {csvStr ? csvStr : "NA"}
+      //     </p>
+      //   );
+      // },
     },
     {
       dataIndex: "type",
@@ -291,20 +302,28 @@ const filterData = [
       render: (val, record) => {
         return (
           <div style={{ display: 'flex', gap: '15px' }}>
-            {/* <button
-                  title="View Story"
-                  onClick={() => {
-                    localStorage.setItem("storyId", JSON.stringify(record?.story_id));
-                    navigate('/home');
-                  }}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M9 6C9 4.34315 7.65685 3 6 3H4C2.34315 3 1 4.34315 1 6V8C1 9.65685 2.34315 11 4 11H6C7.65685 11 9 9.65685 9 8V6ZM7 6C7 5.44772 6.55228 5 6 5H4C3.44772 5 3 5.44772 3 6V8C3 8.55228 3.44772 9 4 9H6C6.55228 9 7 8.55228 7 8V6Z" fill="#0F0F0F" />
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M9 16C9 14.3431 7.65685 13 6 13H4C2.34315 13 1 14.3431 1 16V18C1 19.6569 2.34315 21 4 21H6C7.65685 21 9 19.6569 9 18V16ZM7 16C7 15.4477 6.55228 15 6 15H4C3.44772 15 3 15.4477 3 16V18C3 18.5523 3.44772 19 4 19H6C6.55228 19 7 18.5523 7 18V16Z" fill="#0F0F0F" />
-                    <path d="M11 7C11 6.44772 11.4477 6 12 6H22C22.5523 6 23 6.44772 23 7C23 7.55228 22.5523 8 22 8H12C11.4477 8 11 7.55228 11 7Z" fill="#0F0F0F" />
-                    <path d="M11 17C11 16.4477 11.4477 16 12 16H22C22.5523 16 23 16.4477 23 17C23 17.5523 22.5523 18 22 18H12C11.4477 18 11 17.5523 11 17Z" fill="#0F0F0F" />
-                  </svg>
-                </button> */}
+             <button
+              title="View/Modify"
+              onClick={() => {
+                setShowModifyPopup(true);
+                setSelectedRow(record);
+              }}
+            >
+              <svg
+                className="font-bold text-gray-900 cursor-pointer hover:text-blue-600 bi bi-pencil-square"
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                <path
+                  fillRule="evenodd"
+                  d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+                />
+              </svg>
+            </button>
             <button
               title="Delete story"
               onClick={() => {
@@ -436,6 +455,21 @@ const filterData = [
     // setIsSubmitting(false);
   };
 
+  const handleAddRow = () => {
+    const newObj = {
+      id: filterData?.length + 1,
+      wsForm: [],
+      type: [],
+      clusterHead: [],
+      clusterValue: [],
+      isNewField: true
+    };
+    const curData = [newObj, ...filterData];
+    setFilteredData(curData);
+    message.success("New Row Added Successfully !");
+    handleAnythingChanged(true);
+  };
+
   return (
     // <SidebarWithHeader>
     <div>
@@ -450,6 +484,7 @@ const filterData = [
             <button
               type="submit"
               className="w-20 px-4 py-2 mt-4 text-sm font-medium text-center text-white bg-blue-600 rounded-lg md:w-24 lg:w-28 md:mt-0 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
+              onClick={handleAddRow}
             >
               Add Row
             </button>
