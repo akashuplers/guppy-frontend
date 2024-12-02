@@ -1,24 +1,21 @@
 import React, { useEffect, useState, useRef, useContext } from 'react'
-import SidebarWithHeader from '../../sidebar-with-header'
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { useFormik, Field, Form, ErrorMessage } from 'formik';
+import { Formik } from "formik";
 import { StoryUploadApiContext } from "../../../contexts/ApiContext";
 import { useNavigate } from 'react-router-dom';
 import { Table, message } from 'antd';
 import { API_BASE_PATH, API_ROUTES } from '../../../constants/api-endpoints';
 import axios from 'axios';
 import ShareModal from '../ShareModal';
-import { Dropdown, Space } from 'antd';
-import { FilterOutlined } from '@ant-design/icons';
 import DownloadVersionSelectPopup from '../DownloadVersionSelectPopup';
 import DeleteConfirmationDialog from '../../../utils/modals/DeleteConfirmationDialog';
 import { MultiSelect } from "react-multi-select-component";
-
-import LoadingButtonPrimary from '../../../utils/LoadingButtonPrimary';
 import ModifySelectionPopup from '../ModifySelectionPopup';
 import FooterButtons from '../FooterButtons';
 
 const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = () => { } }) => {
   const navigate = useNavigate();
+  // const { resetForm } = useFormikContext();
   const [isLoading, setIsLoading] = useState(false);
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [stories, setStories] = useState([]);
@@ -35,43 +32,43 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
   const [showDeleteStoryModal, setShowDeleteStoryModal] = useState(false);
   const [selectedStoryId, setSelectedStoryId] = useState('');
   const [selectedVersionId, setSelectedVersionId] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // const [isSubmitting, setIsSubmitting] = useState(false);
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const errorMsg = "Error In Fetching Saved Response";
   const downloadLinkRef = useRef(null);
   const [selected, setSelected] = useState([]);
   const [selectedRow, setSelectedRow] = useState({});
+  const formik = useFormik({
+    initialValues: {
+      ws: "",
+      clusterHead: "",
+      type: "",
+      clusterValue: [],
+    },
+    onSubmit: () => {
+      console.log("submit");
+    },
+  });
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
-  const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
+  const { token, titles, updatedTitles } = storyUploadApiResponse;
+  const [whos, setWhos] = useState();
+  const [whats, setWhats] = useState();
+  const [wheres, setWheres] = useState();
+  const [filteredOptions, setFilteredOption] = useState();
 
-  // const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
-  // const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
-console.log("titles",titles);
-console.log("storyUploadApiResponse",storyUploadApiResponse);
-console.log("setStoryUploadApiResponse",setStoryUploadApiResponse);
-console.log("handleAnythingChanged",handleAnythingChanged);
+  const options = (filteredOptions || []).map(item => ({
+    label: item.name,
+    value: item.id
+  }));
 
-const options = [
-  { label: "Grapes 🍇", value: "grapes" },
-  { label: "Mango 🥭", value: "mango" },
-];
-
-const filteredata = [
-  {id:1, wsForm: "Who's", type:"Primary", clusterHead: "Maharaja", clusterValue: "Highness", },
-  {id:2, wsForm: "What's", type:"Secondary", clusterHead: "Tenali", clusterValue: "Brave", },
-  {id:3, wsForm: "Where's", type:"Primary", clusterHead: "Maharaja", clusterValue: "Highnesss", },
-  {id:4, wsForm: "Who's", type:"Secondary", clusterHead: "Maharaja", clusterValue: "Royal", }
-
-]
-
-const [filterData, setFilteredData] = useState(filteredata)
+  const [filterData, setFilteredData] = useState([])
 
   useEffect(() => {
     if (!tokenVal) {
       navigate('/');
     } else {
-      fetchStories();
-      fetchUsers();
+      // fetchStories();
+      // fetchUsers();
     }
   }, []);
 
@@ -94,44 +91,6 @@ const [filterData, setFilteredData] = useState(filteredata)
       handleSharedUsers();
     }
   }, [shareIds, updatedShareIds]);
-
-  const onClick = ({ key }) => {
-    if (key === "all")
-      setFilteredStories(stories);
-    else
-      setFilteredStories(stories.filter(story => story.story_world === key));
-  };
-
-  const getItems = () => {
-    const uniqueStories = Array.from(new Set(stories.map(story => story.story_world)))
-      .map(storyWorld => ({
-        label: storyWorld,
-        key: storyWorld,
-      }));
-    uniqueStories.push({ label: "all", key: "all" });
-
-    return uniqueStories;
-  };
-
-  const items = getItems();
-
-  const fetchUsers = async () => {
-    try {
-      const apiUrl = API_BASE_PATH + API_ROUTES.LIST_USERS;
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tokenVal}`,
-        },
-      };
-      const output = await axios.get(apiUrl, config);
-      setUsers(output.data?.data);
-      setTempUsers(output.data?.data);
-    } catch (error) {
-      console.log("error: ", error);
-      message.error(errorMsg);
-    }
-  }
 
   const deleteStoryById = async () => {
     try {
@@ -162,9 +121,8 @@ const [filterData, setFilteredData] = useState(filteredata)
     setTitleSelectionItems(updatedTitles);
   }, []);
 
-
   const getUpdatedTitles = (newTitles) => {
-    return newTitles.map(title => {
+    return newTitles?.map(title => {
       return {
         id: title.id,
         title: title.Title,
@@ -176,10 +134,8 @@ const [filterData, setFilteredData] = useState(filteredata)
         secondaryWheres: title.Where_Secondary,
         ...(title.comment && { comment: title.comment })
       }
-
     })
   }
-
 
   const fetchStories = async () => {
     setIsLoading(true);
@@ -187,7 +143,6 @@ const [filterData, setFilteredData] = useState(filteredata)
     try {
       // api call
       const apiUrl = API_BASE_PATH + API_ROUTES.LIST_STORIES_UPLOAD_BY_USER;
-
       const config = {
         headers: {
           Authorization: `Bearer ${tokenVal}`,
@@ -227,7 +182,6 @@ const [filterData, setFilteredData] = useState(filteredata)
   }
 
   const handleVersionSelect = (versionId) => {
-
     if (versionId) {
       setSelectedVersionId(versionId)
     } else {
@@ -246,25 +200,29 @@ const [filterData, setFilteredData] = useState(filteredata)
     }
   };
 
-  const formatDate = (updatedAt) => {
-    const dateObject = new Date(updatedAt);
-
-    // Format date
-    const optionsDate = { month: 'short', day: 'numeric', year: 'numeric' };
-    const formattedDate = dateObject.toLocaleDateString('en-US', optionsDate);
-
-    // Format time
-    const optionsTime = { hour: '2-digit', minute: '2-digit', hour12: true };
-    const formattedTime = dateObject.toLocaleTimeString('en-US', optionsTime);
-
-    return { date: formattedDate, time: formattedTime };
+  const chipStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+    borderRadius: '16px',
+    padding: '5px 10px',
+    fontSize: '14px',
+    color: '#333',
+    border: '1px solid #ccc',
   };
 
-  const handleCloseShareModal = () => {
-    setShareModalOpen(false);
-    setShareIds([]);  // Reset shareIds when modal is closed
-    setUpdatedShareIds([]);
-  }
+  const cancelButtonStyle = {
+    background: 'transparent',
+    border: 'none',
+    color: '#999',
+    cursor: 'pointer',
+    marginLeft: '8px',
+    fontSize: '14px',
+  };
+
+  const handleRemoveChip = (chipValue) => {
+    console.log(`Removing chip: ${chipValue}`);
+  };
 
   const historyColumns = [
     {
@@ -273,16 +231,8 @@ const [filterData, setFilteredData] = useState(filteredata)
       width: 60,
     },
     {
-      dataIndex: "wsForm",
+      dataIndex: "ws",
       title: "W's Form"
-      //  render: (val) => {
-      //   const csvStr = getCSVsFromList(val);
-      //   return (
-      //     <p>
-      //       {csvStr ? csvStr : "NA"}
-      //     </p>
-      //   );
-      // },
     },
     {
       dataIndex: "type",
@@ -294,7 +244,31 @@ const [filterData, setFilteredData] = useState(filteredata)
     },
     {
       dataIndex: "clusterValue",
-      title: "Cluster Value"
+      title: "Cluster Value",
+      render: () => {
+        // debugger
+        const valuesArray = Array?.isArray(selected) ? selected : selected?.split(", ") || [];
+        return (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+            {valuesArray.length > 0 ? (
+              valuesArray.map((value, index) => (
+                <div key={index} style={chipStyle}>
+                  <span>{value?.label}</span>
+                  <button
+                    style={cancelButtonStyle}
+                    onClick={() => handleRemoveChip(value?.value)} // handleRemoveChip should be defined to remove a chip
+                    title="Remove"
+                  >
+                    ✖
+                  </button>
+                </div>
+              ))
+            ) : (
+              "NA" // If no values available, show "NA"
+            )}
+          </div>
+        );
+      },
     },
     {
       dataIndex: "action",
@@ -302,7 +276,7 @@ const [filterData, setFilteredData] = useState(filteredata)
       render: (val, record) => {
         return (
           <div style={{ display: 'flex', gap: '15px' }}>
-             <button
+            <button
               title="View/Modify"
               onClick={() => {
                 setShowModifyPopup(true);
@@ -391,13 +365,18 @@ const [filterData, setFilteredData] = useState(filteredata)
     { id: 3, name: "Where's" },
   ]
 
+  const type = [
+    { id: 1, name: "Primary" },
+    { id: 2, name: "Secondary" }
+  ]
+
   const onReset = () => {
     setTitleSelectionItems(titles);
     message.success("Reset Successfully !");
     handleAnythingChanged(true);
   };
   const onSave = async () => {
-    setIsSubmitting(true);
+    // setIsSubmitting(true);
     let alertKey;
     try {
       // api call
@@ -452,7 +431,6 @@ const [filterData, setFilteredData] = useState(filteredata)
         }
       }
     }
-    // setIsSubmitting(false);
   };
 
   const handleAddRow = () => {
@@ -470,187 +448,231 @@ const [filterData, setFilteredData] = useState(filteredata)
     handleAnythingChanged(true);
   };
 
+  const handleChange = (e, name) => {
+    debugger
+    // const selectedOption = storyWorldOptions?.find(option => option?._id === e?.target?.value);
+    // console.log("selectedOption", selectedOption);
+
+    if (e?.target?.value === "Who's") {
+      setWhos(storyUploadApiResponse?.updatedWhos);
+      setFilteredOption(storyUploadApiResponse?.updatedWhos);
+    } else if (e?.target?.value === "What's") {
+      setWhats(storyUploadApiResponse?.updatedWhats);
+      setFilteredOption(storyUploadApiResponse?.updatedWhats);
+    } else if (e?.target?.value === "Where") {
+      setWheres(storyUploadApiResponse?.updatedWheres);
+      setFilteredOption(storyUploadApiResponse?.updatedWheres);
+    }
+
+    if (name === "ws") {
+      formik.setFieldValue('ws', e.target.value);
+    } else if (name === "clusterHead") {
+      formik.setFieldValue('clusterHead', e?.target?.value);
+      const filteredArray = filteredOptions?.filter(item => item.name !== e.target.value);
+      setFilteredOption(filteredArray);
+    } else if (name === "type") {
+      formik.setFieldValue('type', e.target.value);
+    } else {
+      const selectedValues = e?.map(option => ({ label: option.label, value: option.value }));
+      setSelected(selectedValues);
+      formik.setFieldValue('clusterValue', selectedValues);
+    }
+  };
+  const { values, setFieldValue } = formik;
+
+  const handleSaveCluster = (values, resetForm) => {
+    debugger
+    if (formik.values.ws && formik.values.type && formik.values.clusterHead || Array.isArray(values.clusterValue) && values.clusterValue.length > 0) {
+      const newRow = {
+        id: filterData?.length + 1,
+        ws: formik.values.ws,
+        type: formik.values.type,
+        clusterHead: formik.values.clusterHead,
+        clusterValue: formik.values.clusterValue.map((val) => val.label).join(", "),
+      };
+      setFilteredData((prevArray) => [...prevArray, newRow]);
+
+      // Reset form after adding the data
+      formik.resetForm(formik.values);
+      setWhats([]);
+      setWhos([]);
+      setWheres([]);
+      setFilteredOption([])
+    }
+  };
+  console.log("formik.values", formik.values);
+  console.log("ssssssssss", filterData);
+
+
   return (
-    // <SidebarWithHeader>
     <div>
-      {/* head */}
       <div className="px-5 pb-5 border rounded-md">
-        <div className="flex flex-col justify-between mt-5 mb-3 text-lg md:flex-row md:text-xl md:mb-4">
-          <p>Step-3 : Master W's</p>
-          {/* <p className="mt-2 text-lg md:text-xl md:mt-0">
-          Story World : <span className="text-violet-500">{storyWorld}</span>
-        </p> */}
-          <div className="flex space-x-4">
-            <button
-              type="submit"
-              className="w-20 px-4 py-2 mt-4 text-sm font-medium text-center text-white bg-blue-600 rounded-lg md:w-24 lg:w-28 md:mt-0 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
-              onClick={handleAddRow}
-            >
-              Add Row
-            </button>
-
-            <button
-              type="submit"
-              className="w-20 px-4 py-2 mt-4 text-sm font-medium text-center text-white bg-blue-600 rounded-lg md:w-24 lg:w-28 md:mt-0 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
-            >
-              Save Cluster
-            </button>
-            <button
-              type="submit"
-              className="w-20 px-4 py-2 mt-4 text-sm font-medium text-center text-white bg-blue-600 rounded-lg md:w-24 lg:w-28 md:mt-0 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
-            >
-              Save Ws
-            </button>
-          </div>
-        </div>
         <Formik
-        initialValues={{
-          name: "",
-          storyWorldLead: "",
-        }}
-        // validationSchema={validationSchema}
-        onSubmit={handleSubmit}
-      >
-        {({ isSubmitting, setFieldValue }) => (
-          <Form className="flex flex-wrap gap-2 md:flex-row md:gap-5">
-            <div className="flex-1 min-w-[200px]">
-              <label
-                htmlFor="storyWorld"
-                className="block mb-2 font-medium text-gray-900 text-md md:text-lg"
-              >
-                Select Ws
-              </label>
-              <Field
-                as="select"
-                name="storyWorld"
-                id="storyWorld"
-                className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 sm:text-md focus:ring-primary-600 focus:border-primary-600"
-                onChange={(e) => {
-                  const selectedOption = storyWorldOptions?.find(option => option._id === e.target.value);
-                  setFieldValue('storyWorld', e.target.value);
-                  setFieldValue('storyWorldLead', selectedOption ? selectedOption.lead_who : '');
-                  setFieldValue('storyLeadWho', selectedOption ? selectedOption.lead_who : '');
-                }}
-              >
-                <option value="">Please Select...</option>
-                {storyWorldOptions?.map((item, index) => (
-                  <option key={index} value={item?._id}>{item?.name}</option>
-                ))}
-              </Field>
-              <ErrorMessage
-                name="storyWorld"
-                component="div"
-                className="text-sm text-red-500"
-              />
-            </div>
+          initialValues={{
+            ws: "",
+            clusterHead: "",
+            type: "",
+            clusterValue: [],
+          }}
+          onSubmit={formik.handleSubmit}
+        >
+          {({ values, resetForm }) => (
 
-            <div className="flex-1 min-w-[200px]">
-              <label
-                htmlFor="storyWorld"
-                className="block mb-2 font-medium text-gray-900 text-md md:text-lg"
-              >
-                Select Cluster Head
-              </label>
-              <Field
-                as="select"
-                name="storyWorld"
-                id="storyWorld"
-                className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 sm:text-md focus:ring-primary-600 focus:border-primary-600"
-                onChange={(e) => {
-                  const selectedOption = storyWorldOptions?.find(option => option._id === e.target.value);
-                  setFieldValue('storyWorld', e.target.value);
-                  setFieldValue('storyWorldLead', selectedOption ? selectedOption.lead_who : '');
-                  setFieldValue('storyLeadWho', selectedOption ? selectedOption.lead_who : '');
-                }}
-              >
-                <option value="">Please Select...</option>
-                {storyWorldOptions?.map((item, index) => (
-                  <option key={index} value={item?._id}>{item?.name}</option>
-                ))}
-              </Field>
-              <ErrorMessage
-                name="storyWorld"
-                component="div"
-                className="text-sm text-red-500"
-              />
-            </div>
+            <Form>
+              {console.log("values", values)}
+              {/* Step and Buttons */}
+              <div className="flex flex-col justify-between mt-5 mb-3 text-lg md:flex-row md:text-xl md:mb-4">
+                <p>Step-3 : Master W's</p>
+                <div className="flex space-x-4">
+                  <button
+                    type="button"
+                    className="w-20 px-4 py-2 mt-4 text-sm font-medium text-center text-white bg-blue-600 rounded-lg md:w-24 lg:w-28 md:mt-0 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
+                    onClick={handleAddRow}
+                  >
+                    Add Row
+                  </button>
 
-            <div className="flex-1 min-w-[200px]">
-              <label
-                htmlFor="storyWorld"
-                className="block mb-2 font-medium text-gray-900 text-md md:text-lg"
-              >
-                Select Type
-              </label>
-              <Field
-                as="select"
-                name="storyWorld"
-                id="storyWorld"
-                className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 sm:text-md focus:ring-primary-600 focus:border-primary-600"
-                onChange={(e) => {
-                  const selectedOption = storyWorldOptions?.find(option => option._id === e.target.value);
-                  setFieldValue('storyWorld', e.target.value);
-                  setFieldValue('storyWorldLead', selectedOption ? selectedOption.lead_who : '');
-                  setFieldValue('storyLeadWho', selectedOption ? selectedOption.lead_who : '');
-                }}
-              >
-                <option value="">Please Select...</option>
-                {storyWorldOptions?.map((item, index) => (
-                  <option key={index} value={item?._id}>{item?.name}</option>
-                ))}
-              </Field>
-              <ErrorMessage
-                name="storyWorld"
-                component="div"
-                className="text-sm text-red-500"
-              />
-            </div>
+                  <button
+                    type="submit"
+                    className="w-20 px-4 py-2 mt-4 text-sm font-medium text-center text-white bg-blue-600 rounded-lg md:w-24 lg:w-28 md:mt-0 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
+                    onClick={() => handleSaveCluster(values, resetForm)}
+                  >
+                    Save Cluster
+                  </button>
 
-              <div className="flex-1 min-w-[200px]">
-                <label
-                  htmlFor="storyWorld"
-                  className="block mb-2 font-medium text-gray-900 text-md md:text-lg"
-                >
-                  Select Cluster Values
-                </label>
-                <div >
-                  <MultiSelect
-                    id="storyWorld"
-                    options={options}
-                    value={selected}
-                    onChange={setSelected}
-                    labelledBy="Please Select"
+                  <button
+                    type="button"
+                    className="w-20 px-4 py-2 mt-4 text-sm font-medium text-center text-white bg-blue-600 rounded-lg md:w-24 lg:w-28 md:mt-0 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
+                  >
+                    Save Ws
+                  </button>
+                </div>
+              </div>
+
+              {/* Select Inputs */}
+              <div className="flex flex-wrap mt-4 space-x-4">
+                {/* Select Ws */}
+                <div className="flex-1 min-w-[200px]">
+                  <label htmlFor="storyWorld" className="block mb-2 text-sm font-medium text-gray-900 md:text-sm">
+                    Select Ws
+                  </label>
+                  <Field
+                    as="select"
+                    name="ws"
+                    id="ws"
+                    className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 sm:text-md focus:ring-primary-600 focus:border-primary-600"
+                    onChange={(e) => { handleChange(e, "ws") }}
+                    value={formik.values.ws} // Set Formik value here
+
+                  >
+                    <option value="">Please Select...</option>
+                    {storyWorldOptions?.map((item, index) => (
+                      <option key={index} value={item?._id}>{item?.name}</option>
+                    ))}
+                  </Field>
+                  <ErrorMessage
+                    name="ws"
+                    component="div"
+                    className="text-sm text-red-500"
                   />
                 </div>
-                {/* Error Message */}
-                <ErrorMessage
-                  name="storyWorld" // Make sure this matches the form field name
-                  component="div"
-                  className="mt-1 text-sm text-red-500" // Added margin for better spacing
-                />
+
+                {/* Select Cluster Head */}
+                <div className="flex-1 min-w-[200px]">
+                  <label htmlFor="clusterHead" className="block mb-2 text-sm font-medium text-gray-900 md:text-sm">
+                    Select Cluster Head
+                  </label>
+                  <Field
+                    as="select"
+                    name="clusterHead"
+                    id="clusterHead"
+                    className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 sm:text-md focus:ring-primary-600 focus:border-primary-600"
+                    onChange={(e) => { handleChange(e, "clusterHead") }}
+                    value={formik.values.clusterHead} // Set Formik value here
+
+                  >
+                    <option value="">Please Select...</option>
+                    {whos && whos.map((item, index) => (
+                      <option key={index} value={item?._id}>{item?.name}</option>
+                    ))}
+                    {whats && whats.map((item, index) => (
+                      <option key={index} value={item?._id}>{item?.name}</option>
+                    ))}
+                    {wheres && wheres.map((item, index) => (
+                      <option key={index} value={item?._id}>{item?.name}</option>
+                    ))}
+                  </Field>
+                  <ErrorMessage
+                    name="clusterHead"
+                    component="div"
+                    className="text-sm text-red-500"
+                  />
+                </div>
+
+                {/* Select Type */}
+                <div className="flex-1 min-w-[200px]">
+                  <label htmlFor="type" className="block mb-2 text-sm font-medium text-gray-900 md:text-sm">
+                    Select Type
+                  </label>
+                  <Field
+                    as="select"
+                    name="type"
+                    id="type"
+                    className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 sm:text-md focus:ring-primary-600 focus:border-primary-600"
+                    onChange={(e) => { handleChange(e, "type"); }}
+                    value={formik.values.type} // Set Formik value here
+                  >
+                    <option value="">Please Select...</option>
+                    {type?.map((item, index) => (
+                      <option key={index} value={item?._id}>{item?.name}</option>
+                    ))}
+                  </Field>
+                  <ErrorMessage
+                    name="type"
+                    component="div"
+                    className="text-sm text-red-500"
+                  />
+                </div>
+
+                {/* Select Cluster Values */}
+                <div className="flex-1 min-w-[200px]">
+                  <label htmlFor="clusterValue" className="block mb-2 text-sm font-medium text-gray-900 md:text-sm">
+                    Select Cluster Values
+                  </label>
+                  <Field name="clusterValue">
+                    {({ field, form }) => (
+                      <MultiSelect
+                        id="clusterValue"
+                        options={options}
+                        onChange={(e) => handleChange(e, "clusterValue")}
+                        value={formik.values.clusterValue} // Set Formik value here
+                        labelledBy="Please Select"
+                      />
+                    )}
+                  </Field>
+                  <ErrorMessage
+                    name="clusterValue"
+                    component="div"
+                    className="mt-1 text-sm text-red-500"
+                  />
+                </div>
               </div>
-          </Form>
+            </Form>
+          )}
+        </Formik>
 
-        )}
-      </Formik>
-      {/* body */}
-      <div className='mt-8'>
-        {!isLoading &&
-          <Table
-            dataSource={filterData}
-            columns={historyColumns}
-            bordered
-          />
-        }
+        <div className='mt-8'>
+          {!isLoading &&
+            <Table
+              dataSource={filterData}
+              columns={historyColumns}
+              bordered
+            />
+          }
+        </div>
       </div>
-      </div>
-
-
-
-
-
       <a ref={downloadLinkRef} style={{ display: 'none' }} download></a>
-      <ShareModal open={isShareModalOpen} storyDetails={storyDetails} users={tempUsers} onClose={() => setShareModalOpen(false)} updateUsers={(ids) => setUpdatedShareIds(ids)} />
+      {/* <ShareModal open={isShareModalOpen} storyDetails={storyDetails} users={tempUsers} onClose={() => setShareModalOpen(false)} updateUsers={(ids) => setUpdatedShareIds(ids)} />
       {showVersionModal && <DownloadVersionSelectPopup open={showVersionModal} story_id={selectedStoryId} handleVersionSelect={handleVersionSelect} handleDownload={handleVersionDownload} onClose={() => setShowVersionModal(false)} />}
       {showDeleteStoryModal &&
         <DeleteConfirmationDialog
@@ -658,8 +680,8 @@ const [filterData, setFilteredData] = useState(filteredata)
           onClose={() => setShowDeleteStoryModal(false)}
           onConfirm={() => deleteStoryById()}
         />
-      }
-      {showModifyPopup && (
+      } */}
+      {/* {showModifyPopup && (
         <ModifySelectionPopup
           open={showModifyPopup}
           // modifyItemObj={selectedRow}
@@ -667,18 +689,15 @@ const [filterData, setFilteredData] = useState(filteredata)
           // onModify={onModify}
           type="title"
         />
-      )}
-      <FooterButtons
+      )} */}
+      {/* <FooterButtons
         onDiscard={onDiscard}
         onReset={onReset}
         onSubmit={onSave}
         saveType="Titles"
       // isSubmitting={isSubmitting}
-      />
+      /> */}
     </div>
-
-
-    // </SidebarWithHeader>
   )
 }
 
