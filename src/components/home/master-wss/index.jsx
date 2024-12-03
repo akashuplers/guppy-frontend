@@ -12,13 +12,16 @@ import DeleteConfirmationDialog from '../../../utils/modals/DeleteConfirmationDi
 import { MultiSelect } from "react-multi-select-component";
 import ModifySelectionPopup from '../ModifySelectionPopup';
 import FooterButtons from '../FooterButtons';
+import ModifyMasterWsPopup from '../../ModifyMasterWsPopUp';
+import DownloadCSVFile from '../../DownloadCsv';
 
 const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = () => { } }) => {
   const navigate = useNavigate();
   // const { resetForm } = useFormikContext();
   const [isLoading, setIsLoading] = useState(false);
   const [showModifyPopup, setShowModifyPopup] = useState(false);
-  const [stories, setStories] = useState([]);
+  const [dialogPopup, setDialogPopup] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null); const [stories, setStories] = useState([]);
   const [filteredStories, setFilteredStories] = useState([]);
   const [isShareModalOpen, setShareModalOpen] = useState(false);
   const [storyDetails, setStoryDetails] = useState(null);
@@ -37,7 +40,7 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
   const errorMsg = "Error In Fetching Saved Response";
   const downloadLinkRef = useRef(null);
   const [selected, setSelected] = useState([]);
-  const [selectedRow, setSelectedRow] = useState({});
+  // const [selectedRow, setSelectedRow] = useState({});
   const formik = useFormik({
     initialValues: {
       ws: "",
@@ -62,6 +65,13 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
   }));
 
   const [filterData, setFilteredData] = useState([])
+console.log("filterDatafilterData", filterData);
+
+
+  const handleModify = (updatedData) => {
+    console.log("Updated Data: ", updatedData);
+    // Handle data update (e.g., save to the server or update state)
+  };
 
   useEffect(() => {
     if (!tokenVal) {
@@ -91,6 +101,12 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
       handleSharedUsers();
     }
   }, [shareIds, updatedShareIds]);
+  const csvData = [
+    ["firstname", "lastname", "email"],
+    ["Ahmed", "Tomi", "ah@smthing.co.com"],
+    ["Raed", "Labes", "rl@smthing.co.com"],
+    ["Yezzi", "Min l3b", "ymin@cocococo.com"]
+];
 
   const deleteStoryById = async () => {
     try {
@@ -221,8 +237,10 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
   };
 
   const handleRemoveChip = (chipValue) => {
-    console.log(`Removing chip: ${chipValue}`);
+    debugger
+    
   };
+  console.log("ssssssss", selected);
 
   const historyColumns = [
     {
@@ -245,18 +263,17 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
     {
       dataIndex: "clusterValue",
       title: "Cluster Value",
-      render: () => {
-        // debugger
-        const valuesArray = Array?.isArray(selected) ? selected : selected?.split(", ") || [];
+      render: (clusterValue, record, index) => {
+        const valuesArray = clusterValue?.split(", ") || [];
         return (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
             {valuesArray.length > 0 ? (
-              valuesArray.map((value, index) => (
-                <div key={index} style={chipStyle}>
-                  <span>{value?.label}</span>
+              valuesArray.map((value, idx) => (
+                <div key={idx} style={chipStyle}>
+                  <span>{value}</span>
                   <button
                     style={cancelButtonStyle}
-                    onClick={() => handleRemoveChip(value?.value)} // handleRemoveChip should be defined to remove a chip
+                    onClick={() => handleRemoveChip(value, index)} // handleRemoveChip should be defined to remove a chip
                     title="Remove"
                   >
                     ✖
@@ -280,6 +297,7 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
               title="View/Modify"
               onClick={() => {
                 setShowModifyPopup(true);
+                setDialogPopup(true);
                 setSelectedRow(record);
               }}
             >
@@ -482,7 +500,7 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
 
   const handleSaveCluster = (values, resetForm) => {
     debugger
-    if (formik.values.ws && formik.values.type && formik.values.clusterHead || Array.isArray(values.clusterValue) && values.clusterValue.length > 0) {
+    if (formik.values.ws && formik.values.type && formik.values.clusterHead && Array.isArray(formik.values.clusterValue) && formik.values.clusterValue.length > 0) {
       const newRow = {
         id: filterData?.length + 1,
         ws: formik.values.ws,
@@ -524,14 +542,25 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
               <div className="flex flex-col justify-between mt-5 mb-3 text-lg md:flex-row md:text-xl md:mb-4">
                 <p>Step-3 : Master W's</p>
                 <div className="flex space-x-4">
-                  <button
+                  {/* <button
                     type="button"
                     className="w-20 px-4 py-2 mt-4 text-sm font-medium text-center text-white bg-blue-600 rounded-lg md:w-24 lg:w-28 md:mt-0 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
                     onClick={handleAddRow}
                   >
                     Add Row
+                  </button> */}
+                  <button
+                    type="submit"
+                    className="w-20 px-4 py-2 mt-4 text-sm font-medium text-center text-white bg-blue-600 rounded-lg md:w-24 lg:w-28 md:mt-0 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
+                    onClick={() => handleSaveCluster(values, resetForm)}
+                  >
+                    <DownloadCSVFile
+                    // csvData={csvData}
+                    // buttonTitle={"Download"} 
+                    
+                    />
+                    
                   </button>
-
                   <button
                     type="submit"
                     className="w-20 px-4 py-2 mt-4 text-sm font-medium text-center text-white bg-blue-600 rounded-lg md:w-24 lg:w-28 md:mt-0 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
@@ -672,7 +701,7 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
         </div>
       </div>
       <a ref={downloadLinkRef} style={{ display: 'none' }} download></a>
-      {/* <ShareModal open={isShareModalOpen} storyDetails={storyDetails} users={tempUsers} onClose={() => setShareModalOpen(false)} updateUsers={(ids) => setUpdatedShareIds(ids)} />
+      <ShareModal open={isShareModalOpen} storyDetails={storyDetails} users={tempUsers} onClose={() => setShareModalOpen(false)} updateUsers={(ids) => setUpdatedShareIds(ids)} />
       {showVersionModal && <DownloadVersionSelectPopup open={showVersionModal} story_id={selectedStoryId} handleVersionSelect={handleVersionSelect} handleDownload={handleVersionDownload} onClose={() => setShowVersionModal(false)} />}
       {showDeleteStoryModal &&
         <DeleteConfirmationDialog
@@ -680,23 +709,36 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
           onClose={() => setShowDeleteStoryModal(false)}
           onConfirm={() => deleteStoryById()}
         />
-      } */}
+      }
       {/* {showModifyPopup && (
         <ModifySelectionPopup
           open={showModifyPopup}
-          // modifyItemObj={selectedRow}
+          modifyItemObj={selectedRow}
           onClose={() => setShowModifyPopup(false)}
           // onModify={onModify}
           type="title"
         />
       )} */}
-      {/* <FooterButtons
+      {dialogPopup && (
+        <ModifyMasterWsPopup
+          open={dialogPopup}
+          modifyItemObj={selectedRow} // Pass selected row data for editing
+          onClose={() => setDialogPopup(false)}
+          storyWorldOptions={storyWorldOptions}
+          filteredOptions={filteredOptions}
+          types={type}
+          clusterHead={whos ? whats : wheres}
+          onModify={handleModify}
+          type="title" // Modify this as per the field you want to edit
+        />
+      )}
+      <FooterButtons
         onDiscard={onDiscard}
         onReset={onReset}
         onSubmit={onSave}
         saveType="Titles"
       // isSubmitting={isSubmitting}
-      /> */}
+      />
     </div>
   )
 }

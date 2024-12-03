@@ -11,6 +11,7 @@
     "bootstrap-icons": "^1.11.3",
     "formik": "^2.4.5",
     "react": "^18.2.0",
+    "react-csv": "^2.2.2",
     "react-dom": "^18.2.0",
     "react-multi-select-component": "^4.3.4",
     "react-router-dom": "^6.22.3",
