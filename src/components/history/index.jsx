@@ -296,6 +296,7 @@ const UserHistory = () => {
         <div>
             {/* head */}
             <p className="text-xl md:text-3xl mt-1 mb-2 md:mb-0 font-medium">User History</p>
+          
             {/* body */}
             <div className='mt-8'>
               {!isLoading &&
@@ -322,3 +323,4 @@ const UserHistory = () => {
 }
 
 export default UserHistory
+
