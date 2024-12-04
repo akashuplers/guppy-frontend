@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import Footer from "../../utils/Footer";
+import { useLocation } from 'react-router-dom';
 import SidebarWithHeader from "../sidebar-with-header";
 import Stepper from "./Stepper";
 import StoryUpload from "./StoryUpload";
@@ -15,7 +16,11 @@ import axios from "axios";
 import SaveConfirmationDialog from "../../utils/modals/SaveConfirmationModal";
 
 const Home = () => {
+  const location = useLocation();
+  console.log("location",location);
+  
   const [currentStep, setCurrentStep] = useState(0);
+  const [prevStep, setPrevStep] = useState(false);
   const [isSaveChanges, setIsSaveChanges] = useState(false);
   const [isSaveSuccess, setIsSaveSuccess] = useState(false);
   const [activeStep, setActiveStep] = useState(null);
@@ -23,10 +28,15 @@ const Home = () => {
   const errorMsg = "Error In Fetching Saved Response";
   const storyId = JSON.parse(localStorage.getItem("storyId"));
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
+console.log("currentStep",currentStep);
 
   // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse, saveModalOpen, isAnythingChanged, handleAnythingChanged, handleSaveModalOpen } = useContext(StoryUploadApiContext);
   const { storyWorld, storyWorldLead, titles, situations, actions } = storyUploadApiResponse;
+console.log("saveModalOpen",saveModalOpen);
+console.log("StoryUploadApiContext",StoryUploadApiContext);
+
+console.log("isSaveChanges",isSaveChanges);
 
   useEffect(() => {
     if(storyId && tokenVal) {
@@ -42,17 +52,18 @@ const Home = () => {
       fetchStoryData(storyId, tokenVal);
     }
   }, [currentStep])
+console.log("isSaveSuccess",isSaveSuccess);
 
   useEffect(() => {
     if(isSaveSuccess){
       if(activeStep === "next")
         setCurrentStep(prevStep => prevStep + 1);
-      else if(activeStep == "prev")
+      else if(activeStep === "prev")
         setCurrentStep(prevStep => prevStep - 1);
       setIsSaveSuccess(false);
       setActiveStep(null);
     }
-  },[isSaveSuccess])
+  },[])
 
   const getUpdatedJsonWs = (arr) => {
     if(arr && arr.length>0) {
@@ -171,19 +182,22 @@ const Home = () => {
         };
 
         setStoryUploadApiResponse(saveObj); // save fetched data in context
-
-        if(respObj?.titles?.length === 0) {
-          setCurrentStep(1);
-        } else if(respObj?.titles?.length>0 && respObj?.sitautions?.length===0) {
-          setCurrentStep(2);
-        } else if(respObj?.sitautions?.length>0 && respObj?.actions?.length===0) {
-          setCurrentStep(3);
-        } else if(respObj?.actions?.length>0) {
-          setCurrentStep(1);
+        if(prevStep == false){
+          if(respObj?.titles?.length === 0) {
+              setCurrentStep(1);
+            } else if(respObj?.titles?.length>0 && respObj?.sitautions?.length===0) {
+              setCurrentStep(2);
+            } else if(respObj?.sitautions?.length>0 && respObj?.actions?.length===0) {
+              setCurrentStep(3);
+            } else if(respObj?.actions?.length>0) {
+              setCurrentStep(1);
+            } else {
+            message.error(errorMsg);
+          }
         }
-      } else {
-        message.error(errorMsg);
-      }
+        
+        }
+        
     } catch (error) {
       console.log("error: ", error);
       message.error(errorMsg);
@@ -203,16 +217,19 @@ const Home = () => {
   }, [currentStep]);
 
   const handlePreviousStep = () => {
+    debugger
     if(isAnythingChanged){
       setActiveStep("prev");
       handleSaveModalOpen(true);
       setIsSaveChanges(false);
     }else {
+      setPrevStep(true)
       setCurrentStep(prevStep => prevStep - 1);
     }
   }
 
   const handleNextStep = () => {
+    debugger
     if(isAnythingChanged){
       setActiveStep("next");
       handleSaveModalOpen(true);
@@ -239,6 +256,10 @@ const Home = () => {
     setIsSaveChanges(true); 
     handleSaveModalOpen(false); 
     handleAnythingChanged(false);
+    // if(activeStep === "next") 
+    //   setCurrentStep(prevStep => prevStep + 1); 
+    // else if(activeStep === "prev") 
+    //   setCurrentStep(prevStep => prevStep - 1); 
   }
 
   const handleSaveModalClose = () => {
@@ -254,12 +275,12 @@ const Home = () => {
     <SidebarWithHeader>
       <div className={`flex flex-col sm:min-h-screen`}>
         {/* head */}
-        <p className="text-xl md:text-3xl mt-1 mb-2 md:mb-0 font-medium">Guppy Stories</p>
+        <p className="mt-1 mb-2 text-xl font-medium md:text-3xl md:mb-0">Guppy Stories</p>
 
         {/* body */}
 
         {/* stepper */}
-        <div className="mt-3 md:mt-8 mb-5 bg-gray-50 p-3 border rounded-md">
+        <div className="p-3 mt-3 mb-5 border rounded-md md:mt-8 bg-gray-50">
           <Stepper currentStep={currentStep} />
         </div>
 
@@ -297,19 +318,21 @@ const Home = () => {
             />
           )}
         </div>
-
-        <div className="flex-shrink-0 flex justify-between">
+          
+        <div className="flex justify-between flex-shrink-0">
+          {!(currentStep === 0 || currentStep === 1) && (
+            <button
+              className={`text-white mt-6 bg-gray-500 disabled:bg-gray-400 hover:bg-gray-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
+              onClick={handlePreviousStep}
+              disabled={currentStep === 0}
+            >
+              {"<<Prev"}
+            </button>
+          )}
           <button
-            className={`text-white mt-6 bg-gray-500 disabled:bg-gray-400 hover:bg-gray-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
-            onClick={handlePreviousStep}
-            disabled={currentStep === 0}
-          >
-            {"<<Prev"}
-          </button>
-          <button
-            className={`text-white ml-2 right-6 mt-6 bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
+            className={`text-white ml-2 mt-6 bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5 right-0' : 'ml-auto'}`}
             onClick={handleNextStep}
-            disabled={(currentStep === 0 && ( !storyWorld || !storyWorldLead ))}
+            disabled={currentStep === 0 && (!storyWorld || !storyWorldLead)}
           >
             Next
           </button>

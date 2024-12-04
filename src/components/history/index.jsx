@@ -216,7 +216,7 @@ const UserHistory = () => {
         title: "Updated At",
         render: (val) => {
             return (
-                <div className="text-light d-inline-flex flex-wrap gap gx-2">
+                <div className="flex-wrap text-light d-inline-flex gap gx-2">
                     <span className='me-2'>{formatDate(val)?.date}</span>
                     <span>{formatDate(val)?.time}</span>
               </div>
@@ -233,7 +233,9 @@ const UserHistory = () => {
                   title="View Story"
                   onClick={() => {
                     localStorage.setItem("storyId", JSON.stringify(record?.story_id));
-                    navigate('/home');
+                    // navigate('/home');
+                    navigate('/home', { state:'viewStory' });
+
                   }}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -295,7 +297,7 @@ const UserHistory = () => {
     <SidebarWithHeader>
         <div>
             {/* head */}
-            <p className="text-xl md:text-3xl mt-1 mb-2 md:mb-0 font-medium">User History</p>
+            <p className="mt-1 mb-2 text-xl font-medium md:text-3xl md:mb-0">User History</p>
 
             {/* body */}
             <div className='mt-8'>
