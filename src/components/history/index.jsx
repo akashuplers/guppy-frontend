@@ -216,7 +216,7 @@ const UserHistory = () => {
         title: "Updated At",
         render: (val) => {
             return (
-                <div className="flex-wrap text-light d-inline-flex gap gx-2">
+                <div className="text-light d-inline-flex flex-wrap gap gx-2">
                     <span className='me-2'>{formatDate(val)?.date}</span>
                     <span>{formatDate(val)?.time}</span>
               </div>
@@ -297,8 +297,7 @@ const UserHistory = () => {
     <SidebarWithHeader>
         <div>
             {/* head */}
-            <p className="mt-1 mb-2 text-xl font-medium md:text-3xl md:mb-0">User History</p>
-
+            <p className="text-xl md:text-3xl mt-1 mb-2 md:mb-0 font-medium">User History</p>
             {/* body */}
             <div className='mt-8'>
               {!isLoading &&
