@@ -30,7 +30,6 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
   // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
-console.log("updatedTitles",updatedTitles);
 
   useEffect(() => {
     setTitleSelectionItems(updatedTitles);

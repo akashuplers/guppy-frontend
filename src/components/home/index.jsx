@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from "react";
 import Footer from "../../utils/Footer";
-import { useLocation } from 'react-router-dom';
 import SidebarWithHeader from "../sidebar-with-header";
 import Stepper from "./Stepper";
 import StoryUpload from "./StoryUpload";
@@ -16,9 +15,6 @@ import axios from "axios";
 import SaveConfirmationDialog from "../../utils/modals/SaveConfirmationModal";
 
 const Home = () => {
-  const location = useLocation();
-  console.log("location",location);
-  
   const [currentStep, setCurrentStep] = useState(0);
   const [prevStep, setPrevStep] = useState(false);
   const [isSaveChanges, setIsSaveChanges] = useState(false);
@@ -28,15 +24,9 @@ const Home = () => {
   const errorMsg = "Error In Fetching Saved Response";
   const storyId = JSON.parse(localStorage.getItem("storyId"));
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
-console.log("currentStep",currentStep);
-
   // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse, saveModalOpen, isAnythingChanged, handleAnythingChanged, handleSaveModalOpen } = useContext(StoryUploadApiContext);
   const { storyWorld, storyWorldLead, titles, situations, actions } = storyUploadApiResponse;
-console.log("saveModalOpen",saveModalOpen);
-console.log("StoryUploadApiContext",StoryUploadApiContext);
-
-console.log("isSaveChanges",isSaveChanges);
 
   useEffect(() => {
     if(storyId && tokenVal) {
@@ -52,7 +42,6 @@ console.log("isSaveChanges",isSaveChanges);
       fetchStoryData(storyId, tokenVal);
     }
   }, [currentStep])
-console.log("isSaveSuccess",isSaveSuccess);
 
   useEffect(() => {
     if(isSaveSuccess){
@@ -217,7 +206,6 @@ console.log("isSaveSuccess",isSaveSuccess);
   }, [currentStep]);
 
   const handlePreviousStep = () => {
-    debugger
     if(isAnythingChanged){
       setActiveStep("prev");
       handleSaveModalOpen(true);
@@ -229,7 +217,6 @@ console.log("isSaveSuccess",isSaveSuccess);
   }
 
   const handleNextStep = () => {
-    debugger
     if(isAnythingChanged){
       setActiveStep("next");
       handleSaveModalOpen(true);
