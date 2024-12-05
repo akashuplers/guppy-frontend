@@ -198,10 +198,10 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
       <section className="mt-6">
         <div className="flex flex-col px-6 py-8 mx-auto lg:py-0">
           <div className="w-full bg-white rounded-lg md:mt-0 sm:max-w-md xl:p-0">
-            <p className="text-lg font-medium md:text-xl">Step 1 - (a). Story Upload</p>
+            <p className="text-lg md:text-xl font-medium">Step 1 - (a). Story Upload</p>
 
             {/* add story world form */}
-            <p className="pl-8 mt-3 text-lg font-medium text-gray-600 md:mt-6">Add Story World (Optional)</p>
+            <p className="text-lg text-gray-600 font-medium mt-3 md:mt-6 pl-8">Add Story World (Optional)</p>
             <AddStoryWorld token={token} onAddStoryWorld={onAddStoryWorld} />
 
             {/* upload story form */}
@@ -221,7 +221,7 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
                     <div>
                       <label
                         htmlFor="storyWorld"
-                        className="block mb-2 font-medium text-gray-900 text-md md:text-lg"
+                        className="block mb-2 text-md md:text-lg font-medium text-gray-900"
                       >
                         Story World
                       </label>
@@ -246,14 +246,14 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
                       <ErrorMessage
                         name="storyWorld"
                         component="div"
-                        className="text-sm text-red-500"
+                        className="text-red-500 text-sm"
                       />
                     </div>
-                    <p className="py-4 text-lg font-medium md:text-xl">(b). Upload Story</p>
+                    <p className="text-lg md:text-xl font-medium py-4">(b). Upload Story</p>
                     <div>
                       <label
                         htmlFor="storyWorldLead"
-                        className="block mb-2 font-medium text-gray-900 text-md md:text-lg"
+                        className="block mb-2 text-md md:text-lg font-medium text-gray-900"
                       >
                         Story World Lead
                       </label>
@@ -267,14 +267,14 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
                       <ErrorMessage
                         name="storyWorldLead"
                         component="div"
-                        className="text-sm text-red-500"
+                        className="text-red-500 text-sm"
                       />
                     </div>
 
                     <div>
                       <label
                         htmlFor="storyLeadWho"
-                        className="block mb-2 font-medium text-gray-900 text-md md:text-lg"
+                        className="block mb-2 text-md md:text-lg font-medium text-gray-900"
                       >
                         Story Lead
                       </label>
@@ -287,14 +287,14 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
                       <ErrorMessage
                         name="storyLeadWho"
                         component="div"
-                        className="text-sm text-red-500"
+                        className="text-red-500 text-sm"
                       />
                     </div>
 
                     <div>
                       <label
                         htmlFor="fileInput"
-                        className="block mb-2 font-medium text-gray-900 text-md md:text-lg"
+                        className="block mb-2 text-md md:text-lg font-medium text-gray-900"
                       >
                         Select File
                       </label>
@@ -314,7 +314,7 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
                       <ErrorMessage
                         name="fileInput"
                         component="div"
-                        className="text-sm text-red-500"
+                        className="text-red-500 text-sm"
                       />
                     </div>
 
