@@ -23,6 +23,7 @@ const Home = () => {
   const errorMsg = "Error In Fetching Saved Response";
   const storyId = JSON.parse(localStorage.getItem("storyId"));
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
+  const [prevStep, setPrevStep] = useState(false);
 
   // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse, saveModalOpen, isAnythingChanged, handleAnythingChanged, handleSaveModalOpen } = useContext(StoryUploadApiContext);
@@ -171,7 +172,7 @@ const Home = () => {
         };
 
         setStoryUploadApiResponse(saveObj); // save fetched data in context
-
+        if(prevStep == false){
         if(respObj?.titles?.length === 0) {
           setCurrentStep(1);
         } else if(respObj?.titles?.length>0 && respObj?.sitautions?.length===0) {
@@ -183,7 +184,7 @@ const Home = () => {
         }
       } else {
         message.error(errorMsg);
-      }
+      }}
     } catch (error) {
       console.log("error: ", error);
       message.error(errorMsg);
@@ -208,6 +209,7 @@ const Home = () => {
       handleSaveModalOpen(true);
       setIsSaveChanges(false);
     }else {
+      setPrevStep(true)
       setCurrentStep(prevStep => prevStep - 1);
     }
   }
@@ -255,7 +257,6 @@ const Home = () => {
       <div className={`flex flex-col sm:min-h-screen`}>
         {/* head */}
         <p className="text-xl md:text-3xl mt-1 mb-2 md:mb-0 font-medium">Guppy Stories</p>
-
         {/* body */}
 
         {/* stepper */}
@@ -298,17 +299,18 @@ const Home = () => {
           )}
         </div>
 
-        <div className="flex-shrink-0 flex justify-between">
+        <div className="flex justify-between flex-shrink-0">
+          {!(currentStep === 0 || currentStep === 1) && (
+            <button
+              className={`text-white mt-6 bg-gray-500 disabled:bg-gray-400 hover:bg-gray-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
+              onClick={handlePreviousStep}
+              disabled={currentStep === 0}
+            >
+              {"<<Prev"}
+            </button>
+          )}
           <button
-            className={`text-white mt-6 bg-gray-500 disabled:bg-gray-400 hover:bg-gray-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
-            onClick={handlePreviousStep}
-            disabled={currentStep === 0}
-          >
-            {"<<Prev"}
-          </button>
-          <button
-            className={`text-white ml-2 right-6 mt-6 bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
-            onClick={handleNextStep}
+            className={`text-white ml-2 mt-6 bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5 right-0' : 'ml-auto'}`}            onClick={handleNextStep}
             disabled={(currentStep === 0 && ( !storyWorld || !storyWorldLead ))}
           >
             Next
