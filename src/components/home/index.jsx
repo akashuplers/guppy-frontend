@@ -256,12 +256,11 @@ const Home = () => {
     <SidebarWithHeader>
       <div className={`flex flex-col sm:min-h-screen`}>
         {/* head */}
-        <p className="mt-1 mb-2 text-xl font-medium md:text-3xl md:mb-0">Guppy Stories</p>
-
+        <p className="text-xl md:text-3xl mt-1 mb-2 md:mb-0 font-medium">Guppy Stories</p>
         {/* body */}
 
         {/* stepper */}
-        <div className="p-3 mt-3 mb-5 border rounded-md md:mt-8 bg-gray-50">
+        <div className="mt-3 md:mt-8 mb-5 bg-gray-50 p-3 border rounded-md">
           <Stepper currentStep={currentStep} />
         </div>
 
