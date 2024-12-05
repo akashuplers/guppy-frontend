@@ -15,7 +15,7 @@ const getCSVsFromList = (list_of_strings) => {
   return list_of_strings.join(", ");
 };
 
-const SituationSelection = ({ onDiscard = () => {} }) => {
+const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSuccess = () => {}}) => {
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState({});
@@ -28,12 +28,18 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
   const navigate = useNavigate();
 
   // story upload context
-  const { storyUploadApiResponse, setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
+  const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, situations, updatedSituations, primaryWhos } = storyUploadApiResponse;
 
   useEffect(() => {
     setSituationSelectionItems(updatedSituations);
   }, []);
+
+  useEffect(() => {
+    if(saveSituations){
+      onSave();
+    }
+  }, [saveSituations]);
 
   const onUpdate = (updatedValue) => {
     const updatedRow = {...selectedRow, comment: updatedValue};
@@ -45,11 +51,13 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
     } else {
       message.success("Comment Added Successfully");
     }
+    handleAnythingChanged(true);
   }
 
   const bodyForSaveSituationsApi = () => {
     const updated = situationSelectionItems?.map((item) => ({
-      idea: item.sentence,
+      id: item.isNewField ? '' : item.id,
+      idea: item.idea,
       Classification: "Situation",
       Who_Primary: item.primaryWhos,
       Who_Secondary: item.secondaryWhos,
@@ -57,29 +65,66 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
       What_Secondary: item.secondaryWhats,
       Where_Primary: item.primaryWheres,
       Where_Secondary: item.secondaryWheres,
+      ...(item.isNewField ? {new: true, updated: false}: item.isEditField && {updated: true}),
+      ...(item.comment && {comment: item.comment})
     }));
     const body = {
       story_id: story_id,
       ideas: updated,
     };
+    console.log('save',body);
     return body;
   };
 
   const getUpdatedJson = (arr) => {
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
-        id: index + 1,
-        sentence: item.idea,
+        id: item.id,
+        idea: item.idea,
         primaryWhos: item.Who_Primary,
         secondaryWhos: item.Who_Secondary,
         primaryWhats: item.What_Primary,
         secondaryWhats: item.What_Secondary,
         primaryWheres: item.Where_Primary,
         secondaryWheres: item.Where_Secondary,
+        comment: item.comment
       }));
       return updated;
     }
     return [];
+  }
+
+  const getUpdatedSituations = (newSituations) => {
+    console.log('updated1',newSituations.map((situation, index) => {
+      return {
+        id: situation.id,
+        idea: situation.idea,
+        classification: situation.Classification,
+        primaryWhos: situation.Who_Primary,
+        primaryWhats: situation.What_Primary,
+        primaryWheres: situation.Where_Primary,
+        secondaryWhos: situation.Who_Secondary,
+        secondaryWhats: situation.What_Secondary,
+        secondaryWheres: situation.Where_Secondary,
+        ...(situation.comment && {comment: situation.comment})
+      }
+      
+    }))
+    return newSituations.map((situation, index) => {
+      return {
+        id: situation.id,
+        idea: situation.idea,
+        classification: situation.Classification,
+        primaryWhos: situation.Who_Primary,
+        primaryWhats: situation.What_Primary,
+        primaryWheres: situation.Where_Primary,
+        secondaryWhos: situation.Who_Secondary,
+        secondaryWhats: situation.What_Secondary,
+        secondaryWheres: situation.Where_Secondary,
+        ...(situation.comment && {comment: situation.comment})
+      }
+      
+    })
   }
 
   const onSave = async () => {
@@ -102,18 +147,21 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
       const output = response?.data;
       if(output) {
         const actions= output?.actions;
+        setSituationSelectionItems(getUpdatedSituations(output?.updatedSituations?.ideas));
         
         // update context
         const contextObj = { ...storyUploadApiResponse };
         const updatedContextObj = {
           ...contextObj,
-          updatedSituations: situationSelectionItems,
+          updatedSituations: getUpdatedSituations(output?.updatedSituations?.ideas),
           actions: getUpdatedJson(actions),
           updatedActions: getUpdatedJson(actions),
         };
         setStoryUploadApiResponse(updatedContextObj);
         message.destroy(alertKey);
         message.success("Situations Saved Successfully !");
+        handleSaveSuccess(true);
+        handleAnythingChanged(false);
       } else {
         message.destroy(alertKey);
         message.error("Error In Saving Situations ! Unable To Fetch Response !");
@@ -146,27 +194,31 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
     );
     setSituationSelectionItems(modified);
     message.success("Updated Successfully !");
+    handleAnythingChanged(true);
   };
 
   const onReset = () => {
     setSituationSelectionItems(situations);
     message.success("Reset Successfully !");
+    handleAnythingChanged(true);
   };
 
   const handleAddRow = () => {
     const newObj = {
       id: situationSelectionItems?.length + 1,
-      sentence: "",
+      idea: "",
       primaryWhos,
       secondaryWhos: [],
       primaryWhats: [],
       secondaryWhats: [],
       primaryWheres: [],
       secondaryWheres: [],
+      isNewField: true
     };
     const curData = [newObj, ...situationSelectionItems];
     setSituationSelectionItems(curData);
     message.success("New Row Added Successfully !");
+    handleAnythingChanged(true);
   };
 
   const handleDelete = () => {
@@ -174,11 +226,12 @@ const SituationSelection = ({ onDiscard = () => {} }) => {
     const updated = curData.filter((ele) => ele.id !== selectedRow.id);
     setSituationSelectionItems(updated);
     message.success("Deleted Successfully !");
+    handleAnythingChanged(true);
   };
 
   const situationSelectionColumns = [
     {
-      dataIndex: "sentence",
+      dataIndex: "idea",
       title: <p className="text-center">Situation</p>,
       width: 430,
       align: 'justify',

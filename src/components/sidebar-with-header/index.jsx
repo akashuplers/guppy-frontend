@@ -1,8 +1,10 @@
 import { Dropdown, Popconfirm, message } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { StoryUploadApiContext } from "../../contexts/ApiContext";
 
 const SidebarWithHeader = ({children}) => {
+  const { isAnythingChanged, handleSaveModalOpen, saveModalOpen } = useContext(StoryUploadApiContext);
 
   const [email, setEmail] = useState('');
   const [abbreviation, setAbbreviation] = useState(false);
@@ -21,6 +23,8 @@ const SidebarWithHeader = ({children}) => {
   const handleMenuClick = ({key}) => {
     if(key === '3') {
       localStorage.removeItem('accessToken');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('storyId');
       navigate('/');
       message.success("You Have Been Logged Out Successfully !");
     }
@@ -64,6 +68,22 @@ const SidebarWithHeader = ({children}) => {
   const menuProps = {
     items,
     onClick: handleMenuClick,
+  };
+
+  const handleStoryUpload = () => {
+    // if(isAnythingChanged)
+    // {
+    //   handleSaveModalOpen(true);
+    //   if(!saveModalOpen)
+    //   {
+    //     localStorage.removeItem("storyId"); 
+    //     window.location.href = "/home"; 
+    //   }
+    // }
+    // else {
+    localStorage.removeItem("storyId"); 
+    window.location.href = "/home"; 
+    // }
   };
 
   return (
@@ -207,7 +227,7 @@ const SidebarWithHeader = ({children}) => {
       >
         <div className="h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-800">
           <ul className="space-y-2 font-medium">
-            <li>
+            {/* <li>
               <a
                 href="/home"
                 className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
@@ -224,10 +244,10 @@ const SidebarWithHeader = ({children}) => {
                 </svg>
                 <span className="ms-3">Dashboard</span>
               </a>
-            </li>
+            </li> */}
             <li>
               <a
-                href="/home"
+                onClick={handleStoryUpload}
                 className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className="bi bi-cloud-upload-fill" viewBox="0 0 16 16">

@@ -33,9 +33,25 @@ const initialStateObj = {
 
 const StoryUploadApiProvider = ({ children }) => {
   const [storyUploadApiResponse, setStoryUploadApiResponse] = useState(initialStateObj);
+  const [isAnythingChanged, setIsAnythingChanged] = useState(false);
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+
+  const handleAnythingChanged = (isChanged) => {
+    setIsAnythingChanged(isChanged);
+  }
+
+  const handleSaveModalOpen = (isOpen) => {
+    setSaveModalOpen(isOpen);
+  }
 
   return (
-    <StoryUploadApiContext.Provider value={{ storyUploadApiResponse, setStoryUploadApiResponse }}>
+    <StoryUploadApiContext.Provider value={{ 
+      storyUploadApiResponse, 
+      setStoryUploadApiResponse, 
+      isAnythingChanged, 
+      handleAnythingChanged, 
+      saveModalOpen, 
+      handleSaveModalOpen }}>
       {children}
     </StoryUploadApiContext.Provider>
   );

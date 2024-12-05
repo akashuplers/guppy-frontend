@@ -38,9 +38,10 @@ const Login = () => {
       const output = await axios.post(apiUrl, values);
       const respObj = output?.data?.data;
       if (respObj) {
-        const { accessToken, email } = respObj;
+        const { accessToken, email, id } = respObj;
         localStorage.setItem("accessToken", JSON.stringify(accessToken));
         localStorage.setItem("email", JSON.stringify(email));
+        localStorage.setItem("userId", id);
         message.success("Login Successful !");
         navigate("/home");
       }

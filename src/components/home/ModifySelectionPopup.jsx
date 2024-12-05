@@ -31,12 +31,14 @@ const ModifySelectionPopup = ({
   const { primaryWhos, secondaryWhos, primaryWhats, secondaryWhats, primaryWheres, secondaryWheres } = storyUploadApiResponse;
 
   useEffect(() => {
-    setCurrentValue(modifyItemObj.sentence);
     if(type === "title") {
+        setCurrentValue(modifyItemObj.title);
         setPopupTitle("Title/Sentence");
     } else if(type === "situation") {
+        setCurrentValue(modifyItemObj.idea);
         setPopupTitle("Situation");
     } else {
+        setCurrentValue(modifyItemObj.idea);
         setPopupTitle("Action");
     }
 
@@ -135,14 +137,16 @@ const ModifySelectionPopup = ({
 
   const handleUpdate = () => {
     const updatedObj = {
-        id: modifyItemObj.id,
-        sentence: currentValue,
+        id: modifyItemObj.isNewField ? '' : modifyItemObj.id,
+        ...(type === "title" ? {title: currentValue} : {idea: currentValue}),
         primaryWhos,
         secondaryWhos: secondaryWhoSelectedOptions,
         primaryWhats: primaryWhatSelectedOptions,
         secondaryWhats: secondaryWhatSelectedOptions,
         primaryWheres: primaryWhereSelectedOptions,
         secondaryWheres: secondaryWhereSelectedOptions,
+        ...(modifyItemObj.isNewField ? {isNewField: true} : {isEditField: true}),
+        ...(modifyItemObj.comment && {comment: modifyItemObj.comment})
     }
     onModify(updatedObj);
     onClose();
@@ -176,7 +180,7 @@ const ModifySelectionPopup = ({
         {/* sentence */}
         <div>
           <label
-            htmlFor="sentence"
+            htmlFor="title"
             className="block mb-2 mt-5 text-md md:text-lg font-medium text-gray-900"
           >
             {popupTitle}

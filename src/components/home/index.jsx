@@ -12,31 +12,57 @@ import ActionSelection from "./ActionSelection";
 import DownloadStory from "./DownloadStory";
 import { API_BASE_PATH, API_ROUTES } from "../../constants/api-endpoints";
 import axios from "axios";
+import SaveConfirmationDialog from "../../utils/modals/SaveConfirmationModal";
 
 const Home = () => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isSaveChanges, setIsSaveChanges] = useState(false);
+  const [isSaveSuccess, setIsSaveSuccess] = useState(false);
+  const [activeStep, setActiveStep] = useState(null);
   const [isContentOverflowing, setIsContentOverflowing] = useState(false);
   const errorMsg = "Error In Fetching Saved Response";
+  const storyId = JSON.parse(localStorage.getItem("storyId"));
+  const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
+  const [prevStep, setPrevStep] = useState(false);
 
   // story upload context
-  const { storyUploadApiResponse, setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
+  const { storyUploadApiResponse, setStoryUploadApiResponse, saveModalOpen, isAnythingChanged, handleAnythingChanged, handleSaveModalOpen } = useContext(StoryUploadApiContext);
   const { storyWorld, storyWorldLead, titles, situations, actions } = storyUploadApiResponse;
 
   useEffect(() => {
-    const storyId = JSON.parse(localStorage.getItem("storyId"));
-    const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
     if(storyId && tokenVal) {
       fetchStoryData(storyId, tokenVal);
     }
+    if(!storyId){
+      setCurrentStep(0);
+    }
   }, []);
+
+  useEffect(() => {
+    if(currentStep === 1){
+      fetchStoryData(storyId, tokenVal);
+    }
+  }, [currentStep])
+
+  useEffect(() => {
+    if(isSaveSuccess){
+      if(activeStep === "next")
+        setCurrentStep(prevStep => prevStep + 1);
+      else if(activeStep == "prev")
+        setCurrentStep(prevStep => prevStep - 1);
+      setIsSaveSuccess(false);
+      setActiveStep(null);
+    }
+  },[isSaveSuccess])
 
   const getUpdatedJsonWs = (arr) => {
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
-        id: index + 1,
+        id: item.id,
         name: item.value,
         isRadioSelected: item.type?.toLowerCase()==='primary' ? true : false,
         isCheckboxSelected: item.type?.toLowerCase()==='secondary' ? true : false,
+        ner: item.ner ?? false
       }));
       return updated;
     }
@@ -66,8 +92,8 @@ const Home = () => {
     const arr = list[0]?.titles || [];
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
-        id: index + 1,
-        sentence: item.Title,
+        id: item.id,
+        title: item.Title,
         primaryWhos: item.Who_Primary,
         secondaryWhos: item.Who_Secondary,
         primaryWhats: item.What_Primary,
@@ -84,8 +110,8 @@ const Home = () => {
     const arr = list[0]?.ideas || [];
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
-        id: index + 1,
-        sentence: item.idea,
+        id: item.id,
+        idea: item.idea,
         primaryWhos: item.Who_Primary,
         secondaryWhos: item.Who_Secondary,
         primaryWhats: item.What_Primary,
@@ -146,7 +172,7 @@ const Home = () => {
         };
 
         setStoryUploadApiResponse(saveObj); // save fetched data in context
-
+        if(prevStep == false){
         if(respObj?.titles?.length === 0) {
           setCurrentStep(1);
         } else if(respObj?.titles?.length>0 && respObj?.sitautions?.length===0) {
@@ -158,7 +184,7 @@ const Home = () => {
         }
       } else {
         message.error(errorMsg);
-      }
+      }}
     } catch (error) {
       console.log("error: ", error);
       message.error(errorMsg);
@@ -178,11 +204,24 @@ const Home = () => {
   }, [currentStep]);
 
   const handlePreviousStep = () => {
-    setCurrentStep(prevStep => prevStep - 1);
+    if(isAnythingChanged){
+      setActiveStep("prev");
+      handleSaveModalOpen(true);
+      setIsSaveChanges(false);
+    }else {
+      setPrevStep(true)
+      setCurrentStep(prevStep => prevStep - 1);
+    }
   }
 
   const handleNextStep = () => {
-    setCurrentStep(prevStep => prevStep + 1);
+    if(isAnythingChanged){
+      setActiveStep("next");
+      handleSaveModalOpen(true);
+      setIsSaveChanges(false);
+    }else {
+      setCurrentStep(prevStep => prevStep + 1);
+    }
   }
 
   const onDiscard = async () => {
@@ -193,12 +232,31 @@ const Home = () => {
     window.location.reload();
   }
 
+  const handleSaveSuccess = (isSaved) => {
+    setIsSaveSuccess(isSaved);
+    setIsSaveChanges(false);
+  }
+
+  const handleSaveModal = () => {
+    setIsSaveChanges(true); 
+    handleSaveModalOpen(false); 
+    handleAnythingChanged(false);
+  }
+
+  const handleSaveModalClose = () => {
+    handleSaveModalOpen(false); 
+    handleAnythingChanged(false);
+    if(activeStep === "next") 
+      setCurrentStep(prevStep => prevStep + 1); 
+    else if(activeStep === "prev") 
+      setCurrentStep(prevStep => prevStep - 1); 
+  }
+
   return (
     <SidebarWithHeader>
       <div className={`flex flex-col sm:min-h-screen`}>
         {/* head */}
         <p className="text-xl md:text-3xl mt-1 mb-2 md:mb-0 font-medium">Guppy Stories</p>
-
         {/* body */}
 
         {/* stepper */}
@@ -213,18 +271,26 @@ const Home = () => {
           ) : currentStep === 1 ? (
             <ThreeWsSelection
               onDiscard={onDiscard}
+              saveWs={isSaveChanges}
+              handleSaveSuccess={handleSaveSuccess}
             />
           ) : currentStep === 2 ? (
             <TitleSelection
               onDiscard={onDiscard}
+              saveTitles={isSaveChanges}
+              handleSaveSuccess={handleSaveSuccess}
             />
           ) : currentStep === 3 ? (
             <SituationSelection
               onDiscard={onDiscard}
+              saveSituations={isSaveChanges}
+              handleSaveSuccess={handleSaveSuccess}
             />
           ) : currentStep === 4 ? (
             <ActionSelection
               onDiscard={onDiscard}
+              saveActions={isSaveChanges}
+              handleSaveSuccess={handleSaveSuccess}
             />
           ) : (
             <DownloadStory
@@ -233,23 +299,28 @@ const Home = () => {
           )}
         </div>
 
-        <div className="flex-shrink-0 flex justify-between">
+        <div className="flex justify-between flex-shrink-0">
+          {!(currentStep === 0 || currentStep === 1) && (
+            <button
+              className={`text-white mt-6 bg-gray-500 disabled:bg-gray-400 hover:bg-gray-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
+              onClick={handlePreviousStep}
+              disabled={currentStep === 0}
+            >
+              {"<<Prev"}
+            </button>
+          )}
           <button
-            className={`text-white mt-6 bg-gray-500 disabled:bg-gray-400 hover:bg-gray-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
-            onClick={handlePreviousStep}
-            disabled={currentStep === 0}
-          >
-            {"<<Prev"}
-          </button>
-          <button
-            className={`text-white ml-2 right-6 mt-6 bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
-            onClick={handleNextStep}
-            disabled={(currentStep === 0 && ( !storyWorld || !storyWorldLead )) || (currentStep===1 && titles?.length===0) || (currentStep===2 && situations?.length===0) || (currentStep===3 && actions?.length===0) || currentStep === 5}
+            className={`text-white ml-2 mt-6 bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5 right-0' : 'ml-auto'}`}            onClick={handleNextStep}
+            disabled={(currentStep === 0 && ( !storyWorld || !storyWorldLead ))}
           >
             Next
           </button>
         </div>
 
+        {saveModalOpen && <SaveConfirmationDialog 
+        open={saveModalOpen} 
+        onConfirm = {handleSaveModal} 
+        onClose={handleSaveModalClose}/>}
         {/* footer */}
         {/* <Footer className={"sm:ml-64 p-1 bg-yellow-100 border"} /> */}
       </div>

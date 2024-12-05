@@ -15,7 +15,7 @@ const getCSVsFromList = (list_of_strings) => {
   return list_of_strings?.join(", ");
 };
 
-const TitleSelection = ({ onDiscard = () => {} }) => {
+const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = () => {}}) => {
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState({});
@@ -28,12 +28,18 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
   const navigate = useNavigate();
 
   // story upload context
-  const { storyUploadApiResponse, setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
+  const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
 
   useEffect(() => {
     setTitleSelectionItems(updatedTitles);
   }, []);
+
+  useEffect(() => {
+    if(saveTitles){
+      onSave();
+    }
+  }, [saveTitles]);
 
   const onUpdate = (updatedValue) => {
     const updatedRow = {...selectedRow, comment: updatedValue};
@@ -45,17 +51,21 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
     } else {
       message.success("Comment Added Successfully");
     }
+    handleAnythingChanged(true);
   }
 
   const bodyForSaveTitlesApi = () => {
     const updated = titleSelectionItems?.map((item) => ({
-      Title: item.sentence,
+      id: item.isNewField ? '' : item.id,
+      Title: item.title,
       Who_Primary: item.primaryWhos,
       Who_Secondary: item.secondaryWhos,
       What_Primary: item.primaryWhats,
       What_Secondary: item.secondaryWhats,
       Where_Primary: item.primaryWheres,
       Where_Secondary: item.secondaryWheres,
+      ...(item.isNewField ? {new: true, updated: false} : item.isEditField && {updated: true}),
+      ...(item.comment && {comment: item.comment})
     }));
     const body = {
       titles: updated,
@@ -67,18 +77,36 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
   const getUpdatedJson = (arr) => {
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
-        id: index + 1,
-        sentence: item.idea,
+        id: item.id,
+        idea: item.idea,
         primaryWhos: item.Who_Primary,
         secondaryWhos: item.Who_Secondary,
         primaryWhats: item.What_Primary,
         secondaryWhats: item.What_Secondary,
         primaryWheres: item.Where_Primary,
         secondaryWheres: item.Where_Secondary,
+        comment: item.comment
       }));
       return updated;
     }
     return [];
+  }
+
+  const getUpdatedTitles = (newTitles) => {
+    return newTitles.map(title => {
+      return {
+        id: title.id,
+        title: title.Title,
+        primaryWhos: title.Who_Primary,
+        primaryWhats: title.What_Primary,
+        primaryWheres: title.Where_Primary,
+        secondaryWhos: title.Who_Secondary,
+        secondaryWhats: title.What_Secondary,
+        secondaryWheres: title.Where_Secondary,
+        ...(title.comment && {comment: title.comment})
+      }
+      
+    })
   }
 
   const onSave = async () => {
@@ -100,16 +128,19 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
       const output = response?.data;
       if(output) {
         const situations = output?.situations;
-        
+        const newTitles = output?.updatedTitles?.titles;
+        setTitleSelectionItems(getUpdatedTitles(newTitles));
         // update context
         const contextObj = { ...storyUploadApiResponse };
         const updatedContextObj = {
           ...contextObj,
-          updatedTitles: titleSelectionItems,
+          updatedTitles: getUpdatedTitles(newTitles),
           situations: getUpdatedJson(situations),
           updatedSituations: getUpdatedJson(situations),
         };
         setStoryUploadApiResponse(updatedContextObj);
+        handleSaveSuccess(true);
+        handleAnythingChanged(false);
         message.destroy(alertKey);
         message.success("Titles Saved Successfully !");
       } else {
@@ -144,27 +175,31 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
     );
     setTitleSelectionItems(modified);
     message.success("Updated Successfully !");
+    handleAnythingChanged(true);
   };
 
   const onReset = () => {
     setTitleSelectionItems(titles);
     message.success("Reset Successfully !");
+    handleAnythingChanged(true);
   };
 
   const handleAddRow = () => {
     const newObj = {
       id: titleSelectionItems?.length + 1,
-      sentence: "",
-      primaryWhos,
+      title: "",
+      primaryWhos: [],
       secondaryWhos: [],
       primaryWhats: [],
       secondaryWhats: [],
       primaryWheres: [],
       secondaryWheres: [],
+      isNewField: true
     };
     const curData = [newObj, ...titleSelectionItems];
     setTitleSelectionItems(curData);
     message.success("New Row Added Successfully !");
+    handleAnythingChanged(true);
   };
 
   const handleDelete = () => {
@@ -172,11 +207,12 @@ const TitleSelection = ({ onDiscard = () => {} }) => {
     const updated = curData.filter((ele) => ele.id !== selectedRow.id);
     setTitleSelectionItems(updated);
     message.success("Deleted Successfully !");
+    handleAnythingChanged(true);
   };
 
   const titleSelectionColumns = [
     {
-      dataIndex: "sentence",
+      dataIndex: "title",
       title: <p className="text-center">Title / Sentence</p>,
       width: 330,
       align: 'justify',

@@ -15,7 +15,7 @@ const getCSVsFromList = (list_of_strings) => {
   return list_of_strings.join(", ");
 };
 
-const ActionSelection = ({ onDiscard = () => {} }) => {
+const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess = () => {}}) => {
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState({});
@@ -28,12 +28,18 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
   const navigate = useNavigate();
 
   // story upload context
-  const { storyUploadApiResponse, setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
+  const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, actions, updatedActions, primaryWhos } = storyUploadApiResponse;
 
   useEffect(() => {
     setActionSelectionItems(updatedActions);
   }, []);
+
+  useEffect(() => {
+    if(saveActions){
+      onSave();
+    }
+  }, [saveActions]);
 
   const onUpdate = (updatedValue) => {
     const updatedRow = {...selectedRow, comment: updatedValue};
@@ -45,11 +51,13 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
     } else {
       message.success("Comment Added Successfully");
     }
+    handleAnythingChanged(true);
   }
 
   const bodyForSaveActionsApi = () => {
     const updated = actionSelectionItems?.map((item) => ({
-      idea: item.sentence,
+      id: item.isNewField ? '' : item.id,
+      idea: item.idea,
       Classification: "Action",
       Who_Primary: item.primaryWhos,
       Who_Secondary: item.secondaryWhos,
@@ -57,6 +65,8 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
       What_Secondary: item.secondaryWhats,
       Where_Primary: item.primaryWheres,
       Where_Secondary: item.secondaryWheres,
+      ...(item.isNewField ? {new: true, updated: false}: item.isEditField && {updated: true}),
+      ...(item.comment && {comment: item.comment})
     }));
     const body = {
       story_id: story_id,
@@ -64,6 +74,24 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
     };
     return body;
   };
+
+  const getUpdatedActions = (newActions) => {
+    return newActions.map((action, index) => {
+      return {
+        id: action.id,
+        idea: action.idea,
+        classification: action.Classification,
+        primaryWhos: action.Who_Primary,
+        primaryWhats: action.What_Primary,
+        primaryWheres: action.Where_Primary,
+        secondaryWhos: action.Who_Secondary,
+        secondaryWhats: action.What_Secondary,
+        secondaryWheres: action.Where_Secondary,
+        ...(action.comment && {comment: action.comment})
+      }
+      
+    })
+  }
 
   const onSave = async () => {
     setIsSubmitting(true);
@@ -83,15 +111,18 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
       const response = await axios.post(apiUrl, payload, config); // post api request
       const output = response?.data;
       if(output) {
+        setActionSelectionItems(getUpdatedActions(output?.updatedActions?.ideas));
         // update context
         const contextObj = { ...storyUploadApiResponse };
         const updatedContextObj = {
           ...contextObj,
-          updatedActions: actionSelectionItems,
+          updatedActions: getUpdatedActions(output?.updatedActions?.ideas),
         };
         setStoryUploadApiResponse(updatedContextObj);
         message.destroy(alertKey);
         message.success("Actions Saved Successfully !");
+        handleSaveSuccess(true);
+        handleAnythingChanged(false);
       } else {
         message.error("Error In Saving Actions ! Unable To Fetch Response !");
       }
@@ -123,27 +154,31 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
     );
     setActionSelectionItems(modified);
     message.success("Updated Successfully !");
+    handleAnythingChanged(true);
   };
 
   const onReset = () => {
     setActionSelectionItems(actions);
     message.success("Reset Successfully !");
+    handleAnythingChanged(true);
   };
 
   const handleAddRow = () => {
     const newObj = {
       id: actionSelectionItems?.length + 1,
-      sentence: "",
+      idea: "",
       primaryWhos,
       secondaryWhos: [],
       primaryWhats: [],
       secondaryWhats: [],
       primaryWheres: [],
       secondaryWheres: [],
+      isNewField: true
     };
     const curData = [newObj, ...actionSelectionItems];
     setActionSelectionItems(curData);
     message.success("New Row Added Successfully !");
+    handleAnythingChanged(true);
   };
 
   const handleDelete = () => {
@@ -151,11 +186,12 @@ const ActionSelection = ({ onDiscard = () => {} }) => {
     const updated = curData.filter((ele) => ele.id !== selectedRow.id);
     setActionSelectionItems(updated);
     message.success("Deleted Successfully !");
+    handleAnythingChanged(true);
   };
 
   const actionSelectionColumns = [
     {
-      dataIndex: "sentence",
+      dataIndex: "idea",
       title: <p className="text-center">Action</p>,
       width: 430,
       align: 'justify',
