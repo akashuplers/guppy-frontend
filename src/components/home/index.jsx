@@ -181,10 +181,10 @@ const Home = () => {
           setCurrentStep(3);
         } else if(respObj?.actions?.length>0) {
           setCurrentStep(1);
+        } else {
+          message.error(errorMsg);
         }
-      } else {
-        message.error(errorMsg);
-      }}
+      } }
     } catch (error) {
       console.log("error: ", error);
       message.error(errorMsg);
