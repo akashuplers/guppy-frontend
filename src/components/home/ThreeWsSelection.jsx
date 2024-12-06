@@ -1,4 +1,5 @@
 import React, { useRef, useContext, useEffect, useState } from "react";
+import { ChevronUpDownIcon } from '@heroicons/react/20/solid'; 
 import FooterButtons from "./FooterButtons";
 import DeleteConfirmationDialog from "../../utils/modals/DeleteConfirmationDialog";
 import { message } from "antd";
@@ -622,6 +623,29 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
    }
  };
 
+ const [sortOrder, setSortOrder] = useState('asc'); 
+
+ const handleSort = (title) => {
+  const sortItems = (items) => {
+    return items.sort((a, b) => {
+      if (a.name.toLowerCase() < b.name.toLowerCase()) return sortOrder === 'asc' ? -1 : 1;
+      if (a.name.toLowerCase() > b.name.toLowerCase()) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
+
+  if (title === "who") {
+    setWhoItems(sortItems([...whoItems]));
+  } else if (title === "what") {
+    setWhatItems(sortItems([...whatItems]));
+  } else {
+    setWhereItems(sortItems([...whereItems]));
+  }
+
+  setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+};
+
+
   return (
     <div className="px-5 pb-5 rounded-md border">
       <div className="text-lg flex flex-col md:flex-row justify-between md:text-xl mt-5 mb-3 md:mb-4">
@@ -647,8 +671,9 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
         {/* WHO SECTION */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4">
-              WHO
+          <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4 flex items-center justify-between">
+          WHO
+              <ChevronUpDownIcon className="h-5 w-5 text-violet-500 cursor-pointer" onClick={() => handleSort("who")} />
             </p>
 
             <button
@@ -781,8 +806,9 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
         {/* WHAT SECTION */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4">
+          <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4 flex items-center justify-between">
               WHAT
+              <ChevronUpDownIcon className="h-5 w-5 text-violet-500 cursor-pointer" onClick={() =>handleSort("what")} />
             </p>
 
             <button
@@ -915,8 +941,9 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
         {/* WHERE SECTION */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4">
+          <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4 flex items-center justify-between">
               WHERE
+              <ChevronUpDownIcon className="h-5 w-5 text-violet-500 cursor-pointer" onClick={() =>handleSort("where")} />
             </p>
 
             <button
