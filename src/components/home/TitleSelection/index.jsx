@@ -1,6 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import FooterButtons from "../FooterButtons";
-import { Button, Table, message } from "antd";
+import { Button, Table, message, Input, Checkbox, Select } from "antd";
+// import { Button, Checkbox, Modal, Select } from "antd";
+
 import DeleteConfirmationDialog from "../../../utils/modals/DeleteConfirmationDialog";
 import { StoryUploadApiContext } from "../../../contexts/ApiContext";
 import { API_BASE_PATH, API_ROUTES } from "../../../constants/api-endpoints";
@@ -16,6 +18,8 @@ const getCSVsFromList = (list_of_strings) => {
 };
 
 const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = () => {}}) => {
+const { Option } = Select;
+
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState({});
@@ -26,11 +30,26 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
   const [comment, setComment] = useState('');
   const [modalType, setModalType] = useState('');
   const navigate = useNavigate();
+  const [searchText, setSearchText] = useState({
+    title: '',
+    primaryWhos: '',
+    secondaryWhos: '',
+    primaryWhats: '',
+    secondaryWhats: '',
+    primaryWheres: '',
+    secondaryWheres: '',
+    comment: '',
+  });
+  const handleSearchChange = (e, column) => {
+    setSearchText((prev) => ({
+      ...prev,
+      [column]: e.target.value,
+    }));
+  };
 
   // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
-
   useEffect(() => {
     setTitleSelectionItems(updatedTitles);
   }, []);
@@ -40,6 +59,9 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
       onSave();
     }
   }, [saveTitles]);
+
+  console.log("storyUploadApiResponse",storyUploadApiResponse);
+  
 
   const onUpdate = (updatedValue) => {
     const updatedRow = {...selectedRow, comment: updatedValue};
@@ -367,9 +389,20 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
     },
   ];
 
+  const filteredData = titleSelectionItems.filter(item => {
+    return (
+      item.title.toLowerCase().includes(searchText.title.toLowerCase()) &&
+      getCSVsFromList(item.primaryWhos).toLowerCase().includes(searchText.primaryWhos.toLowerCase()) &&
+      getCSVsFromList(item.secondaryWhos).toLowerCase().includes(searchText.secondaryWhos.toLowerCase()) &&
+      getCSVsFromList(item.primaryWhats).toLowerCase().includes(searchText.primaryWhats.toLowerCase()) &&
+      getCSVsFromList(item.secondaryWhats).toLowerCase().includes(searchText.secondaryWhats.toLowerCase()) &&
+      getCSVsFromList(item.primaryWheres).toLowerCase().includes(searchText.primaryWheres.toLowerCase()) &&
+      getCSVsFromList(item.secondaryWheres).toLowerCase().includes(searchText.secondaryWheres.toLowerCase()) &&
+      (item.comment ? item.comment.toLowerCase().includes(searchText.comment.toLowerCase()) : true)
+    );
+  });
   return (
     <div className="px-5 pb-5 rounded-md border">
-
       <div className="text-lg flex flex-col md:flex-row justify-between md:text-xl mt-5 mb-3 md:mb-4">
         <p>Step-3 : Title Selection</p>
         <p className="text-lg md:text-xl mt-2 md:mt-0">
@@ -380,7 +413,11 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
       {fileName && (
         <p className="text-md md:text-lg mb-4 md:mb-6">
           File Uploaded :{" "}
-          <span title="Click to see story text" className="font-medium text-blue-500 cursor-pointer" onClick={() => setShowStoryModal(true)} >
+          <span
+            title="Click to see story text"
+            className="font-medium text-blue-500 cursor-pointer"
+            onClick={() => setShowStoryModal(true)}
+          >
             {fileName}
           </span>
         </p>
@@ -388,6 +425,92 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
 
       {/* body */}
       <div>
+        <div className="flex space-x-4 mb-4">
+          <Select
+            size="small"
+            mode="tags"
+            className="w-full"
+            // value={secondaryWhoSelectedOptions}
+            // onChange={onSecondaryWhosChange}
+            placeholder={"Select Primary Whos"}
+          >
+            {storyUploadApiResponse.primaryWhos?.map((option, index) => (
+              <Option key={index} value={option}>
+                {option}
+              </Option>
+            ))}
+          </Select>
+          <Select
+            size="small"
+            mode="tags"
+            className="w-full"
+            // value={secondaryWhoSelectedOptions}
+            // onChange={onSecondaryWhosChange}
+            placeholder={"Select Secondary Whos"}
+          >
+            {storyUploadApiResponse.secondaryWhos?.map((option, index) => (
+              <Option key={index} value={option}>
+                {option}
+              </Option>
+            ))}
+          </Select>
+          <Select
+            size="small"
+            mode="tags"
+            className="w-full"
+            // value={secondaryWhoSelectedOptions}
+            // onChange={onSecondaryWhosChange}
+            placeholder={"Select Primary Whats"}
+          >
+            {storyUploadApiResponse.primaryWhats?.map((option, index) => (
+              <Option key={index} value={option}>
+                {option}
+              </Option>
+            ))}
+          </Select>
+          <Select
+            size="small"
+            mode="tags"
+            className="w-full"
+            // value={secondaryWhoSelectedOptions}
+            // onChange={onSecondaryWhosChange}
+            placeholder={"Select Secondary Whats"}
+          >
+            {storyUploadApiResponse.secondaryWhats?.map((option, index) => (
+              <Option key={index} value={option}>
+                {option}
+              </Option>
+            ))}
+          </Select>
+          <Select
+            size="small"
+            mode="tags"
+            className="w-full"
+            // value={secondaryWhoSelectedOptions}
+            // onChange={onSecondaryWhosChange}
+            placeholder={"Select Primary Wheres"}
+          >
+            {storyUploadApiResponse.primaryWheres?.map((option, index) => (
+              <Option key={index} value={option}>
+                {option}
+              </Option>
+            ))}
+          </Select>
+          <Select
+            size="small"
+            mode="tags"
+            className="w-full"
+            // value={secondaryWhoSelectedOptions}
+            // onChange={onSecondaryWhosChange}
+            placeholder={"Select Secondary Wheres"}
+          >
+            {storyUploadApiResponse.secondaryWheres?.map((option, index) => (
+              <Option key={index} value={option}>
+                {option}
+              </Option>
+            ))}
+          </Select>
+        </div>
         <div className="flex justify-end items-center mb-3">
           <Button className="bg-blue-500 text-white h-9" onClick={handleAddRow}>
             ADD NEW
@@ -441,8 +564,8 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
           onUpdate={onUpdate}
           onClose={() => {
             setShowCommentModal(false);
-            setComment('');
-            setModalType('');
+            setComment("");
+            setModalType("");
           }}
         />
       )}
