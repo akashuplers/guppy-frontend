@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import FooterButtons from "../FooterButtons";
 import { Button, Table, message, Input, Checkbox, Select } from "antd";
 // import { Button, Checkbox, Modal, Select } from "antd";
-
+import { SearchOutlined } from '@ant-design/icons';
 import DeleteConfirmationDialog from "../../../utils/modals/DeleteConfirmationDialog";
 import { StoryUploadApiContext } from "../../../contexts/ApiContext";
 import { API_BASE_PATH, API_ROUTES } from "../../../constants/api-endpoints";
@@ -30,16 +30,16 @@ const { Option } = Select;
   const [comment, setComment] = useState('');
   const [modalType, setModalType] = useState('');
   const navigate = useNavigate();
-  const [searchText, setSearchText] = useState({
-    title: '',
-    primaryWhos: '',
-    secondaryWhos: '',
-    primaryWhats: '',
-    secondaryWhats: '',
-    primaryWheres: '',
-    secondaryWheres: '',
-    comment: '',
-  });
+  // const [searchText, setSearchText] = useState({
+  //   title: '',
+  //   primaryWhos: '',
+  //   secondaryWhos: '',
+  //   primaryWhats: '',
+  //   secondaryWhats: '',
+  //   primaryWheres: '',
+  //   secondaryWheres: '',
+  //   comment: '',
+  // });
   const handleSearchChange = (e, column) => {
     setSearchText((prev) => ({
       ...prev,
@@ -231,6 +231,10 @@ const { Option } = Select;
     message.success("Deleted Successfully !");
     handleAnythingChanged(true);
   };
+console.log("storyUploadApiResponse.primaryWhos",storyUploadApiResponse.primaryWhos);
+
+const [searchText, setSearchText] = useState(''); // Manage search text state
+const [selectedKeys, setSelectedKeys] = useState([]); // Manage selected filter values
 
   const titleSelectionColumns = [
     {
@@ -242,6 +246,64 @@ const { Option } = Select;
     {
       dataIndex: "primaryWhos",
       title: <p className="text-center">Primary WHOs</p>,
+      filters: storyUploadApiResponse.primaryWhos.map((who) => ({
+        text: who,  
+        value: who, 
+      })),
+      onFilter: (value, record) => {
+        return record.primaryWhos && record.primaryWhos.includes(value);
+      },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+        <div className="p-2 w-52">
+          <Input
+            placeholder="Primary WHOs"
+            value={selectedKeys[0] || ''}
+            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()} 
+            className="p-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none mb-2 w-full"
+          />
+          <div className="max-h-48 overflow-y-auto">
+            {storyUploadApiResponse.primaryWhos
+              .filter((who) => who.toLowerCase().includes(selectedKeys[0]?.toLowerCase() || ""))  
+              .map((who) => (
+                <div key={who} className="flex items-center mb-2">
+                  <Checkbox
+                    value={who}
+                    checked={selectedKeys.includes(who)} 
+                    onChange={() => {
+                      const newSelectedKeys = selectedKeys.includes(who)
+                        ? selectedKeys.filter((key) => key !== who)
+                        : [...selectedKeys, who];  
+                      setSelectedKeys(newSelectedKeys);
+                    }}
+                  >
+                    {who}
+                  </Checkbox>
+                </div>
+              ))}
+          </div>
+          <div className="mt-2 ">
+          <Button
+              icon={<SearchOutlined />}
+              size="small"
+              className="w-20 bg-blue-500 hover:bg-blue-300 text-sm mr-2"
+              onClick={() => {
+                confirm();
+              }}
+            >
+              Search
+            </Button>
+            <Button
+              onClick={() => clearFilters && clearFilters()}
+              size="small"
+              className="w-20 bg-gray-200 hover:bg-gray-300 text-sm"
+            >
+              Reset
+            </Button>
+          </div>
+        </div>
+      ),
+      sortDirections: ['descend', 'ascend'],
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
@@ -254,6 +316,64 @@ const { Option } = Select;
     {
       dataIndex: "secondaryWhos",
       title: <p className="text-center">Secondary WHOs</p>,
+      filters: storyUploadApiResponse.secondaryWhos.map((who) => ({
+        text: who,  
+        value: who, 
+      })),
+      onFilter: (value, record) => {
+        return record.secondaryWhos && record.secondaryWhos.includes(value);
+      },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+        <div className="p-2 w-52">
+          <Input
+            placeholder="Secondary WHOs"
+            value={selectedKeys[0] || ''} 
+            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()} 
+            className="p-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none mb-2 w-full"
+          />
+          <div className="max-h-48 overflow-y-auto">
+          {storyUploadApiResponse.secondaryWhos
+              .filter((who) => who.toLowerCase().includes(selectedKeys[0]?.toLowerCase() || ""))  
+              .map((who) => (
+                <div key={who}>
+                  <Checkbox
+                    value={who}
+                    checked={selectedKeys.includes(who)} 
+                    onChange={() => {
+                      const newSelectedKeys = selectedKeys.includes(who)
+                        ? selectedKeys.filter((key) => key !== who) 
+                        : [...selectedKeys, who];  
+                      setSelectedKeys(newSelectedKeys);
+                    }}
+                  >
+                    {who}
+                  </Checkbox>
+                </div>
+              ))}
+          </div>
+          <div className="mt-2">
+          <Button
+              icon={<SearchOutlined />}
+              size="small"
+              className="w-20 bg-blue-500 hover:bg-blue-300 text-sm mr-2"
+              onClick={() => {
+                confirm();
+              }}
+            >
+              Search
+            </Button>
+            <Button
+              onClick={() => clearFilters && clearFilters()}
+              size="small"
+              className="w-20 bg-gray-200 hover:bg-gray-300 text-sm"
+            >
+              Reset
+            </Button>
+          </div>
+        </div>
+      ),
+      sortDirections: ['descend', 'ascend'],
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
@@ -266,6 +386,64 @@ const { Option } = Select;
     {
       dataIndex: "primaryWhats",
       title: <p className="text-center">Primary WHATs</p>,
+      filters: storyUploadApiResponse.primaryWhats.map((who) => ({
+        text: who,  
+        value: who,
+      })),
+      onFilter: (value, record) => {
+        return record.primaryWhats && record.primaryWhats.includes(value);
+      },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+        <div className="p-2 w-52">
+          <Input
+            placeholder="Primary WHATs"
+            value={selectedKeys[0] || ''} 
+            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()} 
+            className="p-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none mb-2 w-full"
+            />
+          <div className="max-h-48 overflow-y-auto">
+          {storyUploadApiResponse.primaryWhats
+              .filter((who) => who.toLowerCase().includes(selectedKeys[0]?.toLowerCase() || ""))  
+              .map((who) => (
+                <div key={who}>
+                  <Checkbox
+                    value={who}
+                    checked={selectedKeys.includes(who)} 
+                    onChange={() => {
+                      const newSelectedKeys = selectedKeys.includes(who)
+                        ? selectedKeys.filter((key) => key !== who) 
+                        : [...selectedKeys, who];
+                      setSelectedKeys(newSelectedKeys);
+                    }}
+                  >
+                    {who}
+                  </Checkbox>
+                </div>
+              ))}
+          </div>
+          <div className="mt-2">
+          <Button
+              icon={<SearchOutlined />}
+              size="small"
+              className="w-20 bg-blue-500 hover:bg-blue-300 text-sm mr-2"
+              onClick={() => {
+                confirm(); 
+              }}
+            >
+              Search
+            </Button>
+            <Button
+              onClick={() => clearFilters && clearFilters()}
+              size="small"
+              className="w-20 bg-gray-200 hover:bg-gray-300 text-sm"
+              >
+              Reset
+            </Button>
+          </div>
+        </div>
+      ),
+      sortDirections: ['descend', 'ascend'],
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
@@ -278,6 +456,64 @@ const { Option } = Select;
     {
       dataIndex: "secondaryWhats",
       title: <p className="text-center">Secondary WHATs</p>,
+      filters: storyUploadApiResponse.secondaryWhats.map((who) => ({
+        text: who,  
+        value: who, 
+      })),
+      onFilter: (value, record) => {
+        return record.secondaryWhats && record.secondaryWhats.includes(value);
+      },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+        <div className="p-2 w-52">
+          <Input
+            placeholder="Secondary WHATs"
+            value={selectedKeys[0] || ''} 
+            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()} 
+            className="p-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none mb-2 w-full"
+            />
+          <div className="max-h-48 overflow-y-auto">
+          {storyUploadApiResponse.secondaryWhats
+              .filter((who) => who.toLowerCase().includes(selectedKeys[0]?.toLowerCase() || ""))  
+              .map((who) => (
+                <div key={who}>
+                  <Checkbox
+                    value={who}
+                    checked={selectedKeys.includes(who)} 
+                    onChange={() => {
+                      const newSelectedKeys = selectedKeys.includes(who)
+                        ? selectedKeys.filter((key) => key !== who)  
+                        : [...selectedKeys, who];  
+                      setSelectedKeys(newSelectedKeys);
+                    }}
+                  >
+                    {who}
+                  </Checkbox>
+                </div>
+              ))}
+          </div>
+          <div className="mt-2">
+          <Button
+              icon={<SearchOutlined />}
+              size="small"
+              className="w-20 bg-blue-500 hover:bg-blue-300 text-sm mr-2"
+              onClick={() => {
+                confirm(); 
+              }}
+            >
+              Search
+            </Button>
+            <Button
+              onClick={() => clearFilters && clearFilters()}
+              size="small"
+              className="w-20 bg-gray-200 hover:bg-gray-300 text-sm"
+              >
+              Reset
+            </Button>
+          </div>
+        </div>
+      ),
+      sortDirections: ['descend', 'ascend'],
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
@@ -290,6 +526,65 @@ const { Option } = Select;
     {
       dataIndex: "primaryWheres",
       title: <p className="text-center">Primary WHEREs</p>,
+      filters: storyUploadApiResponse.primaryWheres.map((who) => ({
+        text: who, 
+        value: who,
+      })),
+      onFilter: (value, record) => {
+        return record.primaryWheres && record.primaryWheres.includes(value);
+      },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+        <div className="p-2 w-52">
+          <Input
+            placeholder="Primary WHEREs"
+            value={selectedKeys[0] || ''} 
+            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()}
+            className="p-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none mb-2 w-full"
+            />
+          
+          <div className="max-h-48 overflow-y-auto">
+          {storyUploadApiResponse.primaryWheres
+              .filter((who) => who.toLowerCase().includes(selectedKeys[0]?.toLowerCase() || ""))  
+              .map((who) => (
+                <div key={who}>
+                  <Checkbox
+                    value={who}
+                    checked={selectedKeys.includes(who)}
+                    onChange={() => {
+                      const newSelectedKeys = selectedKeys.includes(who)
+                        ? selectedKeys.filter((key) => key !== who)  
+                        : [...selectedKeys, who]; 
+                      setSelectedKeys(newSelectedKeys);
+                    }}
+                  >
+                    {who}
+                  </Checkbox>
+                </div>
+              ))}
+          </div>
+          <div className="mt-2">
+          <Button
+              icon={<SearchOutlined />}
+              size="small"
+              className="w-20 bg-blue-500 hover:bg-blue-300 text-sm mr-2"
+              onClick={() => {
+                confirm(); 
+              }}
+            >
+              Search
+            </Button>
+            <Button
+              onClick={() => clearFilters && clearFilters()}
+              size="small"
+              className="w-20 bg-gray-200 hover:bg-gray-300 text-sm"
+              >
+              Reset
+            </Button>
+          </div>
+        </div>
+      ),
+      sortDirections: ['descend', 'ascend'],
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
@@ -302,6 +597,64 @@ const { Option } = Select;
     {
       dataIndex: "secondaryWheres",
       title: <p className="text-center">Secondary WHEREs</p>,
+      filters: storyUploadApiResponse.secondaryWheres.map((who) => ({
+        text: who, 
+        value: who,
+      })),
+      onFilter: (value, record) => {
+        return record.secondaryWheres && record.secondaryWheres.some(val => value.includes(val));
+      },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+        <div className="p-2 w-52">
+          <Input
+            placeholder="Secondary WHEREs"
+            value={selectedKeys[0] || ''} 
+            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()} 
+            className="p-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none mb-2 w-full"
+          />
+          <div className="max-h-48 overflow-y-auto">
+            {storyUploadApiResponse.secondaryWheres
+              .filter((who) => who.toLowerCase().includes(selectedKeys[0]?.toLowerCase() || ""))  
+              .map((who) => (
+                <div key={who}>
+                  <Checkbox
+                    value={who}
+                    checked={selectedKeys.includes(who)} 
+                    onChange={() => {
+                      const newSelectedKeys = selectedKeys.includes(who)
+                        ? selectedKeys.filter((key) => key !== who) 
+                        : [...selectedKeys, who];  
+                      setSelectedKeys(newSelectedKeys);
+                    }}
+                  >
+                    {who}
+                  </Checkbox>
+                </div>
+              ))}
+          </div>    
+          <div className="mt-2">
+          <Button
+              icon={<SearchOutlined />}
+              size="small"
+              className="w-20 bg-blue-500 hover:bg-blue-300 text-sm mr-2"
+              onClick={() => {
+                confirm(); 
+              }}
+            >
+              Search
+            </Button>
+            <Button
+              onClick={() => clearFilters && clearFilters()}
+              size="small"
+              className="w-20 bg-gray-200 hover:bg-gray-300 text-sm"
+              >
+              Reset
+            </Button>
+          </div>
+        </div>
+      ),
+      sortDirections: ['descend', 'ascend'],
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
@@ -389,18 +742,6 @@ const { Option } = Select;
     },
   ];
 
-  const filteredData = titleSelectionItems.filter(item => {
-    return (
-      item.title.toLowerCase().includes(searchText.title.toLowerCase()) &&
-      getCSVsFromList(item.primaryWhos).toLowerCase().includes(searchText.primaryWhos.toLowerCase()) &&
-      getCSVsFromList(item.secondaryWhos).toLowerCase().includes(searchText.secondaryWhos.toLowerCase()) &&
-      getCSVsFromList(item.primaryWhats).toLowerCase().includes(searchText.primaryWhats.toLowerCase()) &&
-      getCSVsFromList(item.secondaryWhats).toLowerCase().includes(searchText.secondaryWhats.toLowerCase()) &&
-      getCSVsFromList(item.primaryWheres).toLowerCase().includes(searchText.primaryWheres.toLowerCase()) &&
-      getCSVsFromList(item.secondaryWheres).toLowerCase().includes(searchText.secondaryWheres.toLowerCase()) &&
-      (item.comment ? item.comment.toLowerCase().includes(searchText.comment.toLowerCase()) : true)
-    );
-  });
   return (
     <div className="px-5 pb-5 rounded-md border">
       <div className="text-lg flex flex-col md:flex-row justify-between md:text-xl mt-5 mb-3 md:mb-4">
@@ -425,92 +766,6 @@ const { Option } = Select;
 
       {/* body */}
       <div>
-        <div className="flex space-x-4 mb-4">
-          <Select
-            size="small"
-            mode="tags"
-            className="w-full"
-            // value={secondaryWhoSelectedOptions}
-            // onChange={onSecondaryWhosChange}
-            placeholder={"Select Primary Whos"}
-          >
-            {storyUploadApiResponse.primaryWhos?.map((option, index) => (
-              <Option key={index} value={option}>
-                {option}
-              </Option>
-            ))}
-          </Select>
-          <Select
-            size="small"
-            mode="tags"
-            className="w-full"
-            // value={secondaryWhoSelectedOptions}
-            // onChange={onSecondaryWhosChange}
-            placeholder={"Select Secondary Whos"}
-          >
-            {storyUploadApiResponse.secondaryWhos?.map((option, index) => (
-              <Option key={index} value={option}>
-                {option}
-              </Option>
-            ))}
-          </Select>
-          <Select
-            size="small"
-            mode="tags"
-            className="w-full"
-            // value={secondaryWhoSelectedOptions}
-            // onChange={onSecondaryWhosChange}
-            placeholder={"Select Primary Whats"}
-          >
-            {storyUploadApiResponse.primaryWhats?.map((option, index) => (
-              <Option key={index} value={option}>
-                {option}
-              </Option>
-            ))}
-          </Select>
-          <Select
-            size="small"
-            mode="tags"
-            className="w-full"
-            // value={secondaryWhoSelectedOptions}
-            // onChange={onSecondaryWhosChange}
-            placeholder={"Select Secondary Whats"}
-          >
-            {storyUploadApiResponse.secondaryWhats?.map((option, index) => (
-              <Option key={index} value={option}>
-                {option}
-              </Option>
-            ))}
-          </Select>
-          <Select
-            size="small"
-            mode="tags"
-            className="w-full"
-            // value={secondaryWhoSelectedOptions}
-            // onChange={onSecondaryWhosChange}
-            placeholder={"Select Primary Wheres"}
-          >
-            {storyUploadApiResponse.primaryWheres?.map((option, index) => (
-              <Option key={index} value={option}>
-                {option}
-              </Option>
-            ))}
-          </Select>
-          <Select
-            size="small"
-            mode="tags"
-            className="w-full"
-            // value={secondaryWhoSelectedOptions}
-            // onChange={onSecondaryWhosChange}
-            placeholder={"Select Secondary Wheres"}
-          >
-            {storyUploadApiResponse.secondaryWheres?.map((option, index) => (
-              <Option key={index} value={option}>
-                {option}
-              </Option>
-            ))}
-          </Select>
-        </div>
         <div className="flex justify-end items-center mb-3">
           <Button className="bg-blue-500 text-white h-9" onClick={handleAddRow}>
             ADD NEW
