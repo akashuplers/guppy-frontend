@@ -1,10 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
 import FooterButtons from "../FooterButtons";
-import { Button, Table, message } from "antd";
+import { Button, Table, message, Input, Checkbox, Select } from "antd";
 import DeleteConfirmationDialog from "../../../utils/modals/DeleteConfirmationDialog";
 import { StoryUploadApiContext } from "../../../contexts/ApiContext";
 import { API_BASE_PATH, API_ROUTES } from "../../../constants/api-endpoints";
 import axios from "axios";
+import { SearchOutlined } from '@ant-design/icons';
 import { useNavigate } from "react-router-dom";
 import ModifySelectionPopup from "../ModifySelectionPopup";
 import StoryTextPopup from "../StoryTextPopup";
@@ -229,6 +230,59 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSu
     handleAnythingChanged(true);
   };
 
+  const generateFilterDropdown = (storyUploadApiResponse, selectedKeys, setSelectedKeys, confirm, clearFilters, placeholder) => {
+    return (
+      <div className="p-2 w-52">
+        <Input
+          placeholder={placeholder}
+          value={selectedKeys[0] || ''}
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => confirm()}
+          className="p-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none mb-2 w-full"
+        />
+        <div className="max-h-48 overflow-y-auto">
+          {storyUploadApiResponse
+            .filter((who) => who.toLowerCase().includes(selectedKeys[0]?.toLowerCase() || ""))
+            .map((who) => (
+              <div key={who}>
+                <Checkbox
+                  value={who}
+                  checked={selectedKeys.includes(who)}
+                  onChange={() => {
+                    const newSelectedKeys = selectedKeys.includes(who)
+                      ? selectedKeys.filter((key) => key !== who)
+                      : [...selectedKeys, who];
+                    setSelectedKeys(newSelectedKeys);
+                  }}
+                >
+                  {who}
+                </Checkbox>
+              </div>
+            ))}
+        </div>
+        <div className="mt-2">
+          <Button
+            icon={<SearchOutlined />}
+            size="small"
+            className="w-20 bg-blue-400 hover:bg-blue-300 text-sm mr-2"
+            onClick={() => {
+              confirm();
+            }}
+          >
+            Search
+          </Button>
+          <Button
+            onClick={() => clearFilters && clearFilters()}
+            size="small"
+            className="w-20 bg-gray-200 hover:bg-gray-300 text-sm"
+          >
+            Reset
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
   const situationSelectionColumns = [
     {
       dataIndex: "idea",
@@ -239,6 +293,16 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSu
     {
       dataIndex: "primaryWhos",
       title: <p className="text-center">Primary WHOs</p>,
+      filters: storyUploadApiResponse.primaryWhos.map((who) => ({
+        text: who,  
+        value: who, 
+      })),
+      onFilter: (value, record) => {
+        return record.primaryWhos && record.primaryWhos.includes(value);
+      },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
+        generateFilterDropdown(storyUploadApiResponse.primaryWhos, selectedKeys, setSelectedKeys, confirm, clearFilters, "Primary WHOs"),
+      sortDirections: ['descend', 'ascend'],
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
@@ -251,6 +315,16 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSu
     {
       dataIndex: "secondaryWhos",
       title: <p className="text-center">Secondary WHOs</p>,
+      filters: storyUploadApiResponse.secondaryWhos.map((who) => ({
+        text: who,  
+        value: who, 
+      })),
+      onFilter: (value, record) => {
+        return record.secondaryWhos && record.secondaryWhos.includes(value);
+      },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
+        generateFilterDropdown(storyUploadApiResponse.secondaryWhos, selectedKeys, setSelectedKeys, confirm, clearFilters, "Secondary WHOs"),
+      sortDirections: ['descend', 'ascend'],
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
@@ -263,6 +337,16 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSu
     {
       dataIndex: "primaryWhats",
       title: <p className="text-center">Primary WHATs</p>,
+      filters: storyUploadApiResponse.primaryWhats.map((who) => ({
+        text: who,  
+        value: who, 
+      })),
+      onFilter: (value, record) => {
+        return record.primaryWhats && record.primaryWhats.includes(value);
+      },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
+        generateFilterDropdown(storyUploadApiResponse.primaryWhats, selectedKeys, setSelectedKeys, confirm, clearFilters, "Primary WHATs"),
+      sortDirections: ['descend', 'ascend'],
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
@@ -275,6 +359,16 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSu
     {
       dataIndex: "secondaryWhats",
       title: <p className="text-center">Secondary WHATs</p>,
+      filters: storyUploadApiResponse.secondaryWhats.map((who) => ({
+        text: who,  
+        value: who, 
+      })),
+      onFilter: (value, record) => {
+        return record.secondaryWhats && record.secondaryWhats.includes(value);
+      },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
+        generateFilterDropdown(storyUploadApiResponse.secondaryWhats, selectedKeys, setSelectedKeys, confirm, clearFilters, "Secondary WHATs"),
+      sortDirections: ['descend', 'ascend'],
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
@@ -287,6 +381,16 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSu
     {
       dataIndex: "primaryWheres",
       title: <p className="text-center">Primary WHEREs</p>,
+      filters: storyUploadApiResponse.primaryWheres.map((who) => ({
+        text: who,  
+        value: who, 
+      })),
+      onFilter: (value, record) => {
+        return record.primaryWheres && record.primaryWheres.includes(value);
+      },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
+        generateFilterDropdown(storyUploadApiResponse.primaryWheres, selectedKeys, setSelectedKeys, confirm, clearFilters, "Primary WHEREs"),
+      sortDirections: ['descend', 'ascend'],
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
@@ -299,6 +403,16 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSu
     {
       dataIndex: "secondaryWheres",
       title: <p className="text-center">Secondary WHEREs</p>,
+      filters: storyUploadApiResponse.secondaryWheres.map((who) => ({
+        text: who,  
+        value: who, 
+      })),
+      onFilter: (value, record) => {
+        return record.secondaryWheres && record.secondaryWheres.includes(value);
+      },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
+        generateFilterDropdown(storyUploadApiResponse.secondaryWheres, selectedKeys, setSelectedKeys, confirm, clearFilters, "Secondary WHEREs"),
+      sortDirections: ['descend', 'ascend'],
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
