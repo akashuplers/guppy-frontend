@@ -18,7 +18,6 @@ const getCSVsFromList = (list_of_strings) => {
 };
 
 const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = () => {}}) => {
-const { Option } = Select;
 
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
