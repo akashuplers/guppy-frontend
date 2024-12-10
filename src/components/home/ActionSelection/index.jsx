@@ -32,8 +32,6 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, actions, updatedActions, primaryWhos } = storyUploadApiResponse;
 
-  console.log("storyUploadApiResponse",storyUploadApiResponse);
-  
   useEffect(() => {
     setActionSelectionItems(updatedActions);
   }, []);

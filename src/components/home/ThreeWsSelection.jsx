@@ -1,10 +1,6 @@
 import React, { useRef, useContext, useEffect, useState } from "react";
-import {
-  ChevronUpDownIcon,
-  ChevronUpIcon,
-  ChevronDownIcon,
-} from "@heroicons/react/20/solid";
 import FooterButtons from "./FooterButtons";
+import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
 import DeleteConfirmationDialog from "../../utils/modals/DeleteConfirmationDialog";
 import { message } from "antd";
 import EditModal from "./EditModal";
@@ -13,26 +9,8 @@ import { API_BASE_PATH, API_ROUTES } from "../../constants/api-endpoints";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import StoryTextPopup from "./StoryTextPopup";
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  fill="none"
-  viewBox="0 0 24 24"
-  strokeWidth={1.5}
-  stroke="currentColor"
-  className="size-6"
->
-  <path
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    d="m4.5 15.75 7.5-7.5 7.5 7.5"
-  />
-</svg>;
 
-const ThreeWsSelection = ({
-  onDiscard = () => {},
-  saveWs,
-  handleSaveSuccess = () => {},
-}) => {
+const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = () => {}}) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletionItem, setDeletionItem] = useState({});
   const [type, setType] = useState("");
@@ -56,11 +34,7 @@ const ThreeWsSelection = ({
   const scrollableWhereDivRef = useRef(null);
 
   // story upload context
-  const {
-    storyUploadApiResponse,
-    setStoryUploadApiResponse,
-    handleAnythingChanged,
-  } = useContext(StoryUploadApiContext);
+  const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const navigate = useNavigate();
   const {
     story_id,
@@ -76,14 +50,7 @@ const ThreeWsSelection = ({
   } = storyUploadApiResponse;
 
   useEffect(() => {
-    const {
-      primaryWhos,
-      secondaryWhos,
-      primaryWhats,
-      secondaryWhats,
-      primaryWheres,
-      secondaryWheres,
-    } = storyUploadApiResponse;
+    const { primaryWhos, secondaryWhos, primaryWhats, secondaryWhats, primaryWheres, secondaryWheres } = storyUploadApiResponse;
     setWhoItems(updatedWhos);
     setWhatItems(updatedWhats);
     setWhereItems(updatedWheres);
@@ -93,21 +60,20 @@ const ThreeWsSelection = ({
     setSecondaryWhats(secondaryWhats);
     setPrimaryWheres(primaryWheres);
     setSecondaryWheres(secondaryWheres);
-    const selectedId = updatedWhos.find(
-      (item) => item.isRadioSelected === true
-    )?.id;
+    const selectedId = updatedWhos.find(item => item.isRadioSelected === true)?.id;
     setSelectedPrimaryWho(selectedId);
+
   }, [storyUploadApiResponse, isSaved]);
 
   useEffect(() => {
-    if (saveWs) {
+    if(saveWs){
       onSave();
     }
   }, [saveWs]);
 
   const handleWhoRadioChange = (item) => {
     const name = item?.newName ?? item?.name;
-    if (item.isRadioSelected) {
+    if(item.isRadioSelected) {
       const filteredArr = primaryWhos.filter(
         (ele) => ele.toLowerCase() !== name.toLowerCase()
       );
@@ -148,7 +114,7 @@ const ThreeWsSelection = ({
 
   const handleWhatRadioChange = (item) => {
     const name = item?.newName ?? item?.name;
-    if (item.isRadioSelected) {
+    if(item.isRadioSelected) {
       const filteredArr = primaryWhats.filter(
         (ele) => ele.toLowerCase() !== name.toLowerCase()
       );
@@ -187,7 +153,7 @@ const ThreeWsSelection = ({
 
   const handleWhereRadioChange = (item) => {
     const name = item?.newName ?? item?.name;
-    if (item.isRadioSelected) {
+    if(item.isRadioSelected) {
       const filteredArr = primaryWheres.filter(
         (ele) => ele.toLowerCase() !== name.toLowerCase()
       );
@@ -343,7 +309,7 @@ const ThreeWsSelection = ({
   };
 
   const getUpdatedJson = (arr) => {
-    if (arr && arr.length > 0) {
+    if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
         id: item.id,
         title: item.Title,
@@ -353,16 +319,16 @@ const ThreeWsSelection = ({
         secondaryWhats: item.What_Secondary,
         primaryWheres: item.Where_Primary,
         secondaryWheres: item.Where_Secondary,
-        comment: item.comment,
+        comment: item.comment
       }));
       return updated;
     }
     return [];
-  };
+  }
 
   const getWhoValues = (whoResponse) => {
-    return whoResponse.map((who) => {
-      const whoItem = whoItems.find((item) =>
+    return whoResponse.map(who => {
+      const whoItem = whoItems.find(item => 
         item.newName ? item.newName === who.value : item.name === who.value
       );
 
@@ -370,40 +336,40 @@ const ThreeWsSelection = ({
         id: who.id,
         isRadioSelected: whoItem.isRadioSelected ?? false,
         isCheckboxSelected: whoItem.isCheckboxSelected ?? false,
-        name: who.value,
-      };
-    });
-  };
+        name: who.value
+      }
+    })
+  }
 
   const getWhatValues = (whatResponse) => {
-    return whatResponse.map((what) => {
-      const whatItem = whatItems.find((item) =>
+    return whatResponse.map(what => {
+      const whatItem = whatItems.find(item => 
         item.newName ? item.newName === what.value : item.name === what.value
       );
-
+      
       return {
         id: what.id,
         isRadioSelected: whatItem.isRadioSelected ?? false,
         isCheckboxSelected: whatItem.isCheckboxSelected ?? false,
-        name: what.value,
-      };
-    });
-  };
+        name: what.value
+      }
+    })
+  }
 
   const getWhereValues = (whereResponse) => {
-    return whereResponse.map((where) => {
-      const whereItem = whereItems.find((item) =>
+    return whereResponse.map(where => {
+      const whereItem = whereItems.find(item => 
         item.newName ? item.newName === where.value : item.name === where.value
       );
-
+      
       return {
         id: where.id,
         isRadioSelected: whereItem.isRadioSelected ?? false,
         isCheckboxSelected: whereItem.isCheckboxSelected ?? false,
-        name: where.value,
-      };
-    });
-  };
+        name: where.value
+      }
+    })
+  }
   const onSave = async () => {
     setIsSubmitting(true);
     let alertKey;
@@ -411,6 +377,8 @@ const ThreeWsSelection = ({
       // api call
       const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_Ws;
       const payload = bodyForSaveWsApi();
+      
+      console.log('payload',payload);
 
       const config = {
         headers: {
@@ -453,6 +421,7 @@ const ThreeWsSelection = ({
         message.success("Ws Saved Successfully !");
         handleSaveSuccess(true);
         handleAnythingChanged(false);
+
       } else {
         message.destroy(alertKey); // stop infinite loader alert
         message.error("Error In Saving Ws ! Unable To Fetch Response !");
@@ -471,7 +440,9 @@ const ThreeWsSelection = ({
         if (errorMessage) {
           message.error(errorMessage);
         } else {
-          message.error("Error In Saving Ws ! Unable To Fetch Response !");
+          message.error(
+            "Error In Saving Ws ! Unable To Fetch Response !"
+          );
         }
       }
     }
@@ -508,35 +479,24 @@ const ThreeWsSelection = ({
   // };
 
   const createWsArray = (wsList) => {
-    let updated = wsList?.map((item) => {
-      if (item.isNewField) {
-        return {
-          type: item.isRadioSelected
-            ? "Primary"
-            : item.isCheckboxSelected
-            ? "Secondary"
-            : "null",
-          value: item.newName ?? item.name,
-          id: "",
-          new: true,
-          updated: false,
-          ner: item.ner ?? false,
-        };
-      } else {
-        return {
-          type: item.isRadioSelected
-            ? "Primary"
-            : item.isCheckboxSelected
-            ? "Secondary"
-            : "null",
-          value: item.name,
-          newValue: item.newName,
-          updated: item.newName !== undefined,
-          ner: item.ner ?? false,
-          id: item.id ?? "",
-        };
+    let updated = wsList?.map((item) => {if(item.isNewField){ return {
+      type: item.isRadioSelected ? "Primary" : item.isCheckboxSelected ? "Secondary" : "null",
+      value: item.newName ?? item.name,
+      id: '',
+      new: true,
+      updated: false,
+      ner: item.ner ?? false,
+    }
+  } else {
+      return {
+        type: item.isRadioSelected ? "Primary" : item.isCheckboxSelected ? "Secondary" : "null",
+        value: item.name,
+        newValue: item.newName,
+        updated: item.newName !== undefined,
+        ner: item.ner ?? false,
+        id: item.id ?? ''
       }
-    });
+    }});
     return updated;
   };
 
@@ -549,10 +509,10 @@ const ThreeWsSelection = ({
       isCheckboxSelected: false,
       isRadioSelected: false,
       name: "text",
-      isNewField: true,
+      isNewField: true
     };
-
-    setWhoItems((prev) => [{ id: whoItems.length + 1, ...newField }, ...prev]);
+    
+    setWhoItems((prev) => [{id: whoItems.length + 1, ...newField}, ...prev]);
     handleAnythingChanged(true);
   };
 
@@ -565,13 +525,10 @@ const ThreeWsSelection = ({
       isCheckboxSelected: false,
       isRadioSelected: false,
       name: "text",
-      isNewField: true,
+      isNewField: true
     };
-
-    setWhatItems((prev) => [
-      { id: whatItems.length + 1, ...newField },
-      ...prev,
-    ]);
+    
+    setWhatItems((prev) => [{id: whatItems.length + 1, ...newField}, ...prev]);
     handleAnythingChanged(true);
   };
 
@@ -584,13 +541,10 @@ const ThreeWsSelection = ({
       isCheckboxSelected: false,
       isRadioSelected: false,
       name: "text",
-      isNewField: true,
+      isNewField: true
     };
 
-    setWhereItems((prev) => [
-      { id: whereItems.length + 1, ...newField },
-      ...prev,
-    ]);
+    setWhereItems((prev) => [{id: whereItems.length + 1, ...newField}, ...prev]);
     handleAnythingChanged(true);
   };
 
@@ -611,6 +565,7 @@ const ThreeWsSelection = ({
     setSecondaryWheres([]);
   };
 
+  
   const onDragStart = (evt, itemId) => {
     evt.dataTransfer.setData("text/plain", itemId);
   };
@@ -622,13 +577,13 @@ const ThreeWsSelection = ({
   const onDragEnter = (evt) => {
     evt.preventDefault();
     const element = evt.currentTarget;
-    element.classList.add("dragged-over");
-    evt.dataTransfer.dropEffect = "move";
+    element.classList.add("dragged-over"); 
+    evt.dataTransfer.dropEffect = "move"; 
   };
 
   const onDragLeave = (evt) => {
     const element = evt.currentTarget;
-    element.classList.remove("dragged-over");
+    element.classList.remove("dragged-over"); 
   };
 
   const onDragOver = (evt) => {
@@ -636,63 +591,61 @@ const ThreeWsSelection = ({
     evt.dataTransfer.dropEffect = "move";
   };
 
-  const onDrop = (evt, target) => {
-    evt.preventDefault();
-    const data = evt.dataTransfer.getData("text/plain");
-    let draggedItem;
-    let sourceItems = [];
-    let setSourceItems = () => {};
-    if (whoItems.some((item) => item.id.toString() === data)) {
-      draggedItem = whoItems.find((item) => item.id.toString() === data);
-      sourceItems = whoItems;
-      setSourceItems = setWhoItems;
-    } else if (whatItems.some((item) => item.id.toString() === data)) {
-      draggedItem = whatItems.find((item) => item.id.toString() === data);
-      sourceItems = whatItems;
-      setSourceItems = setWhatItems;
-    } else if (whereItems.some((item) => item.id.toString() === data)) {
-      draggedItem = whereItems.find((item) => item.id.toString() === data);
-      sourceItems = whereItems;
-      setSourceItems = setWhereItems;
-    }
-    if (draggedItem) {
-      const updatedSourceItems = sourceItems.filter(
-        (item) => item.id !== draggedItem.id
-      );
-      setSourceItems(updatedSourceItems);
-      if (target === "what") {
-        setWhatItems((prevItems) => [...prevItems, draggedItem]);
-      } else if (target === "where") {
-        setWhereItems((prevItems) => [...prevItems, draggedItem]);
-      } else if (target === "who") {
-        setWhoItems((prevItems) => [...prevItems, draggedItem]);
-      }
-    }
-  };
+ const onDrop = (evt, target) => {
+   evt.preventDefault();
+   const data = evt.dataTransfer.getData("text/plain"); 
+   let draggedItem;
+   let sourceItems = [];
+   let setSourceItems = () => {}; 
+   if (whoItems.some(item => item.id.toString() === data)) {
+     draggedItem = whoItems.find((item) => item.id.toString() === data);
+     sourceItems = whoItems;
+     setSourceItems = setWhoItems;
+   } else if (whatItems.some(item => item.id.toString() === data)) {
+     draggedItem = whatItems.find((item) => item.id.toString() === data);
+     sourceItems = whatItems;
+     setSourceItems = setWhatItems;
+   } else if (whereItems.some(item => item.id.toString() === data)) {
+     draggedItem = whereItems.find((item) => item.id.toString() === data);
+     sourceItems = whereItems;
+     setSourceItems = setWhereItems;
+   }
+   if (draggedItem) {
+     const updatedSourceItems = sourceItems.filter((item) => item.id !== draggedItem.id);
+     setSourceItems(updatedSourceItems); 
+     if (target === "what") {
+       setWhatItems((prevItems) => [...prevItems, draggedItem]);
+     } else if (target === "where") {
+       setWhereItems((prevItems) => [...prevItems, draggedItem]);
+     } else if (target === "who") {
+       setWhoItems((prevItems) => [...prevItems, draggedItem]);
+     }
+   }
+ };
 
-  const [sortOrder, setSortOrder] = useState("");
+ const [sortOrder, setSortOrder] = useState("");
 
-  const handleSort = (title, direction) => {
-    const sortItems = (items) => {
-      return items.sort((a, b) => {
-        if (a.name.toLowerCase() < b.name.toLowerCase())
-          return direction === "asc" ? -1 : 1;
-        if (a.name.toLowerCase() > b.name.toLowerCase())
-          return direction === "asc" ? 1 : -1;
-        return 0;
-      });
-    };
+ const handleSort = (title, direction) => {
+   const sortItems = (items) => {
+     return items.sort((a, b) => {
+       if (a.name.toLowerCase() < b.name.toLowerCase())
+         return direction === "asc" ? -1 : 1;
+       if (a.name.toLowerCase() > b.name.toLowerCase())
+         return direction === "asc" ? 1 : -1;
+       return 0;
+     });
+   };
 
-    if (title === "who") {
-      setWhoItems(sortItems([...whoItems]));
-    } else if (title === "what") {
-      setWhatItems(sortItems([...whatItems]));
-    } else {
-      setWhereItems(sortItems([...whereItems]));
-    }
+   if (title === "who") {
+     setWhoItems(sortItems([...whoItems]));
+   } else if (title === "what") {
+     setWhatItems(sortItems([...whatItems]));
+   } else {
+     setWhereItems(sortItems([...whereItems]));
+   }
 
-    setSortOrder(direction);
-  };
+   setSortOrder(direction);
+ };
 
   return (
     <div className="px-5 pb-5 rounded-md border">
@@ -707,11 +660,7 @@ const ThreeWsSelection = ({
         <div className="flex justify-between">
           <p className="text-md md:text-lg mb-4 md:mb-6">
             File Uploaded :{" "}
-            <span
-              title="Click to see story text"
-              className="font-medium text-blue-500 cursor-pointer"
-              onClick={() => setShowStoryModal(true)}
-            >
+            <span title="Click to see story text" className="font-medium text-blue-500 cursor-pointer" onClick={() => setShowStoryModal(true)}>
               {fileName}
             </span>
           </p>
@@ -723,8 +672,8 @@ const ThreeWsSelection = ({
         {/* WHO SECTION */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4 flex items-center justify-between">
-              WHO
+          <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4 flex items-center justify-between">
+          WHO
               <div className="flex items-center">
                 <ChevronUpIcon
                   className={`h-5 w-5 cursor-pointer ${
@@ -742,6 +691,7 @@ const ThreeWsSelection = ({
                 />
               </div>
             </p>
+
             <button
               className={`text-white bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-2 py-2 text-center focus:ring-primary-800`}
               onClick={addNewWho}
@@ -750,42 +700,28 @@ const ThreeWsSelection = ({
             </button>
           </div>
 
-          <div
-            ref={scrollableWhoDivRef}
+          <div 
+            ref={scrollableWhoDivRef} 
             className="h-[24vh] overflow-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md"
             onDragLeave={onDragLeave}
             onDragEnter={onDragEnter}
             onDragEnd={onDragEnd}
             onDragOver={onDragOver}
-            onDrop={(e) => onDrop(e, "who")}
-          >
+            onDrop={(e) => onDrop(e, 'who')}>
             <ul className="mt-3 space-y-0 md:space-y-1">
               {whoItems?.map((item, index) => (
-                <li
-                  key={item.id}
-                  draggable
-                  onDragStart={(e) => onDragStart(e, item.id)}
-                  onDragEnd={onDragEnd} // Pass item id to onDragStart
-                >
+                <li key={item.id} draggable onDragStart={(e) => onDragStart(e, item.id)} onDragEnd={onDragEnd}  // Pass item id to onDragStart
+               >
                   <div className="flex items-center">
                     <div
-                      title={
-                        item.newName
-                          ? item.newName.length > 20
-                            ? item.newName
-                            : ""
-                          : item.name.length > 20
-                          ? item.name
-                          : ""
+                      title={item.newName ? item.newName.length>20 ? item.newName : ""
+                        : item.name.length > 20 ? item.name : ""
                       }
                       className="flex items-center w-full md:w-[18vw]"
                     >
                       <input
                         checked={item.isRadioSelected}
-                        disabled={
-                          item.isCheckboxSelected ||
-                          (selectedPrimaryWho && item.id !== selectedPrimaryWho)
-                        }
+                        disabled={item.isCheckboxSelected || (selectedPrimaryWho && item.id !== selectedPrimaryWho)}
                         onChange={() => handleWhoRadioChange(item)}
                         id={`link-radio-${index}`}
                         type="radio"
@@ -808,36 +744,28 @@ const ThreeWsSelection = ({
                         className="ms-2 text-md"
                       >
                         <p>
-                          {item.newName
-                            ? item.newName.length > 20
-                              ? item.newName.slice(0, 20) + "..."
-                              : item.newName
-                            : item.name.length > 20
+                          {item.newName ? item.newName.length>20 ? item.newName.slice(0,20) + "..." : item.newName
+                            :
+                            item.name.length > 20
                             ? item.name.slice(0, 20) + "..."
-                            : item.name}
+                            : item.name
+                          }
                         </p>
                       </label>
 
                       {/* clear radio selection icon */}
-                      {item.isRadioSelected && (
+                      {item.isRadioSelected &&
                         <button
                           title="Clear Selection"
                           className="ms-3 text-blue-600"
                           onClick={() => handleWhoRadioChange(item)}
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                            className="bi bi-x-circle"
-                            viewBox="0 0 16 16"
-                          >
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-circle" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
                           </svg>
                         </button>
-                      )}
+                      }
                     </div>
                     {/* edit icon */}
                     <button
@@ -894,8 +822,8 @@ const ThreeWsSelection = ({
         {/* WHAT SECTION */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4 flex items-center justify-between">
-              WHAT
+          <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4 flex items-center justify-between">
+            WHAT
               <div className="flex items-center">
                 <ChevronUpIcon
                   className={`h-5 w-5 cursor-pointer ${
@@ -913,6 +841,7 @@ const ThreeWsSelection = ({
                 />
               </div>
             </p>
+
             <button
               className={`text-white bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-2 py-2 text-center focus:ring-primary-800`}
               onClick={addNewWhat}
@@ -920,34 +849,23 @@ const ThreeWsSelection = ({
               Add New What
             </button>
           </div>
-          <div
-            ref={scrollableWhatDivRef}
+          <div 
+            ref={scrollableWhatDivRef} 
             className="h-[24vh] overflow-y-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md"
             onDragLeave={onDragLeave}
             onDragEnter={onDragEnter}
             onDragEnd={onDragEnd}
             onDragOver={onDragOver}
-            onDrop={(e) => onDrop(e, "what")}
-          >
+            onDrop={(e) => onDrop(e, 'what')}
+            >
             <ul className="mt-3 space-y-0 md:space-y-1">
               {whatItems?.map((item, index) => (
-                <li
-                  key={item.id}
-                  draggable
-                  onDragStart={(e) => onDragStart(e, item.id)}
-                  onDragEnd={onDragEnd}
-                >
+                <li key={item.id} draggable onDragStart={(e) => onDragStart(e, item.id)} onDragEnd={onDragEnd}>
                   <div className="flex items-center">
                     <div
-                      title={
-                        item.newName
-                          ? item.newName.length > 20
-                            ? item.newName
-                            : ""
-                          : item.name.length > 20
-                          ? item.name
-                          : ""
-                      }
+                      title={item.newName ? item.newName.length>20 ? item.newName : ""
+                        : item.name.length > 20 ? item.name : ""
+                      }                      
                       className="flex items-center w-full md:w-[18vw]"
                     >
                       <input
@@ -975,36 +893,28 @@ const ThreeWsSelection = ({
                         className="ms-2 text-md"
                       >
                         <p>
-                          {item.newName
-                            ? item.newName.length > 20
-                              ? item.newName.slice(0, 20) + "..."
-                              : item.newName
-                            : item.name.length > 20
+                          {item.newName ? item.newName.length>20 ? item.newName.slice(0,20) + "..." : item.newName
+                            :
+                            item.name.length > 20
                             ? item.name.slice(0, 20) + "..."
-                            : item.name}
+                            : item.name
+                          }
                         </p>
                       </label>
-
+                      
                       {/* clear radio selection icon */}
-                      {item.isRadioSelected && (
+                      {item.isRadioSelected &&
                         <button
                           title="Clear Selection"
                           className="ms-3 text-blue-600"
                           onClick={() => handleWhatRadioChange(item)}
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                            className="bi bi-x-circle"
-                            viewBox="0 0 16 16"
-                          >
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-circle" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
                           </svg>
                         </button>
-                      )}
+                      }
                     </div>
 
                     {/* edit icon */}
@@ -1062,8 +972,8 @@ const ThreeWsSelection = ({
         {/* WHERE SECTION */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4 flex items-center justify-between">
-              WHERE
+          <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4 flex items-center justify-between">
+            WHERE
               <div className="flex items-center">
                 <ChevronUpIcon
                   className={`h-5 w-5 cursor-pointer ${
@@ -1081,6 +991,7 @@ const ThreeWsSelection = ({
                 />
               </div>
             </p>
+
             <button
               className={`text-white bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-2 py-2 text-center focus:ring-primary-800`}
               onClick={addNewWhere}
@@ -1088,34 +999,23 @@ const ThreeWsSelection = ({
               Add New Where
             </button>
           </div>
-          <div
-            ref={scrollableWhereDivRef}
+          <div 
+            ref={scrollableWhereDivRef} 
             className="h-[24vh] overflow-y-auto border border-2 border-violet-300 bg-violet-50 px-2 md:px-3 rounded-md"
             onDragLeave={onDragLeave}
             onDragEnter={onDragEnter}
             onDragEnd={onDragEnd}
             onDragOver={onDragOver}
-            onDrop={(e) => onDrop(e, "where")}
-          >
+            onDrop={(e) => onDrop(e, 'where')}
+            >
             <ul className="mt-3 space-y-0 md:space-y-1">
               {whereItems?.map((item, index) => (
-                <li
-                  key={item.id}
-                  draggable
-                  onDragStart={(e) => onDragStart(e, item.id)}
-                  onDragEnd={onDragEnd}
-                >
+                <li key={item.id} draggable onDragStart={(e) => onDragStart(e, item.id)} onDragEnd={onDragEnd}>
                   <div className="flex items-center">
                     <div
-                      title={
-                        item.newName
-                          ? item.newName.length > 20
-                            ? item.newName
-                            : ""
-                          : item.name.length > 20
-                          ? item.name
-                          : ""
-                      }
+                      title={item.newName ? item.newName.length>20 ? item.newName : ""
+                        : item.name.length > 20 ? item.name : ""
+                      }                      
                       className="flex items-center w-full md:w-[18vw]"
                     >
                       <input
@@ -1143,36 +1043,28 @@ const ThreeWsSelection = ({
                         className="ms-2 text-md"
                       >
                         <p>
-                          {item.newName
-                            ? item.newName.length > 20
-                              ? item.newName.slice(0, 20) + "..."
-                              : item.newName
-                            : item.name.length > 20
+                          {item.newName ? item.newName.length>20 ? item.newName.slice(0,20) + "..." : item.newName
+                            :
+                            item.name.length > 20
                             ? item.name.slice(0, 20) + "..."
-                            : item.name}
+                            : item.name
+                          }
                         </p>
                       </label>
 
                       {/* clear radio selection icon */}
-                      {item.isRadioSelected && (
+                      {item.isRadioSelected &&
                         <button
                           title="Clear Selection"
                           className="ms-3 text-blue-600"
                           onClick={() => handleWhereRadioChange(item)}
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                            className="bi bi-x-circle"
-                            viewBox="0 0 16 16"
-                          >
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-circle" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
                           </svg>
                         </button>
-                      )}
+                      }
                     </div>
                     {/* edit icon */}
                     <button
