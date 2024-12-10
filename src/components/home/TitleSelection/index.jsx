@@ -571,8 +571,8 @@ const { Option } = Select;
           onUpdate={onUpdate}
           onClose={() => {
             setShowCommentModal(false);
-            setComment("");
-            setModalType("");
+            setComment('');
+            setModalType('');
           }}
         />
       )}
