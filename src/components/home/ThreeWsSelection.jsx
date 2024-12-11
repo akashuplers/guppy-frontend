@@ -1,5 +1,6 @@
 import React, { useRef, useContext, useEffect, useState } from "react";
 import FooterButtons from "./FooterButtons";
+import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
 import DeleteConfirmationDialog from "../../utils/modals/DeleteConfirmationDialog";
 import { message } from "antd";
 import EditModal from "./EditModal";
@@ -622,6 +623,51 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
    }
  };
 
+ const [sortOrder, setSortOrder] = useState("");
+
+ const handleSort = (title, direction) => {
+   const sortItems = (items) => {
+     return items.sort((a, b) => {
+       if (a.name.toLowerCase() < b.name.toLowerCase())
+         return direction === "asc" ? -1 : 1;
+       if (a.name.toLowerCase() > b.name.toLowerCase())
+         return direction === "asc" ? 1 : -1;
+       return 0;
+     });
+   };
+
+   if (title === "who") {
+     setWhoItems(sortItems([...whoItems]));
+   } else if (title === "what") {
+     setWhatItems(sortItems([...whatItems]));
+   } else {
+     setWhereItems(sortItems([...whereItems]));
+   }
+
+   setSortOrder(direction);
+ };
+
+ const SortIcons = ({ field, sortOrder, handleSort }) => {
+  return (
+    <div className="flex items-center">
+      <ChevronUpIcon
+        className={`h-5 w-5 cursor-pointer ${
+          sortOrder === "asc" ? "text-blue-500" : "text-violet-500"
+        }`}
+        title="Ascending"
+        onClick={() => handleSort(field, "asc")}
+      />
+      <ChevronDownIcon
+        className={`h-5 w-5 cursor-pointer ${
+          sortOrder === "desc" ? "text-blue-500" : "text-violet-500"
+        }`}
+        title="Descending"
+        onClick={() => handleSort(field, "desc")}
+      />
+    </div>
+  );
+};
+
   return (
     <div className="px-5 pb-5 rounded-md border">
       <div className="text-lg flex flex-col md:flex-row justify-between md:text-xl mt-5 mb-3 md:mb-4">
@@ -647,10 +693,10 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
         {/* WHO SECTION */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4">
-              WHO
+          <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4 flex items-center justify-between">
+          WHO
+          <SortIcons field="who" sortOrder={sortOrder} handleSort={handleSort} />
             </p>
-
             <button
               className={`text-white bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-2 py-2 text-center focus:ring-primary-800`}
               onClick={addNewWho}
@@ -781,10 +827,10 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
         {/* WHAT SECTION */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4">
-              WHAT
+          <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4 flex items-center justify-between">
+            WHAT
+            <SortIcons field="what" sortOrder={sortOrder} handleSort={handleSort} />
             </p>
-
             <button
               className={`text-white bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-2 py-2 text-center focus:ring-primary-800`}
               onClick={addNewWhat}
@@ -915,10 +961,10 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
         {/* WHERE SECTION */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4">
-              WHERE
+          <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4 flex items-center justify-between">
+            WHERE
+            <SortIcons field="where" sortOrder={sortOrder} handleSort={handleSort} />
             </p>
-
             <button
               className={`text-white bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-2 py-2 text-center focus:ring-primary-800`}
               onClick={addNewWhere}
