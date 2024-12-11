@@ -647,6 +647,27 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
    setSortOrder(direction);
  };
 
+ const SortIcons = ({ field, sortOrder, handleSort }) => {
+  return (
+    <div className="flex items-center">
+      <ChevronUpIcon
+        className={`h-5 w-5 cursor-pointer ${
+          sortOrder === "asc" ? "text-blue-500" : "text-violet-500"
+        }`}
+        title="Ascending"
+        onClick={() => handleSort(field, "asc")}
+      />
+      <ChevronDownIcon
+        className={`h-5 w-5 cursor-pointer ${
+          sortOrder === "desc" ? "text-blue-500" : "text-violet-500"
+        }`}
+        title="Descending"
+        onClick={() => handleSort(field, "desc")}
+      />
+    </div>
+  );
+};
+
   return (
     <div className="px-5 pb-5 rounded-md border">
       <div className="text-lg flex flex-col md:flex-row justify-between md:text-xl mt-5 mb-3 md:mb-4">
@@ -674,24 +695,8 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
           <div className="flex items-center justify-between mb-2">
           <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4 flex items-center justify-between">
           WHO
-              <div className="flex items-center">
-                <ChevronUpIcon
-                  className={`h-5 w-5 cursor-pointer ${
-                    sortOrder === "asc" ? "text-blue-500" : "text-violet-500"
-                  }`}
-                  title="Ascending"
-                  onClick={() => handleSort("who", "asc")} 
-                />
-                <ChevronDownIcon
-                  className={`h-5 w-5 cursor-pointer ${
-                    sortOrder === "desc" ? "text-blue-500" : "text-violet-500"
-                  }`}
-                  title="Descending"
-                  onClick={() => handleSort("who", "desc")} 
-                />
-              </div>
+          <SortIcons field="who" sortOrder={sortOrder} handleSort={handleSort} />
             </p>
-
             <button
               className={`text-white bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-2 py-2 text-center focus:ring-primary-800`}
               onClick={addNewWho}
@@ -824,24 +829,8 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
           <div className="flex items-center justify-between mb-2">
           <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4 flex items-center justify-between">
             WHAT
-              <div className="flex items-center">
-                <ChevronUpIcon
-                  className={`h-5 w-5 cursor-pointer ${
-                    sortOrder === "asc" ? "text-blue-500" : "text-violet-500"
-                  }`}
-                  title="Ascending"
-                  onClick={() => handleSort("what", "asc")} 
-                />
-                <ChevronDownIcon
-                  className={`h-5 w-5 cursor-pointer ${
-                    sortOrder === "desc" ? "text-blue-500" : "text-violet-500"
-                  }`}
-                  title="Descending"
-                  onClick={() => handleSort("what", "desc")} 
-                />
-              </div>
+            <SortIcons field="what" sortOrder={sortOrder} handleSort={handleSort} />
             </p>
-
             <button
               className={`text-white bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-2 py-2 text-center focus:ring-primary-800`}
               onClick={addNewWhat}
@@ -974,24 +963,8 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
           <div className="flex items-center justify-between mb-2">
           <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4 flex items-center justify-between">
             WHERE
-              <div className="flex items-center">
-                <ChevronUpIcon
-                  className={`h-5 w-5 cursor-pointer ${
-                    sortOrder === "asc" ? "text-blue-500" : "text-violet-500"
-                  }`}
-                  title="Ascending"
-                  onClick={() => handleSort("where", "asc")} 
-                />
-                <ChevronDownIcon
-                  className={`h-5 w-5 cursor-pointer ${
-                    sortOrder === "desc" ? "text-blue-500" : "text-violet-500"
-                  }`}
-                  title="Descending"
-                  onClick={() => handleSort("where", "desc")} 
-                />
-              </div>
+            <SortIcons field="where" sortOrder={sortOrder} handleSort={handleSort} />
             </p>
-
             <button
               className={`text-white bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-2 py-2 text-center focus:ring-primary-800`}
               onClick={addNewWhere}
