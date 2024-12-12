@@ -242,14 +242,15 @@ const fetchVersionByStory = async (story_id) => {
         </a>
 
         {/* ner harmonization button */}
-        <a href={nerUrl} target="_blank" rel="noopener noreferrer"> {/* call the ner harmonization api url */}
-            <Button
+          {/* Commenting this code for now as per discussion  */}
+        {/*<a href={nerUrl} target="_blank" rel="noopener noreferrer"> 
+             <Button
               type="secondary"
               className="bg-blue-500 border-blue-600 text-white h-9 me-4"
             >
               Run Ner Harmonization
-            </Button>
-        </a>
+            </Button> 
+        </a>*/}
 
         {/* logout button */}
         <Popconfirm

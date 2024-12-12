@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import FooterButtons from "../FooterButtons";
-import { Button, Table, message } from "antd";
+import { Button, Table, message, Input, Checkbox, Select } from "antd";
+import { SearchOutlined } from '@ant-design/icons';
 import DeleteConfirmationDialog from "../../../utils/modals/DeleteConfirmationDialog";
 import { StoryUploadApiContext } from "../../../contexts/ApiContext";
 import { API_BASE_PATH, API_ROUTES } from "../../../constants/api-endpoints";
@@ -10,12 +11,14 @@ import ModifySelectionPopup from "../ModifySelectionPopup";
 import StoryTextPopup from "../StoryTextPopup";
 import "../table.css";
 import SingleTextAreaModal from "../../../utils/modals/SingleTextAreaModal";
+import { generateFilterDropdown } from "../../../utils/commonFunction";
 
 const getCSVsFromList = (list_of_strings) => {
   return list_of_strings?.join(", ");
 };
 
 const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = () => {}}) => {
+
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState({});
@@ -30,8 +33,6 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
   // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
-console.log("titles", titles);
-
   useEffect(() => {
     setTitleSelectionItems(updatedTitles);
   }, []);
@@ -221,6 +222,16 @@ console.log("titles", titles);
     {
       dataIndex: "primaryWhos",
       title: <p className="text-center">Primary WHOs</p>,
+      filters: storyUploadApiResponse.primaryWhos.map((who) => ({
+        text: who,  
+        value: who, 
+      })),
+      onFilter: (value, record) => {
+        return record.primaryWhos && record.primaryWhos.includes(value);
+      },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
+        generateFilterDropdown(storyUploadApiResponse.primaryWhos, selectedKeys, setSelectedKeys, confirm, clearFilters, "Primary WHOs"),
+      sortDirections: ['descend', 'ascend'],
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
@@ -233,6 +244,16 @@ console.log("titles", titles);
     {
       dataIndex: "secondaryWhos",
       title: <p className="text-center">Secondary WHOs</p>,
+      filters: storyUploadApiResponse.secondaryWhos.map((who) => ({
+        text: who,  
+        value: who, 
+      })),
+      onFilter: (value, record) => {
+        return record.secondaryWhos && record.secondaryWhos.includes(value);
+      },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
+        generateFilterDropdown(storyUploadApiResponse.secondaryWhos, selectedKeys, setSelectedKeys, confirm, clearFilters, "Secondary WHOs"),
+      sortDirections: ['descend', 'ascend'],
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
@@ -245,6 +266,16 @@ console.log("titles", titles);
     {
       dataIndex: "primaryWhats",
       title: <p className="text-center">Primary WHATs</p>,
+      filters: storyUploadApiResponse.primaryWhats.map((who) => ({
+        text: who,  
+        value: who,
+      })),
+      onFilter: (value, record) => {
+        return record.primaryWhats && record.primaryWhats.includes(value);
+      },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
+        generateFilterDropdown(storyUploadApiResponse.primaryWhats, selectedKeys, setSelectedKeys, confirm, clearFilters, "Primary WHATs"),
+      sortDirections: ['descend', 'ascend'],
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
@@ -257,6 +288,16 @@ console.log("titles", titles);
     {
       dataIndex: "secondaryWhats",
       title: <p className="text-center">Secondary WHATs</p>,
+      filters: storyUploadApiResponse.secondaryWhats.map((who) => ({
+        text: who,  
+        value: who, 
+      })),
+      onFilter: (value, record) => {
+        return record.secondaryWhats && record.secondaryWhats.includes(value);
+      },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
+        generateFilterDropdown(storyUploadApiResponse.secondaryWhats, selectedKeys, setSelectedKeys, confirm, clearFilters, "Secondary WHATs"),
+      sortDirections: ['descend', 'ascend'],
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
@@ -269,6 +310,16 @@ console.log("titles", titles);
     {
       dataIndex: "primaryWheres",
       title: <p className="text-center">Primary WHEREs</p>,
+      filters: storyUploadApiResponse.primaryWheres.map((who) => ({
+        text: who, 
+        value: who,
+      })),
+      onFilter: (value, record) => {
+        return record.primaryWheres && record.primaryWheres.includes(value);
+      },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
+        generateFilterDropdown(storyUploadApiResponse.primaryWheres, selectedKeys, setSelectedKeys, confirm, clearFilters, "Primary WHEREs"),
+      sortDirections: ['descend', 'ascend'],
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
@@ -281,6 +332,17 @@ console.log("titles", titles);
     {
       dataIndex: "secondaryWheres",
       title: <p className="text-center">Secondary WHEREs</p>,
+      filters: storyUploadApiResponse.secondaryWheres.map((who) => ({
+        text: who, 
+        value: who,
+      })),
+      onFilter: (value, record) => {
+        return record.secondaryWheres && record.secondaryWheres.some(val => value.includes(val));
+      },
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
+        generateFilterDropdown(storyUploadApiResponse.secondaryWheres, selectedKeys, setSelectedKeys, confirm, clearFilters, "Secondary WHEREs"),
+      
+      sortDirections: ['descend', 'ascend'],
       render: (val) => {
         const csvStr = getCSVsFromList(val);
         return (
@@ -369,11 +431,10 @@ console.log("titles", titles);
   ];
 
   return (
-    <div className="px-5 pb-5 border rounded-md">
-
-      <div className="flex flex-col justify-between mt-5 mb-3 text-lg md:flex-row md:text-xl md:mb-4">
-        <p>Step-4 : Title Selection</p>
-        <p className="mt-2 text-lg md:text-xl md:mt-0">
+    <div className="px-5 pb-5 rounded-md border">
+      <div className="text-lg flex flex-col md:flex-row justify-between md:text-xl mt-5 mb-3 md:mb-4">
+        <p>Step-3 : Title Selection</p>
+        <p className="text-lg md:text-xl mt-2 md:mt-0">
           Story World : <span className="text-violet-500">{storyWorld}</span>
         </p>
       </div>
@@ -381,7 +442,11 @@ console.log("titles", titles);
       {fileName && (
         <p className="mb-4 text-md md:text-lg md:mb-6">
           File Uploaded :{" "}
-          <span title="Click to see story text" className="font-medium text-blue-500 cursor-pointer" onClick={() => setShowStoryModal(true)} >
+          <span
+            title="Click to see story text"
+            className="font-medium text-blue-500 cursor-pointer"
+            onClick={() => setShowStoryModal(true)}
+          >
             {fileName}
           </span>
         </p>

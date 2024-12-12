@@ -263,7 +263,6 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
                         id="storyWorldLead"
                         className="bg-gray-50 w-full md:w-[35vw] border p-2 border-gray-300 text-gray-900 sm:text-md rounded-lg focus:ring-primary-600 focus:border-primary-600 block"
                         disabled={!!storyWorldName}
-
                       />
                       <ErrorMessage
                         name="storyWorldLead"
