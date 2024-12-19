@@ -1,27 +1,32 @@
-import React, { useEffect, useState, useRef, useContext } from 'react'
-import { useFormik, Field, Form, ErrorMessage } from 'formik';
+import React, { useEffect, useState, useRef, useContext } from "react";
+import { useFormik, Field, Form, ErrorMessage } from "formik";
 import { Formik } from "formik";
 import { StoryUploadApiContext } from "../../../contexts/ApiContext";
-import { useNavigate } from 'react-router-dom';
-import { Table, message } from 'antd';
-import { API_BASE_PATH, API_ROUTES } from '../../../constants/api-endpoints';
-import axios from 'axios';
-import ShareModal from '../ShareModal';
-import DownloadVersionSelectPopup from '../DownloadVersionSelectPopup';
-import DeleteConfirmationDialog from '../../../utils/modals/DeleteConfirmationDialog';
+import { useNavigate } from "react-router-dom";
+import { Table, message } from "antd";
+import { API_BASE_PATH, API_ROUTES } from "../../../constants/api-endpoints";
+import axios from "axios";
+import ShareModal from "../ShareModal";
+import DownloadVersionSelectPopup from "../DownloadVersionSelectPopup";
+import DeleteConfirmationDialog from "../../../utils/modals/DeleteConfirmationDialog";
 import { MultiSelect } from "react-multi-select-component";
-import ModifySelectionPopup from '../ModifySelectionPopup';
-import FooterButtons from '../FooterButtons';
-import ModifyMasterWsPopup from '../../ModifyMasterWsPopUp';
-import DownloadCSVFile from '../../DownloadCsv';
+import ModifySelectionPopup from "../ModifySelectionPopup";
+import FooterButtons from "../FooterButtons";
+import ModifyMasterWsPopup from "../../ModifyMasterWsPopUp";
+import DownloadCSVFile from "../../DownloadCsv";
 
-const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = () => { } }) => {
+const MasterWssPage = ({
+  onDiscard = () => {},
+  saveTitles,
+  handleSaveSuccess = () => {},
+}) => {
   const navigate = useNavigate();
   // const { resetForm } = useFormikContext();
   const [isLoading, setIsLoading] = useState(false);
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [dialogPopup, setDialogPopup] = useState(false);
-  const [selectedRow, setSelectedRow] = useState(null); const [stories, setStories] = useState([]);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [stories, setStories] = useState([]);
   const [filteredStories, setFilteredStories] = useState([]);
   const [isShareModalOpen, setShareModalOpen] = useState(false);
   const [storyDetails, setStoryDetails] = useState(null);
@@ -33,14 +38,21 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
   const [showVersionModal, setShowVersionModal] = useState(false);
   const [isStoryDeleted, setIsStoryDeleted] = useState(false);
   const [showDeleteStoryModal, setShowDeleteStoryModal] = useState(false);
-  const [selectedStoryId, setSelectedStoryId] = useState('');
-  const [selectedVersionId, setSelectedVersionId] = useState('');
+  const [selectedStoryId, setSelectedStoryId] = useState("");
+  const [selectedVersionId, setSelectedVersionId] = useState("");
+  const [clusterList, setClusterList] = useState([]);
   // const [isSubmitting, setIsSubmitting] = useState(false);
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const errorMsg = "Error In Fetching Saved Response";
   const downloadLinkRef = useRef(null);
   const [selected, setSelected] = useState([]);
+  const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged,} = useContext(StoryUploadApiContext);
+    const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
+    // const { token, titles, updatedTitles } = storyUploadApiResponse;
   // const [selectedRow, setSelectedRow] = useState({});
+  console.log("clusterList",clusterList);
+  console.log("story_id",story_id);
+  
   const formik = useFormik({
     initialValues: {
       ws: "",
@@ -52,21 +64,19 @@ const MasterWssPage = ({ onDiscard = () => { }, saveTitles, handleSaveSuccess = 
       console.log("submit");
     },
   });
-  const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
-  const { token, titles, updatedTitles } = storyUploadApiResponse;
+
   const [whos, setWhos] = useState();
   const [whats, setWhats] = useState();
   const [wheres, setWheres] = useState();
   const [filteredOptions, setFilteredOption] = useState();
 
-  const options = (filteredOptions || []).map(item => ({
+  const options = (filteredOptions || []).map((item) => ({
     label: item.name,
-    value: item.id
+    value: item.id,
   }));
 
-  const [filterData, setFilteredData] = useState([])
-console.log("filterDatafilterData", filterData);
-
+  const [filterData, setFilteredData] = useState([]);
+  console.log("filterDatafilterData", filterData);
 
   const handleModify = (updatedData) => {
     console.log("Updated Data: ", updatedData);
@@ -75,7 +85,7 @@ console.log("filterDatafilterData", filterData);
 
   useEffect(() => {
     if (!tokenVal) {
-      navigate('/');
+      navigate("/");
     } else {
       // fetchStories();
       // fetchUsers();
@@ -90,7 +100,7 @@ console.log("filterDatafilterData", filterData);
 
   useEffect(() => {
     if (!tokenVal) {
-      navigate('/');
+      navigate("/");
     } else {
       isStoryDeleted && fetchStories();
     }
@@ -105,8 +115,8 @@ console.log("filterDatafilterData", filterData);
     ["firstname", "lastname", "email"],
     ["Ahmed", "Tomi", "ah@smthing.co.com"],
     ["Raed", "Labes", "rl@smthing.co.com"],
-    ["Yezzi", "Min l3b", "ymin@cocococo.com"]
-];
+    ["Yezzi", "Min l3b", "ymin@cocococo.com"],
+  ];
 
   const deleteStoryById = async () => {
     try {
@@ -127,18 +137,42 @@ console.log("filterDatafilterData", filterData);
       message.error(errorMsg);
     }
     setShowDeleteStoryModal(false);
-  }
+  };
 
   const handleSharedUsers = () => {
-    const finalUsers = users.filter(user => !shareIds.includes(user._id) && !updatedShareIds.includes(user._id));
+    const finalUsers = users.filter(
+      (user) =>
+        !shareIds.includes(user._id) && !updatedShareIds.includes(user._id)
+    );
     setTempUsers(finalUsers);
-  }
+  };
   useEffect(() => {
     setTitleSelectionItems(updatedTitles);
   }, []);
 
+  const clusterHeadWsList = async () => {
+    try {
+        const apiUrl = API_BASE_PATH + API_ROUTES.LIST_WS + story_id;
+        const config = {
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${tokenVal}`,
+        },
+        };
+        const output = await axios.get(apiUrl, config);
+        setClusterList(output?.data?.ws?.ws_data); 
+    } catch (error) {
+        console.log("error: ", error);
+        message.error(errorMsg);
+    }
+  }
+
+  useEffect (()=>{
+    clusterHeadWsList();
+  },[])
+
   const getUpdatedTitles = (newTitles) => {
-    return newTitles?.map(title => {
+    return newTitles?.map((title) => {
       return {
         id: title.id,
         title: title.Title,
@@ -148,10 +182,10 @@ console.log("filterDatafilterData", filterData);
         secondaryWhos: title.Who_Secondary,
         secondaryWhats: title.What_Secondary,
         secondaryWheres: title.Where_Secondary,
-        ...(title.comment && { comment: title.comment })
-      }
-    })
-  }
+        ...(title.comment && { comment: title.comment }),
+      };
+    });
+  };
 
   const fetchStories = async () => {
     setIsLoading(true);
@@ -195,11 +229,11 @@ console.log("filterDatafilterData", filterData);
       }
     }
     setIsLoading(false);
-  }
+  };
 
   const handleVersionSelect = (versionId) => {
     if (versionId) {
-      setSelectedVersionId(versionId)
+      setSelectedVersionId(versionId);
     } else {
       message.error("Please select a version to download.");
     }
@@ -216,32 +250,10 @@ console.log("filterDatafilterData", filterData);
     }
   };
 
-  const chipStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
-    borderRadius: '16px',
-    padding: '5px 10px',
-    fontSize: '14px',
-    color: '#333',
-    border: '1px solid #ccc',
-  };
-
-  const cancelButtonStyle = {
-    background: 'transparent',
-    border: 'none',
-    color: '#999',
-    cursor: 'pointer',
-    marginLeft: '8px',
-    fontSize: '14px',
-  };
-
   const handleRemoveChip = (chipValue) => {
-    debugger
-    
+    debugger;
   };
-  console.log("ssssssss", selected);
-
+ 
   const historyColumns = [
     {
       title: "S.No",
@@ -250,15 +262,15 @@ console.log("filterDatafilterData", filterData);
     },
     {
       dataIndex: "ws",
-      title: "W's Form"
+      title: "W's Form",
     },
     {
       dataIndex: "type",
-      title: "Type"
+      title: "Type",
     },
     {
       dataIndex: "clusterHead",
-      title: "Cluster Head"
+      title: "Cluster Head",
     },
     {
       dataIndex: "clusterValue",
@@ -266,23 +278,39 @@ console.log("filterDatafilterData", filterData);
       render: (clusterValue, record, index) => {
         const valuesArray = clusterValue?.split(", ") || [];
         return (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-            {valuesArray.length > 0 ? (
-              valuesArray.map((value, idx) => (
-                <div key={idx} style={chipStyle}>
-                  <span>{value}</span>
-                  <button
-                    style={cancelButtonStyle}
-                    onClick={() => handleRemoveChip(value, index)} // handleRemoveChip should be defined to remove a chip
-                    title="Remove"
-                  >
-                    ✖
-                  </button>
-                </div>
-              ))
-            ) : (
-              "NA" // If no values available, show "NA"
-            )}
+          <div className="flex flex-wrap gap-2">
+            {
+              valuesArray.length > 0
+                ? valuesArray.map((value, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center bg-gray-200 rounded-lg px-2.5 py-1.5 text-sm text-gray-800 border border-gray-300"
+                    >
+                      <span>{value}</span>
+                      <button
+                        className="text-red-600 bg-transparent border-none cursor-pointer ml-2"
+                        onClick={() => handleRemoveChip(value, index)} // handleRemoveChip should be defined to remove a chip
+                        title="Remove"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="w-6 h-6" // Tailwind size for the cross icon
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  ))
+                : "NA" // If no values available, show "NA"
+            }
           </div>
         );
       },
@@ -292,7 +320,7 @@ console.log("filterDatafilterData", filterData);
       title: "Action",
       render: (val, record) => {
         return (
-          <div style={{ display: 'flex', gap: '15px' }}>
+          <div style={{ display: "flex", gap: "15px" }}>
             <button
               title="View/Modify"
               onClick={() => {
@@ -324,13 +352,25 @@ console.log("filterDatafilterData", filterData);
                 setIsStoryDeleted(false);
               }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6M14 10V17M10 10V17" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <path
+                  d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6M14 10V17M10 10V17"
+                  stroke="#EF4444" // Applying red color (text-red-600 in Tailwind is equivalent to #EF4444)
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </button>
           </div>
-        )
-      }
+        );
+      },
     },
   ];
 
@@ -339,12 +379,12 @@ console.log("filterDatafilterData", filterData);
       const apiUrl = API_BASE_PATH + API_ROUTES.ADD_STORY_WORLD;
       const formData = {
         name: values?.name,
-        lead_who: values?.storyWorldLead
-      }
+        lead_who: values?.storyWorldLead,
+      };
       // api call
       const config = {
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       };
@@ -354,9 +394,8 @@ console.log("filterDatafilterData", filterData);
       //     onAddStoryWorld(output);
       //     resetForm();
       //   }
-
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
       const statusCode = error?.response?.status;
       if (statusCode === 401) {
         message.error("Not Authorized ! You need to login first !");
@@ -370,23 +409,25 @@ console.log("filterDatafilterData", filterData);
         if (errorMessage) {
           message.error(errorMessage);
         } else {
-          message.error("Something Went Wrong ! Please Try Again After Some Time !");
+          message.error(
+            "Something Went Wrong ! Please Try Again After Some Time !"
+          );
         }
       }
     }
     setSubmitting(false);
-  }
+  };
 
   const storyWorldOptions = [
     { id: 1, name: "Who's" },
     { id: 2, name: "What's" },
     { id: 3, name: "Where's" },
-  ]
+  ];
 
   const type = [
     { id: 1, name: "Primary" },
-    { id: 2, name: "Secondary" }
-  ]
+    { id: 2, name: "Secondary" },
+  ];
 
   const onReset = () => {
     setTitleSelectionItems(titles);
@@ -400,7 +441,7 @@ console.log("filterDatafilterData", filterData);
       // api call
       const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_TITLES;
       // const payload = bodyForSaveTitlesApi();
-      const payload = ""
+      const payload = "";
       const config = {
         headers: {
           "Content-Type": "application/json",
@@ -458,7 +499,7 @@ console.log("filterDatafilterData", filterData);
       type: [],
       clusterHead: [],
       clusterValue: [],
-      isNewField: true
+      isNewField: true,
     };
     const curData = [newObj, ...filterData];
     setFilteredData(curData);
@@ -467,46 +508,59 @@ console.log("filterDatafilterData", filterData);
   };
 
   const handleChange = (e, name) => {
-    debugger
+    debugger;
     // const selectedOption = storyWorldOptions?.find(option => option?._id === e?.target?.value);
     // console.log("selectedOption", selectedOption);
 
     if (e?.target?.value === "Who's") {
-      setWhos(storyUploadApiResponse?.updatedWhos);
-      setFilteredOption(storyUploadApiResponse?.updatedWhos);
+      setWhos(clusterList?.Who);
+      setFilteredOption(clusterList?.Who);
     } else if (e?.target?.value === "What's") {
-      setWhats(storyUploadApiResponse?.updatedWhats);
-      setFilteredOption(storyUploadApiResponse?.updatedWhats);
+      setWhats(clusterList?.What);
+      setFilteredOption(clusterList?.What);
     } else if (e?.target?.value === "Where") {
-      setWheres(storyUploadApiResponse?.updatedWheres);
-      setFilteredOption(storyUploadApiResponse?.updatedWheres);
+      setWheres(clusterList?.Where);
+      setFilteredOption(clusterList?.Where);
     }
 
     if (name === "ws") {
-      formik.setFieldValue('ws', e.target.value);
+      formik.setFieldValue("ws", e.target.value);
     } else if (name === "clusterHead") {
-      formik.setFieldValue('clusterHead', e?.target?.value);
-      const filteredArray = filteredOptions?.filter(item => item.name !== e.target.value);
+      formik.setFieldValue("clusterHead", e?.target?.value);
+      const filteredArray = filteredOptions?.filter(
+        (item) => item.name !== e.target.value
+      );
       setFilteredOption(filteredArray);
     } else if (name === "type") {
-      formik.setFieldValue('type', e.target.value);
+      formik.setFieldValue("type", e.target.value);
     } else {
-      const selectedValues = e?.map(option => ({ label: option.label, value: option.value }));
+      const selectedValues = e?.map((option) => ({
+        label: option.label,
+        value: option.value,
+      }));
       setSelected(selectedValues);
-      formik.setFieldValue('clusterValue', selectedValues);
+      formik.setFieldValue("clusterValue", selectedValues);
     }
   };
   const { values, setFieldValue } = formik;
 
   const handleSaveCluster = (values, resetForm) => {
-    debugger
-    if (formik.values.ws && formik.values.type && formik.values.clusterHead && Array.isArray(formik.values.clusterValue) && formik.values.clusterValue.length > 0) {
+    debugger;
+    if (
+      formik.values.ws &&
+      formik.values.type &&
+      formik.values.clusterHead &&
+      Array.isArray(formik.values.clusterValue) &&
+      formik.values.clusterValue.length > 0
+    ) {
       const newRow = {
         id: filterData?.length + 1,
         ws: formik.values.ws,
         type: formik.values.type,
         clusterHead: formik.values.clusterHead,
-        clusterValue: formik.values.clusterValue.map((val) => val.label).join(", "),
+        clusterValue: formik.values.clusterValue
+          .map((val) => val.label)
+          .join(", "),
       };
       setFilteredData((prevArray) => [...prevArray, newRow]);
 
@@ -515,12 +569,11 @@ console.log("filterDatafilterData", filterData);
       setWhats([]);
       setWhos([]);
       setWheres([]);
-      setFilteredOption([])
+      setFilteredOption([]);
     }
   };
   console.log("formik.values", formik.values);
   console.log("ssssssssss", filterData);
-
 
   return (
     <div>
@@ -535,7 +588,6 @@ console.log("filterDatafilterData", filterData);
           onSubmit={formik.handleSubmit}
         >
           {({ values, resetForm }) => (
-
             <Form>
               {console.log("values", values)}
               {/* Step and Buttons */}
@@ -556,10 +608,8 @@ console.log("filterDatafilterData", filterData);
                   >
                     <DownloadCSVFile
                     // csvData={csvData}
-                    // buttonTitle={"Download"} 
-                    
+                    // buttonTitle={"Download"}
                     />
-                    
                   </button>
                   <button
                     type="submit"
@@ -582,7 +632,10 @@ console.log("filterDatafilterData", filterData);
               <div className="flex flex-wrap mt-4 space-x-4">
                 {/* Select Ws */}
                 <div className="flex-1 min-w-[200px]">
-                  <label htmlFor="storyWorld" className="block mb-2 text-sm font-medium text-gray-900 md:text-sm">
+                  <label
+                    htmlFor="storyWorld"
+                    className="block mb-2 text-sm font-medium text-gray-900 md:text-sm"
+                  >
                     Select Ws
                   </label>
                   <Field
@@ -590,13 +643,16 @@ console.log("filterDatafilterData", filterData);
                     name="ws"
                     id="ws"
                     className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 sm:text-md focus:ring-primary-600 focus:border-primary-600"
-                    onChange={(e) => { handleChange(e, "ws") }}
+                    onChange={(e) => {
+                      handleChange(e, "ws");
+                    }}
                     value={formik.values.ws} // Set Formik value here
-
                   >
                     <option value="">Please Select...</option>
                     {storyWorldOptions?.map((item, index) => (
-                      <option key={index} value={item?._id}>{item?.name}</option>
+                      <option key={index} value={item?._id}>
+                        {item?.name}
+                      </option>
                     ))}
                   </Field>
                   <ErrorMessage
@@ -608,7 +664,10 @@ console.log("filterDatafilterData", filterData);
 
                 {/* Select Cluster Head */}
                 <div className="flex-1 min-w-[200px]">
-                  <label htmlFor="clusterHead" className="block mb-2 text-sm font-medium text-gray-900 md:text-sm">
+                  <label
+                    htmlFor="clusterHead"
+                    className="block mb-2 text-sm font-medium text-gray-900 md:text-sm"
+                  >
                     Select Cluster Head
                   </label>
                   <Field
@@ -616,20 +675,30 @@ console.log("filterDatafilterData", filterData);
                     name="clusterHead"
                     id="clusterHead"
                     className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 sm:text-md focus:ring-primary-600 focus:border-primary-600"
-                    onChange={(e) => { handleChange(e, "clusterHead") }}
+                    onChange={(e) => {
+                      handleChange(e, "clusterHead");
+                    }}
                     value={formik.values.clusterHead} // Set Formik value here
-
                   >
                     <option value="">Please Select...</option>
-                    {whos && whos.map((item, index) => (
-                      <option key={index} value={item?._id}>{item?.name}</option>
-                    ))}
-                    {whats && whats.map((item, index) => (
-                      <option key={index} value={item?._id}>{item?.name}</option>
-                    ))}
-                    {wheres && wheres.map((item, index) => (
-                      <option key={index} value={item?._id}>{item?.name}</option>
-                    ))}
+                    {whos &&
+                      whos?.map((item, index) => (
+                        <option key={index} value={item?._id}>
+                          {item?.value}
+                        </option>
+                      ))}
+                    {whats &&
+                      whats?.map((item, index) => (
+                        <option key={index} value={item?._id}>
+                          {item?.value}
+                        </option>
+                      ))}
+                    {wheres &&
+                      wheres?.map((item, index) => (
+                        <option key={index} value={item?._id}>
+                          {item?.value}
+                        </option>
+                      ))}
                   </Field>
                   <ErrorMessage
                     name="clusterHead"
@@ -640,7 +709,10 @@ console.log("filterDatafilterData", filterData);
 
                 {/* Select Type */}
                 <div className="flex-1 min-w-[200px]">
-                  <label htmlFor="type" className="block mb-2 text-sm font-medium text-gray-900 md:text-sm">
+                  <label
+                    htmlFor="type"
+                    className="block mb-2 text-sm font-medium text-gray-900 md:text-sm"
+                  >
                     Select Type
                   </label>
                   <Field
@@ -648,12 +720,16 @@ console.log("filterDatafilterData", filterData);
                     name="type"
                     id="type"
                     className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 sm:text-md focus:ring-primary-600 focus:border-primary-600"
-                    onChange={(e) => { handleChange(e, "type"); }}
+                    onChange={(e) => {
+                      handleChange(e, "type");
+                    }}
                     value={formik.values.type} // Set Formik value here
                   >
                     <option value="">Please Select...</option>
                     {type?.map((item, index) => (
-                      <option key={index} value={item?._id}>{item?.name}</option>
+                      <option key={index} value={item?._id}>
+                        {item?.name}
+                      </option>
                     ))}
                   </Field>
                   <ErrorMessage
@@ -665,7 +741,10 @@ console.log("filterDatafilterData", filterData);
 
                 {/* Select Cluster Values */}
                 <div className="flex-1 min-w-[200px]">
-                  <label htmlFor="clusterValue" className="block mb-2 text-sm font-medium text-gray-900 md:text-sm">
+                  <label
+                    htmlFor="clusterValue"
+                    className="block mb-2 text-sm font-medium text-gray-900 md:text-sm"
+                  >
                     Select Cluster Values
                   </label>
                   <Field name="clusterValue">
@@ -690,26 +769,36 @@ console.log("filterDatafilterData", filterData);
           )}
         </Formik>
 
-        <div className='mt-8'>
-          {!isLoading &&
-            <Table
-              dataSource={filterData}
-              columns={historyColumns}
-              bordered
-            />
-          }
+        <div className="mt-8">
+          {!isLoading && (
+            <Table dataSource={filterData} columns={historyColumns} bordered />
+          )}
         </div>
       </div>
-      <a ref={downloadLinkRef} style={{ display: 'none' }} download></a>
-      <ShareModal open={isShareModalOpen} storyDetails={storyDetails} users={tempUsers} onClose={() => setShareModalOpen(false)} updateUsers={(ids) => setUpdatedShareIds(ids)} />
-      {showVersionModal && <DownloadVersionSelectPopup open={showVersionModal} story_id={selectedStoryId} handleVersionSelect={handleVersionSelect} handleDownload={handleVersionDownload} onClose={() => setShowVersionModal(false)} />}
-      {showDeleteStoryModal &&
+      <a ref={downloadLinkRef} style={{ display: "none" }} download></a>
+      <ShareModal
+        open={isShareModalOpen}
+        storyDetails={storyDetails}
+        users={tempUsers}
+        onClose={() => setShareModalOpen(false)}
+        updateUsers={(ids) => setUpdatedShareIds(ids)}
+      />
+      {showVersionModal && (
+        <DownloadVersionSelectPopup
+          open={showVersionModal}
+          story_id={selectedStoryId}
+          handleVersionSelect={handleVersionSelect}
+          handleDownload={handleVersionDownload}
+          onClose={() => setShowVersionModal(false)}
+        />
+      )}
+      {showDeleteStoryModal && (
         <DeleteConfirmationDialog
           open={showDeleteStoryModal}
           onClose={() => setShowDeleteStoryModal(false)}
           onConfirm={() => deleteStoryById()}
         />
-      }
+      )}
       {/* {showModifyPopup && (
         <ModifySelectionPopup
           open={showModifyPopup}
@@ -737,10 +826,10 @@ console.log("filterDatafilterData", filterData);
         onReset={onReset}
         onSubmit={onSave}
         saveType="Titles"
-      // isSubmitting={isSubmitting}
+        // isSubmitting={isSubmitting}
       />
     </div>
-  )
-}
+  );
+};
 
-export default MasterWssPage
+export default MasterWssPage;

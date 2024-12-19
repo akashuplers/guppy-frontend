@@ -8,7 +8,7 @@ export const API_ROUTES = {
     UPLOAD_STORY: '/story/upload-story',
     GET_STORY_WORLD: '/story/story-world',
     ADD_STORY_WORLD: '/story/add-story-world',
-    SAVE_Ws: '/story/save-ws',
+    SELECT_Ws: '/story/select-ws',
     SAVE_TITLES: '/story/save-titles',
     SAVE_SITUATIONS: '/story/save-situations',
     SAVE_ACTIONS: '/story/save-actions',
@@ -24,5 +24,6 @@ export const API_ROUTES = {
     SHARE: '/story/share/',
     DOWNLOAD_VERSION_STORY: "/story/download-version",
     STORY: '/story',
-    HARMONIZATION: '/story/harmonization/'
+    HARMONIZATION: '/story/harmonization/',
+    LIST_WS: '/story/ws/'
 }

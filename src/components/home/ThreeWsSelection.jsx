@@ -375,7 +375,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
     let alertKey;
     try {
       // api call
-      const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_Ws;
+      const apiUrl = API_BASE_PATH + API_ROUTES.SELECT_Ws;
       const payload = bodyForSaveWsApi();
       
       console.log('payload',payload);
@@ -479,23 +479,33 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
   // };
 
   const createWsArray = (wsList) => {
+    debugger
     let updated = wsList?.map((item) => {if(item.isNewField){ return {
       // type: item.isRadioSelected ? "Primary" : item.isCheckboxSelected ? "Secondary" : "null",
+
       selected:item.isCheckboxSelected ? true : false,
       value: item.newName ?? item.name,
       id: '',
-      // new: true,
-      // updated: false,
-      // ner: item.ner ?? false,
+      new: true,
+      updated: false,
+      ner: item.ner ?? false,
     }
   } else {
       return {
+        // type: item.isRadioSelected ? "Primary" : item.isCheckboxSelected ? "Secondary" : "null",
+
         selected:item.isCheckboxSelected ? true : false,
         value: item.name,
         newValue: item.newName,
-        // updated: item.newName !== undefined,
-        // ner: item.ner ?? false,
+        updated: item.newName !== undefined,
+        ner: item.ner ?? false,
         id: item.id ?? ''
+
+        // value: item.name,
+        // newValue: item.name,
+        // updated: item.newName !== undefined,
+        // // ner: item.ner ?? false,
+        // id: item.id ?? ''
       }
     }});
     return updated;
@@ -725,16 +735,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                       }
                       className="flex items-center w-full md:w-[18vw]"
                     >
-                      <input
-                        checked={item.isRadioSelected}
-                        disabled={item.isCheckboxSelected || (selectedPrimaryWho && item.id !== selectedPrimaryWho)}
-                        onChange={() => handleWhoRadioChange(item)}
-                        id={`link-radio-${index}`}
-                        type="radio"
-                        value={item.name}
-                        title="Primary-Who"
-                        className="w-4 h-4 me-3 text-green-600 border-gray-300 disabled:bg-gray-200 focus:ring-blue-500 focus:ring-2"
-                      />
+                      
                       <input
                         checked={item.isCheckboxSelected}
                         disabled={item.isRadioSelected}
@@ -858,16 +859,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                       }                      
                       className="flex items-center w-full md:w-[18vw]"
                     >
-                      <input
-                        checked={item.isRadioSelected}
-                        disabled={item.isCheckboxSelected}
-                        onChange={() => handleWhatRadioChange(item)}
-                        id={`link-radio-${index}`}
-                        type="radio"
-                        value={item.name}
-                        title="Primary-What"
-                        className="w-4 h-4 me-3 text-green-600 disabled:bg-gray-200 border-gray-300 focus:ring-blue-500 focus:ring-2"
-                      />
+                     
                       <input
                         checked={item.isCheckboxSelected}
                         disabled={item.isRadioSelected}
@@ -992,16 +984,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                       }                      
                       className="flex items-center w-full md:w-[18vw]"
                     >
-                      <input
-                        checked={item.isRadioSelected}
-                        disabled={item.isCheckboxSelected}
-                        onChange={() => handleWhereRadioChange(item)}
-                        id={`link-radio-${index}`}
-                        type="radio"
-                        value={item.name}
-                        title="Primary-Where"
-                        className="w-4 h-4 me-3 text-green-600 disabled:bg-gray-200 border-gray-300 focus:ring-blue-500 focus:ring-2"
-                      />
+                      
                       <input
                         checked={item.isCheckboxSelected}
                         disabled={item.isRadioSelected}
