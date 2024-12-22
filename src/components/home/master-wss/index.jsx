@@ -10,8 +10,7 @@ import ShareModal from "../ShareModal";
 import DownloadVersionSelectPopup from "../DownloadVersionSelectPopup";
 import DeleteConfirmationDialog from "../../../utils/modals/DeleteConfirmationDialog";
 import { MultiSelect } from "react-multi-select-component";
-import ModifySelectionPopup from "../ModifySelectionPopup";
-import FooterButtons from "../FooterButtons";
+ import FooterButtons from "../FooterButtons";
 import ModifyMasterWsPopup from "../../ModifyMasterWsPopUp";
 import DownloadCSVFile from "../../DownloadCsv";
 
@@ -41,22 +40,17 @@ const MasterWssPage = ({
   const [selectedStoryId, setSelectedStoryId] = useState("");
   const [selectedVersionId, setSelectedVersionId] = useState("");
   const [clusterList, setClusterList] = useState([]);
-  // const [isSubmitting, setIsSubmitting] = useState(false);
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const errorMsg = "Error In Fetching Saved Response";
   const downloadLinkRef = useRef(null);
   const [selected, setSelected] = useState([]);
   const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged,} = useContext(StoryUploadApiContext);
-    const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
-    // const { token, titles, updatedTitles } = storyUploadApiResponse;
-  // const [selectedRow, setSelectedRow] = useState({});
-  console.log("clusterList",clusterList);
-  console.log("story_id",story_id);
+  const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
   
   const formik = useFormik({
     initialValues: {
       ws: "",
-      clusterHead: "",
+      masterHead: "",
       type: "",
       clusterValue: [],
     },
@@ -69,9 +63,13 @@ const MasterWssPage = ({
   const [whats, setWhats] = useState();
   const [wheres, setWheres] = useState();
   const [filteredOptions, setFilteredOption] = useState();
+console.log("whoswhoswhos", whos) ;
+console.log("whatswhatswhats", whats) ;
+console.log("whereswheres", wheres) ;
+console.log("filteredOptions", filteredOptions);
 
   const options = (filteredOptions || []).map((item) => ({
-    label: item.name,
+    label: item.value,
     value: item.id,
   }));
 
@@ -171,6 +169,78 @@ const MasterWssPage = ({
     clusterHeadWsList();
   },[])
 
+  const generateClusterValues = (value) => {
+    return value.split(' ').map((item, index) => ({
+        id: `${index + 1122}`,
+        value: item
+    }));
+};
+
+// Function to convert the input data to the desired structure
+const transformData = (data) => {
+  // Initial empty structure for "who" and "what"
+  const result = {
+      who: {
+          primary: [],
+          secondary: []
+      },
+      what: {
+          primary: [],
+          secondary: []
+      }
+  }
+  data.forEach(item => {
+    const clusterValues = generateClusterValues(item.clusterValue);
+    const newItem = {
+        id: item.id.toString(),
+        masterHead: item.masterHead,
+        clusterValues: clusterValues,
+        new: true,
+        updated: false
+    };
+        // Place the item in the appropriate section based on ws and type
+        if (item.ws === "Who's") {
+          if (item.type === "Primary") {
+              result.who.primary.push(newItem);
+          } else {
+              result.who.secondary.push(newItem);
+          }
+      } else if (item.ws === "What's") {
+          if (item.type === "Primary") {
+              result.what.primary.push(newItem);
+          } else {
+              result.what.secondary.push(newItem);
+          }
+      }
+  });
+
+  return result;
+};
+const transformedData = transformData(filterData);
+console.log("transformedData", transformedData);
+const cleanEmptySections = (data) => {
+  for (const key in data) {
+      if (data.hasOwnProperty(key)) {
+          const sections = data[key];
+
+          // Remove 'primary' or 'secondary' sections if they are empty
+          for (const section in sections) {
+              if (sections[section].length === 0) {
+                  delete sections[section];
+              }
+          }
+      }
+  }
+  return data;
+};
+
+// Clean the data by removing empty sections
+const cleanedData = cleanEmptySections(transformedData);
+console.log("cleanedData",cleanedData);
+
+console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
+
+
   const getUpdatedTitles = (newTitles) => {
     return newTitles?.map((title) => {
       return {
@@ -269,7 +339,7 @@ const MasterWssPage = ({
       title: "Type",
     },
     {
-      dataIndex: "clusterHead",
+      dataIndex: "masterHead",
       title: "Cluster Head",
     },
     {
@@ -497,7 +567,7 @@ const MasterWssPage = ({
       id: filterData?.length + 1,
       wsForm: [],
       type: [],
-      clusterHead: [],
+      masterHead: [],
       clusterValue: [],
       isNewField: true,
     };
@@ -525,8 +595,8 @@ const MasterWssPage = ({
 
     if (name === "ws") {
       formik.setFieldValue("ws", e.target.value);
-    } else if (name === "clusterHead") {
-      formik.setFieldValue("clusterHead", e?.target?.value);
+    } else if (name === "masterHead") {
+      formik.setFieldValue("masterHead", e?.target?.value);
       const filteredArray = filteredOptions?.filter(
         (item) => item.name !== e.target.value
       );
@@ -549,7 +619,7 @@ const MasterWssPage = ({
     if (
       formik.values.ws &&
       formik.values.type &&
-      formik.values.clusterHead &&
+      formik.values.masterHead &&
       Array.isArray(formik.values.clusterValue) &&
       formik.values.clusterValue.length > 0
     ) {
@@ -557,7 +627,7 @@ const MasterWssPage = ({
         id: filterData?.length + 1,
         ws: formik.values.ws,
         type: formik.values.type,
-        clusterHead: formik.values.clusterHead,
+        masterHead: formik.values.masterHead,
         clusterValue: formik.values.clusterValue
           .map((val) => val.label)
           .join(", "),
@@ -572,8 +642,6 @@ const MasterWssPage = ({
       setFilteredOption([]);
     }
   };
-  console.log("formik.values", formik.values);
-  console.log("ssssssssss", filterData);
 
   return (
     <div>
@@ -581,7 +649,7 @@ const MasterWssPage = ({
         <Formik
           initialValues={{
             ws: "",
-            clusterHead: "",
+            masterHead: "",
             type: "",
             clusterValue: [],
           }}
@@ -589,7 +657,6 @@ const MasterWssPage = ({
         >
           {({ values, resetForm }) => (
             <Form>
-              {console.log("values", values)}
               {/* Step and Buttons */}
               <div className="flex flex-col justify-between mt-5 mb-3 text-lg md:flex-row md:text-xl md:mb-4">
                 <p>Step-3 : Master W's</p>
@@ -665,20 +732,20 @@ const MasterWssPage = ({
                 {/* Select Cluster Head */}
                 <div className="flex-1 min-w-[200px]">
                   <label
-                    htmlFor="clusterHead"
+                    htmlFor="masterHead"
                     className="block mb-2 text-sm font-medium text-gray-900 md:text-sm"
                   >
                     Select Cluster Head
                   </label>
                   <Field
                     as="select"
-                    name="clusterHead"
-                    id="clusterHead"
+                    name="masterHead"
+                    id="masterHead"
                     className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 sm:text-md focus:ring-primary-600 focus:border-primary-600"
                     onChange={(e) => {
-                      handleChange(e, "clusterHead");
+                      handleChange(e, "masterHead");
                     }}
-                    value={formik.values.clusterHead} // Set Formik value here
+                    value={formik.values.masterHead} // Set Formik value here
                   >
                     <option value="">Please Select...</option>
                     {whos &&
@@ -701,7 +768,7 @@ const MasterWssPage = ({
                       ))}
                   </Field>
                   <ErrorMessage
-                    name="clusterHead"
+                    name="masterHead"
                     component="div"
                     className="text-sm text-red-500"
                   />
