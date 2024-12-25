@@ -162,14 +162,14 @@ const ModifySelectionPopup = ({
         <div>
           <Button
             onClick={onClose}
-            className="mt-2 text-white bg-gray-400 border-gray-500 custom-btn md:mt-4 me-2 md:me-3"
+            className="custom-btn mt-2 md:mt-4 me-2 md:me-3 bg-gray-400 border-gray-500 text-white"
           >
             Cancel
           </Button>
           <Button
             onClick={handleUpdate}
             type="primary"
-            className="text-blue-500 border-blue-500 bg-blue-50"
+            className="bg-blue-50 border-blue-500 text-blue-500"
           >
             Update
           </Button>
@@ -181,7 +181,7 @@ const ModifySelectionPopup = ({
         <div>
           <label
             htmlFor="title"
-            className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg"
+            className="block mb-2 mt-5 text-md md:text-lg font-medium text-gray-900"
           >
             {popupTitle}
           </label>
@@ -189,18 +189,18 @@ const ModifySelectionPopup = ({
             rows={6}
             value={currentValue}
             onChange={handleChange}
-            className="block w-full p-3 text-gray-900 border border-gray-300 rounded-md bg-gray-50 text-md focus:ring-primary-600 focus:border-primary-600"
+            className="bg-gray-50 w-full border p-3 border-gray-300 text-gray-900 text-md rounded-md focus:ring-primary-600 focus:border-primary-600 block"
           />
         </div>
 
         {/* W's Dropdowns */}
-        <div className="grid grid-cols-1 gap-3 mt-8 mb-6 md:mb-16 md:grid-cols-2 md:gap-5">
+        <div className="mt-8 mb-6 md:mb-16 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
 
             {/* secondary who dropdown */}
             <div>
                 <label
                     htmlFor="secondaryWhos"
-                    className="block mb-2 font-medium text-gray-900 text-md md:text-lg"
+                    className="block mb-2 text-md md:text-lg font-medium text-gray-900"
                 >
                     Secondary WHOs
                 </label>
@@ -237,7 +237,7 @@ const ModifySelectionPopup = ({
             <div>
                 <label
                     htmlFor="primaryWhats"
-                    className="block mb-2 font-medium text-gray-900 text-md md:text-lg"
+                    className="block mb-2 text-md md:text-lg font-medium text-gray-900"
                 >
                     Primary WHATs
                 </label>
@@ -274,7 +274,7 @@ const ModifySelectionPopup = ({
             <div>
                 <label
                     htmlFor="secondaryWhats"
-                    className="block mb-2 font-medium text-gray-900 text-md md:text-lg"
+                    className="block mb-2 text-md md:text-lg font-medium text-gray-900"
                 >
                     Secondary WHATs
                 </label>
@@ -311,7 +311,7 @@ const ModifySelectionPopup = ({
             <div>
                 <label
                     htmlFor="primaryWheres"
-                    className="block mb-2 font-medium text-gray-900 text-md md:text-lg"
+                    className="block mb-2 text-md md:text-lg font-medium text-gray-900"
                 >
                     Primary WHEREs
                 </label>
@@ -348,7 +348,7 @@ const ModifySelectionPopup = ({
             <div>
                 <label
                     htmlFor="secondaryWheres"
-                    className="block mb-2 font-medium text-gray-900 text-md md:text-lg"
+                    className="block mb-2 text-md md:text-lg font-medium text-gray-900"
                 >
                     Secondary WHEREs
                 </label>
