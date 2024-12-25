@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Modal, Select, Checkbox } from "antd";
-
 const { Option } = Select;
-
 const ModifyMasterWsPopup = ({
   open,
   onClose,
@@ -16,8 +14,6 @@ const ModifyMasterWsPopup = ({
 }) => {
   const [currentValue, setCurrentValue] = useState("");
   const [popupTitle, setPopupTitle] = useState("");
-
-  // Options and selected values (for example purposes)
   const [secondaryWhoOptions, setSecondaryWhoOptions] = useState([]);
   const [secondaryWhoSelectedOptions, setSecondaryWhoSelectedOptions] =
     useState([]);
@@ -27,18 +23,7 @@ const ModifyMasterWsPopup = ({
   const [typo, setTypo] = useState([]);
   const [clusterHead, setClusterHead] = useState([]);
   const [clusterValue, setClusterValue] = useState([]);
-
-  console.log("wsForm", wsForm);
-  console.log("storyWorldOptions", storyWorldOptions);
-  console.log("clusterValue", clusterValue);
   
-
-  // const storyWorldOptions = [
-  //   { id: 1, name: "Who's" },
-  //   { id: 2, name: "What's" },
-  //   { id: 3, name: "Where's" },
-  // ]
-  // Update on receiving new `modifyItemObj`
   useEffect(() => {
     if (type === "title") {
       setCurrentValue(modifyItemObj?.title || "");
@@ -51,7 +36,6 @@ const ModifyMasterWsPopup = ({
       setPopupTitle("Action");
     }
 
-    // For simplicity, assume options come from modifyItemObj or context
     setSecondaryWhoOptions(modifyItemObj?.secondaryWhos || []);
     setSecondaryWhoSelectedOptions(modifyItemObj?.secondaryWhos || []);
     setClusterHead(modifyItemObj?.clusterHead);
@@ -61,43 +45,20 @@ const ModifyMasterWsPopup = ({
   }, [modifyItemObj, type]);
 
   const handleChange = (e) => {
-    debugger
     setClusterHead(e.target.value);
   };
 
-  const handleSelectAllSecondaryWhos = () => {
-    if (secondaryWhoSelectedOptions.length === secondaryWhoOptions.length) {
-      setSecondaryWhoSelectedOptions([]);
-    } else {
-      setSecondaryWhoSelectedOptions(secondaryWhoOptions);
-    }
-  };
-
-  const handleSelectAllPrimaryWhats = () => {
-    // if (primaryWhatSelectedOptions.length === primaryWhatOptions.length) {
-    //   setPrimaryWhatSelectedOptions([]);
-    // } else {
-    //   setPrimaryWhatSelectedOptions(primaryWhatOptions);
-    // }
-  };
-
   const handleUpdate = () => {
-    debugger
     const updatedObj = {
-      id: modifyItemObj?.id || "", // ensure this is set correctly
-       // Update with the respective value
-      clusterValue: clusterValue, // Cluster value is also updated,
+      id: modifyItemObj?.id || "", 
+      clusterValue: clusterValue, 
       clusterHead:clusterHead,
       wsForm:wsForm,
       typo:typo
     };
-    onModify(updatedObj); // Call the passed function with the updated object
-    onClose(); // Close the modal or the form
+    onModify(updatedObj); 
+    onClose(); 
   };
-
-  const onTypeChange = (value) => {
-    setTypo(value);
-  }
 
   return (
     <Modal
@@ -121,32 +82,17 @@ const ModifyMasterWsPopup = ({
       ]}
     >
       <div>
-        {/* Editable text area */}
         <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
           {popupTitle}
         </label>
         <div className="mt-8 mb-6">
           <Select
             size="large"
-            // mode="multiple"
             className="w-full"
             value={wsForm}
             onChange={handleChange}
             placeholder={"Select Ws Form"}
           >
-            {/* <Option value="select-all">
-              <Checkbox
-                id="selectAllCheckbox"
-                className="me-2"
-                // checked={allPrimaryWhatSelected}
-                onChange={handleSelectAllPrimaryWhats}
-              />
-              <label htmlFor="selectAllCheckbox">
-                {/* {
-                   allPrimaryWhatSelected ? "Unselect All" : "Select All"
-                } */}
-              {/* </label>
-            </Option> */} 
             {wsForms?.map((item, index) => (
               <Option key={index} value={item?._id}>
                 {item?.name}
@@ -154,26 +100,17 @@ const ModifyMasterWsPopup = ({
             ))}
           </Select>
         </div>
-        {/* Primary WHAT Dropdown */}
         <div className="mt-8 mb-6">
           <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
             Type
           </label>
           <Select
             size="large"
-            // mode="multiple"
             className="w-full"
             value={typo}
             onChange={handleChange}
             placeholder="Select Type"
           >
-            {/* <Option value="select-all">
-              <Checkbox
-                // checked={primaryWhatSelectedOptions.length === primaryWhatOptions.length}
-                onChange={handleSelectAllPrimaryWhats}
-              />
-              Select All
-            </Option> */}
             {types?.map((item, index) => (
               <Option key={index} value={item?._id}>
                 {item.name}
@@ -189,10 +126,10 @@ const ModifyMasterWsPopup = ({
             {"Cluster Head"}
           </label>
           <input
-            type="text" // Use "text" type for a single-line input field
+            type="text"
             value={clusterHead}
             onChange={handleChange}
-            id="title" // Ensure the input has an id if you need it for accessibility
+            id="title"
             className="block w-full p-3 text-gray-900 border border-gray-300 rounded-md bg-gray-50 text-md focus:ring-primary-600 focus:border-primary-600"
           />
         </div>
@@ -204,10 +141,10 @@ const ModifyMasterWsPopup = ({
             {"Cluster Value"}
           </label>
           <input
-            type="text" // Use "text" type for a single-line input field
+            type="text"
             value={clusterValue}
             onChange={handleChange}
-            id="title" // Ensure the input has an id if you need it for accessibility
+            id="title"
             className="block w-full p-3 text-gray-900 border border-gray-300 rounded-md bg-gray-50 text-md focus:ring-primary-600 focus:border-primary-600"
           />
         </div>

@@ -2,7 +2,6 @@ import { CSVLink } from "react-csv";
 
 const DownloadCSVFile = (props) => {
 
-
     return (
         <>
       <CSVLink
@@ -15,6 +14,5 @@ const DownloadCSVFile = (props) => {
         </>
     )
 }
-
 
 export default DownloadCSVFile;

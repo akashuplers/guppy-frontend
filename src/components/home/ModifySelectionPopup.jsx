@@ -1,8 +1,6 @@
 import { Button, Checkbox, Modal, Select } from "antd";
 import React, { useContext, useEffect, useState } from "react";
 import { StoryUploadApiContext } from "../../contexts/ApiContext";
-// import 
-// import { StoryUploadApiContext } from "../../contexts/ApiContext";
 const { Option } = Select;
 
 const ModifySelectionPopup = ({
