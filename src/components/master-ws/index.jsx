@@ -130,6 +130,7 @@ const wsForm = [
   }
 
   const handleSubmit = async (values, { setSubmitting }) => {
+    debugger
     let alertKey;
     try {
         const storyWorldId = values?.storyWorld;
@@ -212,24 +213,10 @@ const [ filteredData, setFilteredData ] = useState(filterData);
       dataIndex: "clusterValue",
       title: "Cluster Value",
       render: (clusterValue, record, index) => {
-        // Assuming clusterValue is already an array. If it's a string, you can split it.
         const valuesArray = Array.isArray(clusterValue) ? clusterValue : clusterValue?.split(", ") || [];
-    
         const handleRemoveChip = (valueToRemove) => {
-          // Update the record by removing the value from the clusterValue array
           const updatedClusterValues = clusterValue.filter(value => value !== valueToRemove);
-    
-          // Assuming you have a method to update the row data, you would call it here
-          // For example, if you are using state:
-          // setData(prevData => {
-          //   const newData = [...prevData];
-          //   newData[index].clusterValue = updatedClusterValues;
-          //   return newData;
-          // });
-    
-          // Or if you're directly mutating the record (depending on your use case):
           record.clusterValue = updatedClusterValues;
-          // You would likely want to trigger a re-render here if you're using local state.
         };
     
         return (
@@ -240,7 +227,7 @@ const [ filteredData, setFilteredData ] = useState(filterData);
                   <span>{value}</span>
                   <button
                         className="text-red-600 bg-transparent border-none cursor-pointer ml-2"
-                        onClick={() => handleRemoveChip(value, index)} // handleRemoveChip should be defined to remove a chip
+                        onClick={() => handleRemoveChip(value, index)} 
                         title="Remove"
                       >
                         <svg
@@ -249,7 +236,7 @@ const [ filteredData, setFilteredData ] = useState(filterData);
                           viewBox="0 0 24 24"
                           strokeWidth={1.5}
                           stroke="currentColor"
-                          className="w-6 h-6" // Tailwind size for the cross icon
+                          className="w-6 h-6" 
                         >
                           <path
                             strokeLinecap="round"
@@ -261,7 +248,7 @@ const [ filteredData, setFilteredData ] = useState(filterData);
                 </div>
               ))
             ) : (
-              "NA" // If no values available, show "NA"
+              "NA" 
             )}
           </div>
         );
@@ -312,7 +299,7 @@ const [ filteredData, setFilteredData ] = useState(filterData);
               >
                 <path
                   d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6M14 10V17M10 10V17"
-                  stroke="#EF4444" // Applying red color (text-red-600 in Tailwind is equivalent to #EF4444)
+                  stroke="#EF4444"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -428,7 +415,7 @@ const [ filteredData, setFilteredData ] = useState(filterData);
         </div>
 
         {/* master Ws Tabs */}
-        {isFetched && (
+        
           <div className="mt-10 px-5">
             {/* <Tabs defaultActiveKey="1" items={items} /> */}
             <Table
@@ -437,7 +424,7 @@ const [ filteredData, setFilteredData ] = useState(filterData);
               bordered
             />
           </div>
-        )}
+       
         {dialogPopup && (
           <ModifyMasterWsPopup
             open={dialogPopup}

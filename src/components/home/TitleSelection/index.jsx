@@ -21,18 +21,17 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
 
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedRow, setSelectedRow] = useState({});
   const [titleSelectionItems, setTitleSelectionItems] = useState([]);
+  const [selectedRow, setSelectedRow] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showStoryModal, setShowStoryModal] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [comment, setComment] = useState('');
   const [modalType, setModalType] = useState('');
   const navigate = useNavigate();
-
-  // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
+  
   useEffect(() => {
     setTitleSelectionItems(updatedTitles);
   }, []);
@@ -118,7 +117,6 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
       // api call
       const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_TITLES;
       const payload = bodyForSaveTitlesApi();
-
       const config = {
         headers: {
           "Content-Type": "application/json",

@@ -20,11 +20,11 @@ const MasterWssPage = ({
   handleSaveSuccess = () => {},
 }) => {
   const navigate = useNavigate();
-  // const { resetForm } = useFormikContext();
   const [isLoading, setIsLoading] = useState(false);
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [dialogPopup, setDialogPopup] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);  
   const [stories, setStories] = useState([]);
   const [filteredStories, setFilteredStories] = useState([]);
   const [isShareModalOpen, setShareModalOpen] = useState(false);
@@ -35,17 +35,20 @@ const MasterWssPage = ({
   const [updatedShareIds, setUpdatedShareIds] = useState([]);
   const [titleSelectionItems, setTitleSelectionItems] = useState([]);
   const [showVersionModal, setShowVersionModal] = useState(false);
+  const [ selectedMasterHeadLabel, setSelectedMasterHeadLabel] = useState();
   const [isStoryDeleted, setIsStoryDeleted] = useState(false);
-  const [showDeleteStoryModal, setShowDeleteStoryModal] = useState(false);
+  const [showDeleteStoryModal, setShowDeleteStoryModal] = useState(false);  
   const [selectedStoryId, setSelectedStoryId] = useState("");
   const [selectedVersionId, setSelectedVersionId] = useState("");
   const [clusterList, setClusterList] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);  
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const errorMsg = "Error In Fetching Saved Response";
   const downloadLinkRef = useRef(null);
   const [selected, setSelected] = useState([]);
-  const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged,} = useContext(StoryUploadApiContext);
-  const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
+  const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged,} = useContext(StoryUploadApiContext);  
+  const { token, story_id, storyWorld, fileName, primaryWhos, masterWs, filterDatas } = storyUploadApiResponse;
   
   const formik = useFormik({
     initialValues: {
@@ -63,10 +66,6 @@ const MasterWssPage = ({
   const [whats, setWhats] = useState();
   const [wheres, setWheres] = useState();
   const [filteredOptions, setFilteredOption] = useState();
-console.log("whoswhoswhos", whos) ;
-console.log("whatswhatswhats", whats) ;
-console.log("whereswheres", wheres) ;
-console.log("filteredOptions", filteredOptions);
 
   const options = (filteredOptions || []).map((item) => ({
     label: item.value,
@@ -74,12 +73,32 @@ console.log("filteredOptions", filteredOptions);
   }));
 
   const [filterData, setFilteredData] = useState([]);
-  console.log("filterDatafilterData", filterData);
 
-  const handleModify = (updatedData) => {
-    console.log("Updated Data: ", updatedData);
-    // Handle data update (e.g., save to the server or update state)
+  const handleDelete = () => {
+        const curData = [...filterData];
+        const updated = curData.filter((ele) => ele.id !== selectedRow.id);
+        setFilteredData(updated);
+        message.success("Deleted Successfully !");
+        handleAnythingChanged(true);
   };
+
+useEffect(() => {
+  if(filterData?.length > 0) {
+    const masterHeadIds = filterData.map(item => item.masterHead.id);
+    const updatedWhos = whos?.filter(item => !masterHeadIds.includes(item.id));
+    const updatedWheres = wheres?.filter(item => !masterHeadIds.includes(item.id));
+    const updatedWhats = whats?.filter(item => !masterHeadIds.includes(item.id));  
+    setWhos(updatedWhos);
+    setWheres(updatedWheres);
+    setWhats(updatedWhats);
+    const updatedFilteredOptions = filteredOptions?.filter(item => 
+      !masterHeadIds.includes(item.id) 
+    );
+  
+    setFilteredOption(updatedFilteredOptions);
+  }
+
+}, [filterData]);
 
   useEffect(() => {
     if (!tokenVal) {
@@ -116,27 +135,6 @@ console.log("filteredOptions", filteredOptions);
     ["Yezzi", "Min l3b", "ymin@cocococo.com"],
   ];
 
-  const deleteStoryById = async () => {
-    try {
-      const apiUrl = API_BASE_PATH + API_ROUTES.STORY + `/${selectedStoryId}`;
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tokenVal}`,
-        },
-      };
-      const response = await axios.delete(apiUrl, config);
-      if (response.data?.message) {
-        message.success({ content: response.data?.message, duration: 20 });
-        setIsStoryDeleted(true);
-      }
-    } catch (error) {
-      console.log("error: ", error);
-      message.error(errorMsg);
-    }
-    setShowDeleteStoryModal(false);
-  };
-
   const handleSharedUsers = () => {
     const finalUsers = users.filter(
       (user) =>
@@ -144,9 +142,6 @@ console.log("filteredOptions", filteredOptions);
     );
     setTempUsers(finalUsers);
   };
-  useEffect(() => {
-    setTitleSelectionItems(updatedTitles);
-  }, []);
 
   const clusterHeadWsList = async () => {
     try {
@@ -169,93 +164,75 @@ console.log("filteredOptions", filteredOptions);
     clusterHeadWsList();
   },[])
 
-  const generateClusterValues = (value) => {
-    return value.split(' ').map((item, index) => ({
-        id: `${index + 1122}`,
-        value: item
-    }));
-};
-
-// Function to convert the input data to the desired structure
 const transformData = (data) => {
-  // Initial empty structure for "who" and "what"
   const result = {
-      who: {
-          primary: [],
-          secondary: []
-      },
-      what: {
-          primary: [],
-          secondary: []
-      }
-  }
-  data.forEach(item => {
-    const clusterValues = generateClusterValues(item.clusterValue);
+    who: {
+      primary: [],
+      secondary: []
+    },
+    what: {
+      primary: [],
+      secondary: []
+    },
+    where: {
+      primary: [],
+      secondary: []
+    }
+  };
+
+  data?.forEach(item => {
     const newItem = {
-        id: item.id.toString(),
-        masterHead: item.masterHead,
-        clusterValues: clusterValues,
-        new: true,
-        updated: false
+      id: item.masterHead.id, 
+      masterHead: item.masterHead.value, 
+      clusterValues: item.clusterValue?.map(cluster => ({
+        id: cluster.id,
+        value: cluster.value
+      })),
+      new: true,
+      updated: false
     };
-        // Place the item in the appropriate section based on ws and type
-        if (item.ws === "Who's") {
-          if (item.type === "Primary") {
-              result.who.primary.push(newItem);
-          } else {
-              result.who.secondary.push(newItem);
-          }
-      } else if (item.ws === "What's") {
-          if (item.type === "Primary") {
-              result.what.primary.push(newItem);
-          } else {
-              result.what.secondary.push(newItem);
-          }
+
+    if (item.ws === "Who's") {
+      if (item.type === "Primary") {
+        result.who.primary.push(newItem);
+      } else {
+        result.who.secondary.push(newItem);
       }
+    } else if (item.ws === "What's") {
+      if (item.type === "Primary") {
+        result.what.primary.push(newItem);
+      } else {
+        result.what.secondary.push(newItem);
+      }
+    } else if (item.ws === "Where's") {
+      if (item.type === "Primary") {
+        result.where.primary.push(newItem);
+      } else {
+        result.where.secondary.push(newItem);
+      }
+    }
   });
 
-  return result;
+  return cleanEmptySections(result);
 };
-const transformedData = transformData(filterData);
-console.log("transformedData", transformedData);
+
 const cleanEmptySections = (data) => {
   for (const key in data) {
-      if (data.hasOwnProperty(key)) {
-          const sections = data[key];
-
-          // Remove 'primary' or 'secondary' sections if they are empty
-          for (const section in sections) {
-              if (sections[section].length === 0) {
-                  delete sections[section];
-              }
-          }
+    if (data.hasOwnProperty(key)) {
+      const sections = data[key];
+      for (const section in sections) {
+        if (sections[section].length === 0) {
+          delete sections[section];
+        }
       }
+    }
   }
   return data;
 };
 
-// Clean the data by removing empty sections
-const cleanedData = cleanEmptySections(transformedData);
-console.log("cleanedData",cleanedData);
 
-console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
-
-
-  const getUpdatedTitles = (newTitles) => {
-    return newTitles?.map((title) => {
-      return {
-        id: title.id,
-        title: title.Title,
-        primaryWhos: title.Who_Primary,
-        primaryWhats: title.What_Primary,
-        primaryWheres: title.Where_Primary,
-        secondaryWhos: title.Who_Secondary,
-        secondaryWhats: title.What_Secondary,
-        secondaryWheres: title.Where_Secondary,
-        ...(title.comment && { comment: title.comment }),
-      };
-    });
-  };
+const transformedData = transformData(filterData);
+const cleanedData = transformedData
 
   const fetchStories = async () => {
     setIsLoading(true);
@@ -269,7 +246,7 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
         },
       };
       alertKey = message.loading("Fetching Stories...", 0).key;
-      const response = await axios.post(apiUrl, {}, config); // post api request
+      const response = await axios.post(apiUrl, {}, config);
       const output = response?.data?.data;
       if (output) {
         setStories(output.slice().reverse());
@@ -320,12 +297,20 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
     }
   };
 
-  const handleRemoveChip = (chipValue) => {
-    debugger;
+  const handleRemoveChip = (value, index) => {
+    const updatedClusterValues = [...filterData[index]?.clusterValue];  
+    const newClusterValues = updatedClusterValues?.filter(item => item?.id !== value?.id); 
+    updateClusterValue(index, newClusterValues);
+  };
+  const updateClusterValue = (index, newClusterValues) => {
+    const updatedTableData = [...filterData];
+    updatedTableData[index].clusterValue = newClusterValues;
+    setFilteredData(updatedTableData);
   };
  
   const historyColumns = [
     {
+      dataIndex: "id",
       title: "S.No",
       render: (text, record, index) => index + 1,
       width: 60,
@@ -341,25 +326,31 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
     {
       dataIndex: "masterHead",
       title: "Cluster Head",
+      render: (text, record) => {
+        return (
+          <div>
+            <span>{record.masterHead.value}</span>
+          </div>
+        );
+      },
     },
     {
       dataIndex: "clusterValue",
       title: "Cluster Value",
       render: (clusterValue, record, index) => {
-        const valuesArray = clusterValue?.split(", ") || [];
         return (
           <div className="flex flex-wrap gap-2">
             {
-              valuesArray.length > 0
-                ? valuesArray.map((value, idx) => (
+              clusterValue?.length > 0
+                ? clusterValue?.map((value, idx) => (
                     <div
                       key={idx}
                       className="flex items-center bg-gray-200 rounded-lg px-2.5 py-1.5 text-sm text-gray-800 border border-gray-300"
                     >
-                      <span>{value}</span>
+                      <span>{value?.value}</span>
                       <button
                         className="text-red-600 bg-transparent border-none cursor-pointer ml-2"
-                        onClick={() => handleRemoveChip(value, index)} // handleRemoveChip should be defined to remove a chip
+                        onClick={() => handleRemoveChip(value, index)}
                         title="Remove"
                       >
                         <svg
@@ -368,7 +359,7 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
                           viewBox="0 0 24 24"
                           strokeWidth={1.5}
                           stroke="currentColor"
-                          className="w-6 h-6" // Tailwind size for the cross icon
+                          className="w-6 h-6"
                         >
                           <path
                             strokeLinecap="round"
@@ -379,7 +370,7 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
                       </button>
                     </div>
                   ))
-                : "NA" // If no values available, show "NA"
+                : "NA" 
             }
           </div>
         );
@@ -417,9 +408,8 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
             <button
               title="Delete story"
               onClick={() => {
-                setSelectedStoryId(record?.story_id);
-                setShowDeleteStoryModal(true);
-                setIsStoryDeleted(false);
+                setShowDeleteModal(true);
+                setSelectedRow(record);
               }}
             >
               <svg
@@ -431,7 +421,7 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
               >
                 <path
                   d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6M14 10V17M10 10V17"
-                  stroke="#EF4444" // Applying red color (text-red-600 in Tailwind is equivalent to #EF4444)
+                  stroke="#EF4444" 
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -444,49 +434,12 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
     },
   ];
 
-  const handleSubmit = async (values, { setSubmitting, resetForm }) => {
-    try {
-      const apiUrl = API_BASE_PATH + API_ROUTES.ADD_STORY_WORLD;
-      const formData = {
-        name: values?.name,
-        lead_who: values?.storyWorldLead,
-      };
-      // api call
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      const response = await axios.post(apiUrl, formData, config); // post api request
-      const output = response?.data?.latestStoryWorld;
-      //   if(output) {
-      //     onAddStoryWorld(output);
-      //     resetForm();
-      //   }
-    } catch (error) {
-      console.error("Error:", error);
-      const statusCode = error?.response?.status;
-      if (statusCode === 401) {
-        message.error("Not Authorized ! You need to login first !");
-        navigate("/");
-      } else if (statusCode === 400) {
-        message.error("Story World Already Exists With This Name !");
-      } else if (statusCode === 500) {
-        message.error("Internal Server Error !");
-      } else {
-        const errorMessage = error?.response?.data?.message;
-        if (errorMessage) {
-          message.error(errorMessage);
-        } else {
-          message.error(
-            "Something Went Wrong ! Please Try Again After Some Time !"
-          );
-        }
-      }
-    }
-    setSubmitting(false);
-  };
+  const headers = [
+    { label: "W's Form", key: "ws" },
+    { label: "Type", key: "type" },
+    { label: "Cluster Head", key: "masterHead" },
+    { label: "Cluster Value", key: "clusterValue" }
+];
 
   const storyWorldOptions = [
     { id: 1, name: "Who's" },
@@ -500,51 +453,132 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
   ];
 
   const onReset = () => {
-    setTitleSelectionItems(titles);
     message.success("Reset Successfully !");
     handleAnythingChanged(true);
   };
+
+  const handleAddRow = () => {
+    const newObj = {
+      id: filterData?.length + 1,
+      wsForm: [],
+      type: [],
+      masterHead: [],
+      clusterValue: [],
+      new: true,
+    };
+    const curData = [newObj, ...filterData];
+    setFilteredData(curData);
+    message.success("New Row Added Successfully !");
+    handleAnythingChanged(true);
+  };
+
+  const handleChange = (e, name) => {
+    if (e?.target?.value === "Who's") {
+      setWhos(clusterList?.Who);
+      setWhats([]);
+      setWheres([]);
+      setFilteredOption(clusterList?.Who);
+    } else if (e?.target?.value === "What's") {
+      setWhats(clusterList?.What);
+      setWhos([]);
+      setWheres([]);
+      setFilteredOption(clusterList?.What);
+    } else if (e?.target?.value === "Where's") {
+      setWheres(clusterList?.Where);
+      setWhats([]);
+      setWhos([]);
+      setFilteredOption(clusterList?.Where);
+    }
+  
+    const selectedOption = [
+      ...clusterList?.Who,
+      ...clusterList?.What,
+      ...clusterList?.Where
+    ]?.find((option) => option?.value === e?.target?.value);
+
+    if (name === "ws") {
+      formik.setFieldValue("ws", e.target.value);
+    }else if ( name === "masterHead" && selectedOption) {
+      const { id, value } = selectedOption;
+    
+        formik.setFieldValue("masterHead", { id: id, value:value });
+        const filteredArray = filteredOptions?.filter(
+        (item) => item.value !== e.target.value
+      );
+      setFilteredOption(filteredArray);
+    } else if (name === "type") {
+      formik.setFieldValue("type", e.target.value);
+    } else {
+    
+        const selectedValues = e?.map((option) => ({
+          label: option.label,
+          value: option.value,
+        }));
+        setSelected(selectedValues);
+        formik.setFieldValue("clusterValue", selectedValues);
+    
+    }
+  };
+  const { values, setFieldValue } = formik;
+
+  const getUpdatedJson = (list) => {
+    const arr = list || [];
+    if(arr && arr.length>0) {
+      const updated = arr.map((item, index) => ({
+        id: item.id,
+        title: item.Title,
+        primaryWhos: item.Who_Primary,
+        secondaryWhos: item.Who_Secondary,
+        primaryWhats: item.What_Primary,
+        secondaryWhats: item.What_Secondary,
+        primaryWheres: item.Where_Primary,
+        secondaryWheres: item.Where_Secondary,
+        comment: item.comment
+      }));
+      return updated;
+    }
+    return [];
+  }
+
   const onSave = async () => {
-    // setIsSubmitting(true);
+    setIsSubmitting(true);
     let alertKey;
     try {
-      // api call
-      const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_TITLES;
-      // const payload = bodyForSaveTitlesApi();
-      const payload = "";
+      const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_CLUSTER + story_id;
+      const payload = transformedData;
       const config = {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       };
-      alertKey = message.loading("Saving Titles...", 0).key;
-      const response = await axios.post(apiUrl, payload, config); // post api request
+      alertKey = message.loading("Saving Ws...", 0).key;
+      const response = await axios.post(apiUrl, payload, config); 
       const output = response?.data;
       if (output) {
-        const situations = output?.situations;
-        const newTitles = output?.updatedTitles?.titles;
-        setTitleSelectionItems(getUpdatedTitles(newTitles));
-        // update context
+        const { masterWs, titles } = output;
         const contextObj = { ...storyUploadApiResponse };
         const updatedContextObj = {
           ...contextObj,
-          // updatedTitles: getUpdatedTitles(newTitles),
-          // situations: getUpdatedJson(situations),
-          // updatedSituations: getUpdatedJson(situations),
+          masterWs: masterWs,
+          filterDatas:filterData,
+          titles: getUpdatedJson(titles),
+          updatedTitles: getUpdatedJson(titles),
         };
         setStoryUploadApiResponse(updatedContextObj);
+        setIsSaved(true);
+        message.destroy(alertKey); 
+        message.success("Clusters Saved Successfully !");
         handleSaveSuccess(true);
         handleAnythingChanged(false);
-        message.destroy(alertKey);
-        message.success("Titles Saved Successfully !");
+
       } else {
-        message.destroy(alertKey);
-        message.error("Error In Saving Titles ! Unable To Fetch Response !");
+        message.destroy(alertKey); 
+        message.error("Error In Saving Ws ! Unable To Fetch Response !");
       }
     } catch (error) {
       console.error("Error:", error);
-      message.destroy(alertKey);
+      message.destroy(alertKey); 
       const statusCode = error?.response?.status;
       if (statusCode === 401) {
         message.error("Not Authorized ! You need to login first !");
@@ -556,71 +590,21 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
         if (errorMessage) {
           message.error(errorMessage);
         } else {
-          message.error("Error In Saving Titles ! Unable To Fetch Response !");
+          message.error(
+            "Error In Saving Ws ! Unable To Fetch Response !"
+          );
         }
       }
     }
+    setIsSubmitting(false);
   };
-
-  const handleAddRow = () => {
-    const newObj = {
-      id: filterData?.length + 1,
-      wsForm: [],
-      type: [],
-      masterHead: [],
-      clusterValue: [],
-      isNewField: true,
-    };
-    const curData = [newObj, ...filterData];
-    setFilteredData(curData);
-    message.success("New Row Added Successfully !");
-    handleAnythingChanged(true);
-  };
-
-  const handleChange = (e, name) => {
-    debugger;
-    // const selectedOption = storyWorldOptions?.find(option => option?._id === e?.target?.value);
-    // console.log("selectedOption", selectedOption);
-
-    if (e?.target?.value === "Who's") {
-      setWhos(clusterList?.Who);
-      setFilteredOption(clusterList?.Who);
-    } else if (e?.target?.value === "What's") {
-      setWhats(clusterList?.What);
-      setFilteredOption(clusterList?.What);
-    } else if (e?.target?.value === "Where") {
-      setWheres(clusterList?.Where);
-      setFilteredOption(clusterList?.Where);
-    }
-
-    if (name === "ws") {
-      formik.setFieldValue("ws", e.target.value);
-    } else if (name === "masterHead") {
-      formik.setFieldValue("masterHead", e?.target?.value);
-      const filteredArray = filteredOptions?.filter(
-        (item) => item.name !== e.target.value
-      );
-      setFilteredOption(filteredArray);
-    } else if (name === "type") {
-      formik.setFieldValue("type", e.target.value);
-    } else {
-      const selectedValues = e?.map((option) => ({
-        label: option.label,
-        value: option.value,
-      }));
-      setSelected(selectedValues);
-      formik.setFieldValue("clusterValue", selectedValues);
-    }
-  };
-  const { values, setFieldValue } = formik;
 
   const handleSaveCluster = (values, resetForm) => {
-    debugger;
     if (
       formik.values.ws &&
       formik.values.type &&
       formik.values.masterHead &&
-      Array.isArray(formik.values.clusterValue) &&
+      Array?.isArray(formik.values.clusterValue) &&
       formik.values.clusterValue.length > 0
     ) {
       const newRow = {
@@ -629,12 +613,12 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
         type: formik.values.type,
         masterHead: formik.values.masterHead,
         clusterValue: formik.values.clusterValue
-          .map((val) => val.label)
-          .join(", "),
+        .map((val) => ({
+          id: val.value,         
+          value: val.label    
+        }))
       };
       setFilteredData((prevArray) => [...prevArray, newRow]);
-
-      // Reset form after adding the data
       formik.resetForm(formik.values);
       setWhats([]);
       setWhos([]);
@@ -657,7 +641,6 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
         >
           {({ values, resetForm }) => (
             <Form>
-              {/* Step and Buttons */}
               <div className="flex flex-col justify-between mt-5 mb-3 text-lg md:flex-row md:text-xl md:mb-4">
                 <p>Step-3 : Master W's</p>
                 <div className="flex space-x-4">
@@ -674,30 +657,20 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
                     onClick={() => handleSaveCluster(values, resetForm)}
                   >
                     <DownloadCSVFile
-                    // csvData={csvData}
-                    // buttonTitle={"Download"}
+                    csvDat={filterData}
+                    header={headers}
                     />
                   </button>
                   <button
-                    type="submit"
-                    className="w-20 px-4 py-2 mt-4 text-sm font-medium text-center text-white bg-blue-600 rounded-lg md:w-24 lg:w-28 md:mt-0 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
-                    onClick={() => handleSaveCluster(values, resetForm)}
-                  >
-                    Save Cluster
-                  </button>
-
-                  <button
                     type="button"
                     className="w-20 px-4 py-2 mt-4 text-sm font-medium text-center text-white bg-blue-600 rounded-lg md:w-24 lg:w-28 md:mt-0 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
+                    onClick={() => handleSaveCluster(values, resetForm)}
                   >
                     Save Ws
                   </button>
                 </div>
               </div>
-
-              {/* Select Inputs */}
               <div className="flex flex-wrap mt-4 space-x-4">
-                {/* Select Ws */}
                 <div className="flex-1 min-w-[200px]">
                   <label
                     htmlFor="storyWorld"
@@ -713,7 +686,7 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
                     onChange={(e) => {
                       handleChange(e, "ws");
                     }}
-                    value={formik.values.ws} // Set Formik value here
+                    value={formik.values.ws}
                   >
                     <option value="">Please Select...</option>
                     {storyWorldOptions?.map((item, index) => (
@@ -728,8 +701,6 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
                     className="text-sm text-red-500"
                   />
                 </div>
-
-                {/* Select Cluster Head */}
                 <div className="flex-1 min-w-[200px]">
                   <label
                     htmlFor="masterHead"
@@ -745,7 +716,7 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
                     onChange={(e) => {
                       handleChange(e, "masterHead");
                     }}
-                    value={formik.values.masterHead} // Set Formik value here
+                    value={formik.values.masterHead?.value} 
                   >
                     <option value="">Please Select...</option>
                     {whos &&
@@ -790,7 +761,7 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
                     onChange={(e) => {
                       handleChange(e, "type");
                     }}
-                    value={formik.values.type} // Set Formik value here
+                    value={formik.values.type} 
                   >
                     <option value="">Please Select...</option>
                     {type?.map((item, index) => (
@@ -805,8 +776,6 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
                     className="text-sm text-red-500"
                   />
                 </div>
-
-                {/* Select Cluster Values */}
                 <div className="flex-1 min-w-[200px]">
                   <label
                     htmlFor="clusterValue"
@@ -820,7 +789,7 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
                         id="clusterValue"
                         options={options}
                         onChange={(e) => handleChange(e, "clusterValue")}
-                        value={formik.values.clusterValue} // Set Formik value here
+                        value={formik.values.clusterValue}
                         labelledBy="Please Select"
                       />
                     )}
@@ -838,7 +807,7 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
 
         <div className="mt-8">
           {!isLoading && (
-            <Table dataSource={filterData} columns={historyColumns} bordered />
+            <Table dataSource={ filterDatas || filterData  } columns={historyColumns} bordered />
           )}
         </div>
       </div>
@@ -859,41 +828,32 @@ console.log("gffffffffffffffff", JSON.stringify(transformedData, null, 2));
           onClose={() => setShowVersionModal(false)}
         />
       )}
-      {showDeleteStoryModal && (
-        <DeleteConfirmationDialog
-          open={showDeleteStoryModal}
-          onClose={() => setShowDeleteStoryModal(false)}
-          onConfirm={() => deleteStoryById()}
-        />
-      )}
-      {/* {showModifyPopup && (
-        <ModifySelectionPopup
-          open={showModifyPopup}
-          modifyItemObj={selectedRow}
-          onClose={() => setShowModifyPopup(false)}
-          // onModify={onModify}
-          type="title"
-        />
-      )} */}
+       {showDeleteModal && (
+          <DeleteConfirmationDialog
+            open={showDeleteModal}
+            onClose={() => setShowDeleteModal(false)}
+            onConfirm={handleDelete}
+          />
+        )}
       {dialogPopup && (
         <ModifyMasterWsPopup
           open={dialogPopup}
-          modifyItemObj={selectedRow} // Pass selected row data for editing
+          modifyItemObj={selectedRow} 
           onClose={() => setDialogPopup(false)}
           storyWorldOptions={storyWorldOptions}
           filteredOptions={filteredOptions}
           types={type}
           clusterHead={whos ? whats : wheres}
-          onModify={handleModify}
-          type="title" // Modify this as per the field you want to edit
+          // onModify={handleModify}
+          type="title" 
         />
       )}
       <FooterButtons
         onDiscard={onDiscard}
         onReset={onReset}
         onSubmit={onSave}
-        saveType="Titles"
-        // isSubmitting={isSubmitting}
+        saveType="Clusters"
+        isSubmitting={isSubmitting}
       />
     </div>
   );

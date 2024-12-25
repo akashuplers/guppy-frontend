@@ -61,8 +61,8 @@ const Home = () => {
       const updated = arr.map((item, index) => ({
         id: item.id,
         name: item.value,
-        isRadioSelected: item.type?.toLowerCase()==='primary' ? true : false,
-        isCheckboxSelected: item.type?.toLowerCase()==='secondary' ? true : false,
+        // isRadioSelected: item.type?.toLowerCase()==='primary' ? true : false,
+        isCheckboxSelected: item.selected ? true : false,
         ner: item.ner ?? false
       }));
       return updated;
@@ -220,7 +220,6 @@ const Home = () => {
   }
 
   const handleNextStep = () => {
-    debugger
     if(isAnythingChanged){
       setActiveStep("next");
       handleSaveModalOpen(true);

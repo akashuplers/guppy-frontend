@@ -25,5 +25,6 @@ export const API_ROUTES = {
     DOWNLOAD_VERSION_STORY: "/story/download-version",
     STORY: '/story',
     HARMONIZATION: '/story/harmonization/',
-    LIST_WS: '/story/ws/'
+    LIST_WS: '/story/ws/',
+    SAVE_CLUSTER: '/story/save-clusters/'
 }
