@@ -49,6 +49,7 @@ const MasterWssPage = ({
   const [selected, setSelected] = useState([]);
   const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged,} = useContext(StoryUploadApiContext);  
   const { token, story_id, storyWorld, fileName, primaryWhos, masterWs, filterDatas } = storyUploadApiResponse;
+  const [searchTerm, setSearchTerm] = useState('');
 
   const formik = useFormik({
     initialValues: {
@@ -75,8 +76,6 @@ const MasterWssPage = ({
   const [filterData, setFilteredData] = useState([]);
 
   console.log("filterDatafilterData", filterData);
-  const tableData = [...filterData, ...filterDatas]
-  console.log("tableData", tableData);
   
   const handleDelete = () => {
         const curData = [...filterData];
@@ -235,7 +234,7 @@ const cleanEmptySections = (data) => {
 };
 
 
-const transformedData =  transformData(filterData);
+const transformedData = transformData(filterData);
 const cleanedData = transformedData
 
   const fetchStories = async () => {
@@ -667,11 +666,8 @@ console.log("Flatten Data", flattenData);
     }
     setIsSubmitting(false);
   };
-  console.log("qqqqqqqqqqq, filterDats", filterDatas);
-  
 
   const handleSaveCluster = (values, resetForm) => {
-    debugger
     if (
       formik.values.ws &&
       formik.values.type &&
@@ -878,7 +874,7 @@ console.log("Flatten Data", flattenData);
 
         <div className="mt-8">
           {!isLoading && (
-            <Table dataSource={ tableData || filterData  } columns={historyColumns} bordered />
+            <Table dataSource={ filterDatas  || filterData || []  } columns={historyColumns} bordered />
           )}
         </div>
       </div>
