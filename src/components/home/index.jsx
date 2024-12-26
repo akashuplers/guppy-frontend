@@ -298,7 +298,7 @@ const Home = () => {
               saveSituations={isSaveChanges}
               handleSaveSuccess={handleSaveSuccess}
             />
-          ) : currentStep === 4 ? (
+          ) : currentStep === 5 ? (
             <ActionSelection
               onDiscard={onDiscard}
               saveActions={isSaveChanges}

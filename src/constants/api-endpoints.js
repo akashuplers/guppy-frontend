@@ -26,5 +26,6 @@ export const API_ROUTES = {
     STORY: '/story',
     HARMONIZATION: '/story/harmonization/',
     LIST_WS: '/story/ws/',
-    SAVE_CLUSTER: '/story/save-clusters/'
+    SAVE_CLUSTER: '/story/save-clusters/',
+    SORT_WS:'/story/sort-ws/'
 }
