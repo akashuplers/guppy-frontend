@@ -21,18 +21,17 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
 
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedRow, setSelectedRow] = useState({});
   const [titleSelectionItems, setTitleSelectionItems] = useState([]);
+  const [selectedRow, setSelectedRow] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showStoryModal, setShowStoryModal] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [comment, setComment] = useState('');
   const [modalType, setModalType] = useState('');
   const navigate = useNavigate();
-
-  // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
+  
   useEffect(() => {
     setTitleSelectionItems(updatedTitles);
   }, []);
@@ -118,7 +117,6 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
       // api call
       const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_TITLES;
       const payload = bodyForSaveTitlesApi();
-
       const config = {
         headers: {
           "Content-Type": "application/json",
@@ -391,7 +389,7 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
               }}
             >
               <svg
-                className="cursor-pointer hover:text-blue-600 text-gray-900 font-bold bi bi-pencil-square"
+                className="font-bold text-gray-900 cursor-pointer hover:text-blue-600 bi bi-pencil-square"
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
                 height="16"
@@ -414,7 +412,7 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
               }}
             >
               <svg
-                className="ml-5 cursor-pointer hover:text-red-400 text-red-600 font-boldbi bi-trash3"
+                className="ml-5 text-red-600 cursor-pointer hover:text-red-400 font-boldbi bi-trash3"
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
                 height="16"
@@ -440,7 +438,7 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
       </div>
 
       {fileName && (
-        <p className="text-md md:text-lg mb-4 md:mb-6">
+        <p className="mb-4 text-md md:text-lg md:mb-6">
           File Uploaded :{" "}
           <span
             title="Click to see story text"
@@ -454,8 +452,8 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
 
       {/* body */}
       <div>
-        <div className="flex justify-end items-center mb-3">
-          <Button className="bg-blue-500 text-white h-9" onClick={handleAddRow}>
+        <div className="flex items-center justify-end mb-3">
+          <Button className="text-white bg-blue-500 h-9" onClick={handleAddRow}>
             ADD NEW
           </Button>
         </div>
