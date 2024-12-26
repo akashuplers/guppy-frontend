@@ -10,6 +10,7 @@ const ModifyMasterWsPopup = ({
   storyWorldOptions,
   types,
   wsForms,
+  clusterHeads,
   filteredOptions,
 }) => {
   const [currentValue, setCurrentValue] = useState("");
@@ -23,6 +24,8 @@ const ModifyMasterWsPopup = ({
   const [typo, setTypo] = useState([]);
   const [clusterHead, setClusterHead] = useState([]);
   const [clusterValue, setClusterValue] = useState([]);
+  
+  console.log("clusterHead", clusterHead);
   
   useEffect(() => {
     if (type === "title") {
@@ -38,27 +41,57 @@ const ModifyMasterWsPopup = ({
 
     setSecondaryWhoOptions(modifyItemObj?.secondaryWhos || []);
     setSecondaryWhoSelectedOptions(modifyItemObj?.secondaryWhos || []);
-    setClusterHead(modifyItemObj?.clusterHead);
+    setClusterHead(modifyItemObj?.masterHead);
     setTypo(modifyItemObj?.type || []);
     setWsForm(modifyItemObj?.ws || []);
     setClusterValue(modifyItemObj?.clusterValue || [])
   }, [modifyItemObj, type]);
+console.log();
 
-  const handleChange = (e) => {
-    setClusterHead(e.target.value);
-  };
+  const handleChange = (value, name) => {
+    debugger
+    switch (name) {
+      case 'wsForm':
+        setWsForm(value);
+        break;
+      case 'typo':
+        setTypo(value); 
+        break;
+      case 'clusterHead':
+        setClusterHead(value); 
+        break;
+      case 'clusterValue':
+        setClusterValue(value);
+        break;
+      default:
+        break;
+    }
+  };  
+
+  const handleClusterValue = () => {
+    if(secondaryWhoSelectedOptions.length === secondaryWhoOptions.length) {
+        setSecondaryWhoSelectedOptions([]);
+    } else {
+        setSecondaryWhoSelectedOptions(secondaryWhoOptions);
+    }
+  }
 
   const handleUpdate = () => {
+    debugger
     const updatedObj = {
-      id: modifyItemObj?.id || "", 
-      clusterValue: clusterValue, 
-      clusterHead:clusterHead,
-      wsForm:wsForm,
-      typo:typo
+      id: modifyItemObj.isNewField ? '' : modifyItemObj.id,
+      ...(type === "title" ? { title: currentValue } : { idea: currentValue }),
+      ...(modifyItemObj.isNewField ? { isNewField: true } : { isEditField: true }),
+      wsForm, 
+      typo, 
+      clusterHead, 
+      clusterValue, 
     };
-    onModify(updatedObj); 
-    onClose(); 
+  
+    onModify(updatedObj); // Pass the updated object to onModify
+    onClose(); // Close the modal
   };
+  
 
   return (
     <Modal
@@ -89,11 +122,11 @@ const ModifyMasterWsPopup = ({
           <Select
             size="large"
             className="w-full"
-            value={wsForm}
-            onChange={handleChange}
+            value={wsForm} // Bind value to the state variable
+            onChange={(value) => handleChange(value, "wsForm")} // Pass name 'wsForm' to handleChange
             placeholder={"Select Ws Form"}
           >
-            {wsForms?.map((item, index) => (
+            {storyWorldOptions?.map((item, index) => (
               <Option key={index} value={item?._id}>
                 {item?.name}
               </Option>
@@ -118,35 +151,45 @@ const ModifyMasterWsPopup = ({
             ))}
           </Select>
         </div>
-        <div>
-          <label
-            htmlFor="title"
-            className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg"
-          >
+        <div className="mt-8 mb-6">
+          <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
             {"Cluster Head"}
           </label>
-          <input
-            type="text"
+          <Select
+            size="large"
+            className="w-full"
             value={clusterHead}
             onChange={handleChange}
-            id="title"
-            className="block w-full p-3 text-gray-900 border border-gray-300 rounded-md bg-gray-50 text-md focus:ring-primary-600 focus:border-primary-600"
-          />
+            placeholder="Select Type"
+          >
+            {clusterHeads?.map((item, index) => (
+              <Option key={index} value={item?._id}>
+                {item.name}
+              </Option>
+            ))}
+          </Select>
         </div>
         <div>
           <label
-            htmlFor="title"
-            className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg"
+            htmlFor="secondaryWhos"
+            className="block mb-2 text-md md:text-lg font-medium text-gray-900"
           >
-            {"Cluster Value"}
+            "Cluster Value"
           </label>
-          <input
-            type="text"
+          <Select
+            size="large"
+            mode="tags"
+            className="w-full"
             value={clusterValue}
             onChange={handleChange}
-            id="title"
-            className="block w-full p-3 text-gray-900 border border-gray-300 rounded-md bg-gray-50 text-md focus:ring-primary-600 focus:border-primary-600"
-          />
+            placeholder={"Select Cluster Values"}
+          >
+            {filteredOptions?.map((option, index) => (
+              <Option key={index} value={option}>
+                {option}
+              </Option>
+            ))}
+          </Select>
         </div>
       </div>
     </Modal>
