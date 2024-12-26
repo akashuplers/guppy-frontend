@@ -60,7 +60,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
     setSecondaryWhats(secondaryWhats);
     setPrimaryWheres(primaryWheres);
     setSecondaryWheres(secondaryWheres);
-    const selectedId = updatedWhos.find(item => item.isRadioSelected === true)?.id;
+    const selectedId = updatedWhos.find(item => item.isCheckboxSelected === true)?.id;
     setSelectedPrimaryWho(selectedId);
 
   }, [storyUploadApiResponse, isSaved]);
@@ -70,26 +70,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
       onSave();
     }
   }, [saveWs]);
-
-  const handleWhoRadioChange = (item) => {
-    const name = item?.newName ?? item?.name;
-    if(item.isRadioSelected) {
-      const filteredArr = primaryWhos.filter(
-        (ele) => ele.toLowerCase() !== name.toLowerCase()
-      );
-      setPrimaryWhos(filteredArr);
-      setSelectedPrimaryWho(null);
-    } else {
-      setSelectedPrimaryWho(item.id);
-      setPrimaryWhos([...primaryWhos, name]);
-    }
-    const updatedItem = { ...item, isRadioSelected: !item.isRadioSelected };
-    const updatedArr = whoItems.map((ele) =>
-      ele.id === item.id ? updatedItem : ele
-    );
-    setWhoItems(updatedArr);
-    handleAnythingChanged(true);
-  };
 
   const handleWhoCheckboxChange = (item) => {
     const name = item?.newName ?? item?.name;
@@ -112,24 +92,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
     handleAnythingChanged(true);
   };
 
-  const handleWhatRadioChange = (item) => {
-    const name = item?.newName ?? item?.name;
-    if(item.isRadioSelected) {
-      const filteredArr = primaryWhats.filter(
-        (ele) => ele.toLowerCase() !== name.toLowerCase()
-      );
-      setPrimaryWhats(filteredArr);
-    } else {
-      setPrimaryWhats([...primaryWhats, name]);
-    }
-    const updatedItem = { ...item, isRadioSelected: !item.isRadioSelected };
-    const updatedArr = whatItems.map((ele) =>
-      ele.id === item.id ? updatedItem : ele
-    );
-    setWhatItems(updatedArr);
-    handleAnythingChanged(true);
-  };
-
   const handleWhatCheckboxChange = (item) => {
     const name = item?.newName ?? item?.name;
     if (item.isCheckboxSelected) {
@@ -148,25 +110,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
       ele.id === item.id ? updatedItem : ele
     );
     setWhatItems(updatedArr);
-    handleAnythingChanged(true);
-  };
-
-  const handleWhereRadioChange = (item) => {
-    const name = item?.newName ?? item?.name;
-    if(item.isRadioSelected) {
-      const filteredArr = primaryWheres.filter(
-        (ele) => ele.toLowerCase() !== name.toLowerCase()
-      );
-      setPrimaryWheres(filteredArr);
-    } else {
-      setPrimaryWheres([...primaryWheres, name]);
-    }
-
-    const updatedItem = { ...item, isRadioSelected: !item.isRadioSelected };
-    const updatedArr = whereItems.map((ele) =>
-      ele.id === item.id ? updatedItem : ele
-    );
-    setWhereItems(updatedArr);
     handleAnythingChanged(true);
   };
 
@@ -334,7 +277,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
 
       return {
         id: who.id,
-        isRadioSelected: whoItem.isRadioSelected ?? false,
         isCheckboxSelected: whoItem.isCheckboxSelected ?? false,
         name: who.value
       }
@@ -349,7 +291,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
       
       return {
         id: what.id,
-        isRadioSelected: whatItem.isRadioSelected ?? false,
         isCheckboxSelected: whatItem.isCheckboxSelected ?? false,
         name: what.value
       }
@@ -364,7 +305,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
       
       return {
         id: where.id,
-        isRadioSelected: whereItem.isRadioSelected ?? false,
         isCheckboxSelected: whereItem.isCheckboxSelected ?? false,
         name: where.value
       }
@@ -375,7 +315,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
     let alertKey;
     try {
       // api call
-      const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_Ws;
+      const apiUrl = API_BASE_PATH + API_ROUTES.SELECT_Ws;
       const payload = bodyForSaveWsApi();
       
       console.log('payload',payload);
@@ -465,22 +405,9 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
     return body;
   };
 
-  // const createWsArray = (primaryArr, secondaryArr) => {
-  //   const primArr = primaryArr?.map((item) => ({
-  //     type: "Primary",
-  //     value: item,
-  //   }));
-  //   const secArr = secondaryArr?.map((item) => ({
-  //     type: "Secondary",
-  //     value: item,
-  //   }));
-  //   const combined = [...primArr, ...secArr];
-  //   return combined;
-  // };
-
   const createWsArray = (wsList) => {
     let updated = wsList?.map((item) => {if(item.isNewField){ return {
-      type: item.isRadioSelected ? "Primary" : item.isCheckboxSelected ? "Secondary" : "null",
+      selected:item.isCheckboxSelected ? true : false,
       value: item.newName ?? item.name,
       id: '',
       new: true,
@@ -489,7 +416,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
     }
   } else {
       return {
-        type: item.isRadioSelected ? "Primary" : item.isCheckboxSelected ? "Secondary" : "null",
+        selected:item.isCheckboxSelected ? true : false,
         value: item.name,
         newValue: item.newName,
         updated: item.newName !== undefined,
@@ -507,7 +434,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
     event.currentTarget.blur();
     const newField = {
       isCheckboxSelected: false,
-      isRadioSelected: false,
       name: "text",
       isNewField: true
     };
@@ -523,7 +449,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
     event.currentTarget.blur();
     const newField = {
       isCheckboxSelected: false,
-      isRadioSelected: false,
       name: "text",
       isNewField: true
     };
@@ -539,7 +464,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
     event.currentTarget.blur();
     const newField = {
       isCheckboxSelected: false,
-      isRadioSelected: false,
       name: "text",
       isNewField: true
     };
@@ -724,19 +648,10 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                       }
                       className="flex items-center w-full md:w-[18vw]"
                     >
-                      <input
-                        checked={item.isRadioSelected}
-                        disabled={item.isCheckboxSelected || (selectedPrimaryWho && item.id !== selectedPrimaryWho)}
-                        onChange={() => handleWhoRadioChange(item)}
-                        id={`link-radio-${index}`}
-                        type="radio"
-                        value={item.name}
-                        title="Primary-Who"
-                        className="w-4 h-4 me-3 text-green-600 border-gray-300 disabled:bg-gray-200 focus:ring-blue-500 focus:ring-2"
-                      />
+                      
                       <input
                         checked={item.isCheckboxSelected}
-                        disabled={item.isRadioSelected}
+                        
                         onChange={() => handleWhoCheckboxChange(item)}
                         id={`default-checkbox-${index}`}
                         type="checkbox"
@@ -757,22 +672,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                           }
                         </p>
                       </label>
-
-                      {/* clear radio selection icon */}
-                      {item.isRadioSelected &&
-                        <button
-                          title="Clear Selection"
-                          className="ms-3 text-blue-600"
-                          onClick={() => handleWhoRadioChange(item)}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-circle" viewBox="0 0 16 16">
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-                          </svg>
-                        </button>
-                      }
                     </div>
-                    {/* edit icon */}
                     <button
                       title="Edit"
                       onClick={() => {
@@ -796,8 +696,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                         />
                       </svg>
                     </button>
-
-                    {/* delete icon */}
                     <button
                       title="Delete"
                       onClick={() => {
@@ -823,8 +721,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
             </ul>
           </div>
         </div>
-
-        {/* WHAT SECTION */}
         <div>
           <div className="flex items-center justify-between mb-2">
           <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4 flex items-center justify-between">
@@ -857,19 +753,9 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                       }                      
                       className="flex items-center w-full md:w-[18vw]"
                     >
-                      <input
-                        checked={item.isRadioSelected}
-                        disabled={item.isCheckboxSelected}
-                        onChange={() => handleWhatRadioChange(item)}
-                        id={`link-radio-${index}`}
-                        type="radio"
-                        value={item.name}
-                        title="Primary-What"
-                        className="w-4 h-4 me-3 text-green-600 disabled:bg-gray-200 border-gray-300 focus:ring-blue-500 focus:ring-2"
-                      />
+                     
                       <input
                         checked={item.isCheckboxSelected}
-                        disabled={item.isRadioSelected}
                         onChange={() => handleWhatCheckboxChange(item)}
                         id={`default-checkbox-${index}`}
                         type="checkbox"
@@ -890,23 +776,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                           }
                         </p>
                       </label>
-                      
-                      {/* clear radio selection icon */}
-                      {item.isRadioSelected &&
-                        <button
-                          title="Clear Selection"
-                          className="ms-3 text-blue-600"
-                          onClick={() => handleWhatRadioChange(item)}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-circle" viewBox="0 0 16 16">
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-                          </svg>
-                        </button>
-                      }
                     </div>
-
-                    {/* edit icon */}
                     <button
                       title="Edit"
                       onClick={() => {
@@ -930,8 +800,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                         />
                       </svg>
                     </button>
-
-                    {/* delete icon */}
                     <button
                       title="Delete"
                       onClick={() => {
@@ -957,8 +825,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
             </ul>
           </div>
         </div>
-
-        {/* WHERE SECTION */}
         <div>
           <div className="flex items-center justify-between mb-2">
           <p className="flex-grow text-center mr-2 border border-2 border-violet-300 rounded-md bg-violet-50 px-4 flex items-center justify-between">
@@ -991,19 +857,9 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                       }                      
                       className="flex items-center w-full md:w-[18vw]"
                     >
-                      <input
-                        checked={item.isRadioSelected}
-                        disabled={item.isCheckboxSelected}
-                        onChange={() => handleWhereRadioChange(item)}
-                        id={`link-radio-${index}`}
-                        type="radio"
-                        value={item.name}
-                        title="Primary-Where"
-                        className="w-4 h-4 me-3 text-green-600 disabled:bg-gray-200 border-gray-300 focus:ring-blue-500 focus:ring-2"
-                      />
+                      
                       <input
                         checked={item.isCheckboxSelected}
-                        disabled={item.isRadioSelected}
                         onChange={() => handleWhereCheckboxChange(item)}
                         id={`default-checkbox-${index}`}
                         type="checkbox"
@@ -1024,20 +880,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                           }
                         </p>
                       </label>
-
-                      {/* clear radio selection icon */}
-                      {item.isRadioSelected &&
-                        <button
-                          title="Clear Selection"
-                          className="ms-3 text-blue-600"
-                          onClick={() => handleWhereRadioChange(item)}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-circle" viewBox="0 0 16 16">
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-                          </svg>
-                        </button>
-                      }
                     </div>
                     {/* edit icon */}
                     <button
