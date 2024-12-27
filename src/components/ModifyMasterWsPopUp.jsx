@@ -12,6 +12,7 @@ const ModifyMasterWsPopup = ({
   wsForms,
   clusterHeads,
   filteredOptions,
+  clusterList
 }) => {
   const [currentValue, setCurrentValue] = useState("");
   const [popupTitle, setPopupTitle] = useState("");
@@ -24,8 +25,37 @@ const ModifyMasterWsPopup = ({
   const [typo, setTypo] = useState([]);
   const [clusterHead, setClusterHead] = useState([]);
   const [clusterValue, setClusterValue] = useState([]);
+  const [whoCluster, setWhoCluster] = useState([]);
+  const [whatCluster, setWhatCluster] = useState([]);
+  const [whereCluster, setWhereCluster] = useState([]);
+  const clusterHeadsOptions = whoCluster ?? whatCluster ?? whereCluster
+  console.log("dddddddddd", wsForm);
+  console.log("modifyItemObj", modifyItemObj);
+  console.log("clusterHeadsOptions", clusterHeadsOptions);
   
-  console.log("clusterHead", clusterHead);
+  console.log("filteredOptions", filteredOptions);
+
+  const handleClusterChange = () => {
+    if (wsForm === "Who's") {
+      setWhoCluster(clusterList?.Who);
+    } else if (wsForm === "What's") {
+      setWhatCluster(clusterList?.What);
+    } else if (wsForm === "Where's") {
+      setWhereCluster(clusterList?.Where);
+    } else {
+      // Reset or handle default case if necessary
+      setWhoCluster(null);
+      setWhatCluster(null);
+      setWhereCluster(null);
+    }
+  };
+
+  useEffect(() => {
+    handleClusterChange(); // Trigger the function whenever wsForm or clusterList changes
+  }, [wsForm, clusterList]); 
+  
+  const clusters = whoCluster ?? whatCluster ?? whereCluster
+  console.log("qqqqaaaaaaaaaaassssssdfdww", whatCluster);
   
   useEffect(() => {
     if (type === "title") {
@@ -46,10 +76,9 @@ const ModifyMasterWsPopup = ({
     setWsForm(modifyItemObj?.ws || []);
     setClusterValue(modifyItemObj?.clusterValue || [])
   }, [modifyItemObj, type]);
-console.log();
+
 
   const handleChange = (value, name) => {
-    debugger
     switch (name) {
       case 'wsForm':
         setWsForm(value);
@@ -66,10 +95,22 @@ console.log();
       default:
         break;
     }
+    if (value === "0") {
+      setWhoCluster(clusterList?.Who);
+    } else if (value === "1") {
+      setWhatCluster(clusterList?.What);
+    } else if (value === "2") {
+      setWhereCluster(clusterList?.Where);
+    } else {
+      // Reset or handle default case if necessary
+      setWhoCluster(null);
+      setWhatCluster(null);
+      setWhereCluster(null);
+    }
   };  
 
   const handleClusterValue = () => {
-    if(secondaryWhoSelectedOptions.length === secondaryWhoOptions.length) {
+    if(secondaryWhoSelectedOptions.length === secondaryWhoOptions?.length) {
         setSecondaryWhoSelectedOptions([]);
     } else {
         setSecondaryWhoSelectedOptions(secondaryWhoOptions);
@@ -77,22 +118,19 @@ console.log();
   }
 
   const handleUpdate = () => {
-    debugger
     const updatedObj = {
-      id: modifyItemObj.isNewField ? '' : modifyItemObj.id,
-      ...(type === "title" ? { title: currentValue } : { idea: currentValue }),
-      ...(modifyItemObj.isNewField ? { isNewField: true } : { isEditField: true }),
-      wsForm, 
-      typo, 
-      clusterHead, 
-      clusterValue, 
+      id: modifyItemObj.isNewField ? "" : modifyItemObj.id, 
+      ws: wsForm || modifyItemObj.ws, 
+      type: typo || modifyItemObj.type, 
+      masterHead: clusterHead || modifyItemObj.masterHead, 
+      clusterValue: clusterValue || modifyItemObj.clusterValue,
+      ...(type === "title" ? { title: currentValue } : { idea: currentValue }), 
+      ...(modifyItemObj.isNewField ? { isNewField: true } : { isEditField: true }), 
     };
-  
-    onModify(updatedObj); // Pass the updated object to onModify
-    onClose(); // Close the modal
+    onModify(updatedObj);
+    onClose();
   };
   
-
   return (
     <Modal
       open={open}
@@ -104,6 +142,7 @@ console.log();
           <Button onClick={onClose} className="bg-gray-400 border-gray-500">
             Cancel
           </Button>
+          {"   "}
           <Button
             onClick={handleUpdate}
             type="primary"
@@ -119,11 +158,14 @@ console.log();
           {popupTitle}
         </label>
         <div className="mt-8 mb-6">
+        <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
+            Ws Form
+          </label>
           <Select
             size="large"
             className="w-full"
-            value={wsForm} // Bind value to the state variable
-            onChange={(value) => handleChange(value, "wsForm")} // Pass name 'wsForm' to handleChange
+            value={wsForm} 
+            onChange={(value) => handleChange(value, "wsForm")}
             placeholder={"Select Ws Form"}
           >
             {storyWorldOptions?.map((item, index) => (
@@ -134,19 +176,19 @@ console.log();
           </Select>
         </div>
         <div className="mt-8 mb-6">
-          <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
+        <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
             Type
           </label>
           <Select
             size="large"
             className="w-full"
-            value={typo}
-            onChange={handleChange}
-            placeholder="Select Type"
+            value={typo} // Bind value to the state variable
+            onChange={(value) => handleChange(value, "typo")} // Pass name 'wsForm' to handleChange
+            placeholder={"Select Type"}
           >
             {types?.map((item, index) => (
               <Option key={index} value={item?._id}>
-                {item.name}
+                {item?.name}
               </Option>
             ))}
           </Select>
@@ -160,11 +202,11 @@ console.log();
             className="w-full"
             value={clusterHead}
             onChange={handleChange}
-            placeholder="Select Type"
+            placeholder="Select Cluster Head"
           >
-            {clusterHeads?.map((item, index) => (
+            {clusters?.map((item, index) => (
               <Option key={index} value={item?._id}>
-                {item.name}
+                {item.value}
               </Option>
             ))}
           </Select>
@@ -174,7 +216,7 @@ console.log();
             htmlFor="secondaryWhos"
             className="block mb-2 text-md md:text-lg font-medium text-gray-900"
           >
-            "Cluster Value"
+            {"Cluster Value"}
           </label>
           <Select
             size="large"
