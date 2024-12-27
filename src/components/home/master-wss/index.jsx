@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useContext } from "react";
 import { useFormik, Field, Form, ErrorMessage } from "formik";
 import { Formik } from "formik";
 import { StoryUploadApiContext } from "../../../contexts/ApiContext";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Table, message, Button, Checkbox, Modal, Select  } from "antd";
 import { API_BASE_PATH, API_ROUTES } from "../../../constants/api-endpoints";
 import axios from "axios";
@@ -20,6 +20,9 @@ const MasterWssPage = ({
   handleSaveSuccess = () => {},
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  
   const [isLoading, setIsLoading] = useState(false);
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [dialogPopup, setDialogPopup] = useState(false);
@@ -50,6 +53,7 @@ const MasterWssPage = ({
   const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged,} = useContext(StoryUploadApiContext);  
   const { token, story_id, storyWorld, fileName, primaryWhos, masterWs, filterDatas } = storyUploadApiResponse;
   const [searchTerm, setSearchTerm] = useState('');
+console.log("filterDatas", filterDatas);
 
   const formik = useFormik({
     initialValues: {
@@ -67,11 +71,13 @@ const MasterWssPage = ({
   const [whats, setWhats] = useState();
   const [wheres, setWheres] = useState();
   const [filteredOptions, setFilteredOption] = useState();
+console.log("qqqqqqqqqqaaaaaaaaa", whos);
 
   const options = (filteredOptions || [])?.map((item) => ({
     label: item.value,
     value: item.id,
   }));
+console.log("optionsoptions", options);
 
   const [filterData, setFilteredData] = useState([]);
 
@@ -131,12 +137,6 @@ useEffect(() => {
       handleSharedUsers();
     }
   }, [shareIds, updatedShareIds]);
-  const csvData = [
-    ["firstname", "lastname", "email"],
-    ["Ahmed", "Tomi", "ah@smthing.co.com"],
-    ["Raed", "Labes", "rl@smthing.co.com"],
-    ["Yezzi", "Min l3b", "ymin@cocococo.com"],
-  ];
 
   const handleSharedUsers = () => {
     const finalUsers = users.filter(
@@ -233,8 +233,8 @@ const cleanEmptySections = (data) => {
   return data;
 };
 
-
-const transformedData = transformData(filterData);
+const allData = [...filterData, ...filterDatas || []]
+const transformedData = allData ?  transformData(allData): transformData(filterData);
 const cleanedData = transformedData
 
   const fetchStories = async () => {
@@ -281,10 +281,6 @@ const cleanedData = transformedData
     setIsLoading(false);
   };
 
-  
-
-
-
   const handleVersionSelect = (versionId) => {
     if (versionId) {
       setSelectedVersionId(versionId);
@@ -325,10 +321,43 @@ const cleanedData = transformedData
     {
       dataIndex: "ws",
       title: "W's Form",
+      render: (text, record) => {
+        const Who = "Who's";
+        const What = "What's";
+        const Where = "Where's";
+        return (
+          <div>
+            <span>
+              {record?.ws === "0"
+                ? Who
+                : record?.ws === "1"
+                ? What
+                : record?.ws === "2"
+                ? Where
+                : record?.ws}
+            </span>{" "}
+          </div>
+        );
+      },
     },
     {
       dataIndex: "type",
       title: "Type",
+      render: (text, record) => {
+        const Primary = "Primary";
+        const Secondary = "Secondary";
+        return (
+          <div>
+            <span>
+              {record?.type === "0"
+                ? Primary
+                : record?.type === "1"
+                ? Secondary
+                : record?.type}
+            </span>{" "}
+          </div>
+        );
+      },
     },
     {
       dataIndex: "masterHead",
@@ -336,7 +365,7 @@ const cleanedData = transformedData
       render: (text, record) => {
         return (
           <div>
-            <span>{record.masterHead.value}</span>
+            <span>{record?.masterHead?.value}</span>
           </div>
         );
       },
@@ -347,38 +376,36 @@ const cleanedData = transformedData
       render: (clusterValue, record, index) => {
         return (
           <div className="flex flex-wrap gap-2">
-            {
-              clusterValue?.length > 0
-                ? clusterValue?.map((value, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center bg-gray-200 rounded-lg px-2.5 py-1.5 text-sm text-gray-800 border border-gray-300"
+            {clusterValue?.length > 0
+              ? clusterValue?.map((value, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center bg-gray-200 rounded-lg px-2.5 py-1.5 text-sm text-gray-800 border border-gray-300"
+                  >
+                    <span>{value?.value}</span>
+                    <button
+                      className="text-red-600 bg-transparent border-none cursor-pointer ml-2"
+                      onClick={() => handleRemoveChip(value, index)}
+                      title="Remove"
                     >
-                      <span>{value?.value}</span>
-                      <button
-                        className="text-red-600 bg-transparent border-none cursor-pointer ml-2"
-                        onClick={() => handleRemoveChip(value, index)}
-                        title="Remove"
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-6 h-6"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="w-6 h-6"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  ))
-                : "NA" 
-            }
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                ))
+              : "NA"}
           </div>
         );
       },
@@ -428,7 +455,7 @@ const cleanedData = transformedData
               >
                 <path
                   d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6M14 10V17M10 10V17"
-                  stroke="#EF4444" 
+                  stroke="#EF4444"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -454,12 +481,13 @@ const flattenData = filterData?.map(item => ({
   
   ws: item?.ws,  // Directly mapping the 'ws' field
   type: item?.type,  // Mapping the 'type' field
-  "Cluster Head": item.masterHead?.value,  // Flattening 'masterHead' and getting its 'value'
-  "Cluster Value": item.clusterValue?.map(val => val?.value)?.join(", ")  // Flattening 'clusterValue' array and joining values with commas
+  "ClusterHead": item.masterHead?.value,  // Flattening 'masterHead' and getting its 'value'
+  "ClusterValue": item.clusterValue?.map(val => val?.value)?.join(", ")  // Flattening 'clusterValue' array and joining values with commas
 }));
+console.log("flattenDataflattenDataflattenData", flattenData);
 
-console.log("Flatten Data", flattenData);
 
+console.log("Flatten Data", allData, "filterDatas",filterDatas, "fffffffff", filterDatas);
 
   const storyWorldOptions = [
     { id: 1, name: "Who's" },
@@ -527,13 +555,11 @@ console.log("Flatten Data", flattenData);
     if (name === "ws") {
       formik.setFieldValue("ws", e.target.value);
     }else if ( name === "masterHead" && selectedOption) {
-      debugger
+     
       const { id, value } = selectedOption;
     
         formik.setFieldValue("masterHead", { id: id, value:value });
-      //   const filteredArray = filteredOptions?.filter(
-      //   (item) => item.value !== e.target.value
-      // );
+      
 
       const payload = {
         clusterHead: { value: value, id: id },  // Set selected masterHead as clusterHead
@@ -666,7 +692,8 @@ console.log("Flatten Data", flattenData);
     }
     setIsSubmitting(false);
   };
-
+  console.log("stssssssssss", StoryUploadApiContext);
+  
   const handleSaveCluster = (values, resetForm) => {
     if (
       formik.values.ws &&
@@ -693,6 +720,31 @@ console.log("Flatten Data", flattenData);
     }
   };
 
+  console.log("flattenDatadddddddddddddddd", flattenData);
+  const onModify = (updatedObj) => {
+  
+    // Clone the current data to avoid mutation
+    const curData = [...filterData];
+    console.log("Current Data:", curData);
+    console.log("Selected Row:", selectedRow);
+    console.log("Updated Object:", updatedObj);
+  
+    // Update the matching row
+    const modified = curData.map((ele) =>
+      ele.id === selectedRow.id ? { ...ele, ...updatedObj } : ele
+    );
+  
+    console.log("Modified Data:", modified);
+  
+    // Update the state
+    setFilteredData(modified);
+  
+    // Show success message
+    message.success("Updated Successfully!");
+    handleAnythingChanged(true);
+  };
+  console.log("aaaaaaaaaaaaaaaaaaa", filterData);
+  
   return (
     <div>
       <div className="px-5 pb-5 border rounded-md">
@@ -723,7 +775,7 @@ console.log("Flatten Data", flattenData);
                     onClick={() => handleSaveCluster(values, resetForm)}
                   >
                     <DownloadCSVFile
-                    // csvDat={flattenData}
+                    csvDat={flattenData}
                     // header={headers}
                     />
                   </button>
@@ -752,7 +804,7 @@ console.log("Flatten Data", flattenData);
                     onChange={(e) => {
                       handleChange(e, "ws");
                     }}
-                    value={formik.values.ws}
+                    value={formik.values.ws }
                   >
                     <option value="">Please Select...</option>
                     {storyWorldOptions?.map((item, index) => (
@@ -814,12 +866,12 @@ console.log("Flatten Data", flattenData);
 
                 {/* Select Type */}
                 <div className="flex-1 min-w-[200px]">
-                  <label
+                  <labeltable
                     htmlFor="type"
                     className="block mb-2 text-sm font-medium text-gray-900 md:text-sm"
                   >
                     Select Type
-                  </label>
+                  </labeltable>
                   <Field
                     as="select"
                     name="type"
@@ -874,7 +926,7 @@ console.log("Flatten Data", flattenData);
 
         <div className="mt-8">
           {!isLoading && (
-            <Table dataSource={ filterDatas  || filterData || []  } columns={historyColumns} bordered />
+            <Table dataSource={ allData ?? filterData  } columns={historyColumns} bordered />
           )}
         </div>
       </div>
@@ -906,12 +958,13 @@ console.log("Flatten Data", flattenData);
         <ModifyMasterWsPopup
           open={dialogPopup}
           modifyItemObj={selectedRow} 
+          clusterList={clusterList}
           onClose={() => setDialogPopup(false)}
           storyWorldOptions={storyWorldOptions}
-          filteredOptions={filteredOptions}
+          filteredOptions={options}
           types={type}
           clusterHeads={whos ? whats : wheres}
-          // onModify={handleModify}
+          onModify={onModify}
           type="title" 
         />
       )}
