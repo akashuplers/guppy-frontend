@@ -1,5 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Button, Modal, Select, Checkbox } from "antd";
+import axios from "axios";
+import { API_BASE_PATH, API_ROUTES } from "../constants/api-endpoints";
+import { StoryUploadApiContext } from "../contexts/ApiContext";
+
 const { Option } = Select;
 const ModifyMasterWsPopup = ({
   open,
@@ -28,7 +32,14 @@ const ModifyMasterWsPopup = ({
   const [whoCluster, setWhoCluster] = useState([]);
   const [whatCluster, setWhatCluster] = useState([]);
   const [whereCluster, setWhereCluster] = useState([]);
-  const clusterHeadsOptions = whoCluster ?? whatCluster ?? whereCluster
+  const [clusterHeadVals, setclusterHeadVals] = useState([]);
+  const [clusterValuesVals, setclusterValuesVals] = useState([]);
+  const clusterHeadsOptions = whoCluster ?? whatCluster ?? whereCluster;
+  
+  const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged,} = useContext(StoryUploadApiContext);  
+  const { token, story_id, storyWorld, fileName, primaryWhos, masterWs, filterDatas } = storyUploadApiResponse;
+  const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
+
   console.log("dddddddddd", wsForm);
   console.log("modifyItemObj", modifyItemObj);
   console.log("clusterHeadsOptions", clusterHeadsOptions);
@@ -37,11 +48,14 @@ const ModifyMasterWsPopup = ({
 
   const handleClusterChange = () => {
     if (wsForm === "Who's") {
+      setclusterHeadVals(clusterList.Who)
       setWhoCluster(clusterList?.Who);
     } else if (wsForm === "What's") {
+      setclusterHeadVals(clusterList.What)
       setWhatCluster(clusterList?.What);
     } else if (wsForm === "Where's") {
       setWhereCluster(clusterList?.Where);
+      setclusterHeadVals(clusterList.Where);
     } else {
       // Reset or handle default case if necessary
       setWhoCluster(null);
@@ -54,9 +68,6 @@ const ModifyMasterWsPopup = ({
     handleClusterChange(); // Trigger the function whenever wsForm or clusterList changes
   }, [wsForm, clusterList]); 
   
-  const clusters = whoCluster ?? whatCluster ?? whereCluster
-  console.log("qqqqaaaaaaaaaaassssssdfdww", whatCluster);
-  
   useEffect(() => {
     if (type === "title") {
       setCurrentValue(modifyItemObj?.title || "");
@@ -68,26 +79,41 @@ const ModifyMasterWsPopup = ({
       setCurrentValue(modifyItemObj?.idea || "");
       setPopupTitle("Action");
     }
-
     setSecondaryWhoOptions(modifyItemObj?.secondaryWhos || []);
     setSecondaryWhoSelectedOptions(modifyItemObj?.secondaryWhos || []);
     setClusterHead(modifyItemObj?.masterHead);
     setTypo(modifyItemObj?.type || []);
     setWsForm(modifyItemObj?.ws || []);
-    setClusterValue(modifyItemObj?.clusterValue || [])
-  }, [modifyItemObj, type]);
+    setClusterValue(modifyItemObj?.clusterValue?.map(obj => obj.id) || [])
+    if(clusterValuesVals?.length === 0 && modifyItemObj?.masterHead?.id === clusterHead?.id){
+      const allMH = clusterList[modifyItemObj?.ws.split("'")[0]];
+      getClusterValueData(allMH.findIndex(obj =>obj.id===clusterHead.id))
+    }
+  }, [modifyItemObj, type, clusterHead, clusterHeadVals]);
 
+  
 
   const handleChange = (value, name) => {
     switch (name) {
       case 'wsForm':
         setWsForm(value);
+        if(parseInt(value)===0)
+          setclusterHeadVals(clusterList.Who)
+        else if(parseInt(value)===1)
+          setclusterHeadVals(clusterList.What)
+        else if(parseInt(value)===2)
+          setclusterHeadVals(clusterList.Where)
+        
+        setClusterHead([])
+        setTypo([])
+        setClusterValue([])
         break;
       case 'typo':
         setTypo(value); 
         break;
       case 'clusterHead':
         setClusterHead(value); 
+        getClusterValueData(value)
         break;
       case 'clusterValue':
         setClusterValue(value);
@@ -107,7 +133,28 @@ const ModifyMasterWsPopup = ({
       setWhatCluster(null);
       setWhereCluster(null);
     }
-  };  
+  };
+  const getClusterValueData = async (e, name) => {
+    const apiUrl = API_BASE_PATH + API_ROUTES.SORT_WS + story_id;
+    const payload = {
+      clusterHead: clusterHeadVals[e],
+      ws: clusterHeadVals
+    };
+    
+    const config = {
+      headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenVal}`,
+      },
+      };
+    try {
+      const response = await axios.post(apiUrl, payload, config); 
+      const filteredArray = response?.data?.ws?.clusterValues
+      setclusterValuesVals(filteredArray)
+    } catch (error) {
+      console.error("Error calling the API:", error);
+    }
+  }
 
   const handleClusterValue = () => {
     if(secondaryWhoSelectedOptions.length === secondaryWhoOptions?.length) {
@@ -118,12 +165,13 @@ const ModifyMasterWsPopup = ({
   }
 
   const handleUpdate = () => {
+    const clusterVals = clusterValuesVals?.filter((obj) => clusterValue?.includes(obj?.id))
     const updatedObj = {
       id: modifyItemObj.isNewField ? "" : modifyItemObj.id, 
       ws: wsForm || modifyItemObj.ws, 
       type: typo || modifyItemObj.type, 
       masterHead: clusterHead || modifyItemObj.masterHead, 
-      clusterValue: clusterValue || modifyItemObj.clusterValue,
+      clusterValue: clusterVals || modifyItemObj.clusterValue,
       ...(type === "title" ? { title: currentValue } : { idea: currentValue }), 
       ...(modifyItemObj.isNewField ? { isNewField: true } : { isEditField: true }), 
     };
@@ -201,10 +249,10 @@ const ModifyMasterWsPopup = ({
             size="large"
             className="w-full"
             value={clusterHead}
-            onChange={handleChange}
+            onChange={(value) => handleChange(value, "clusterHead")} // Pass name 'wsForm' to handleChange
             placeholder="Select Cluster Head"
           >
-            {clusters?.map((item, index) => (
+            {clusterHeadVals?.map((item, index) => (
               <Option key={index} value={item?._id}>
                 {item.value}
               </Option>
@@ -223,12 +271,12 @@ const ModifyMasterWsPopup = ({
             mode="tags"
             className="w-full"
             value={clusterValue}
-            onChange={handleChange}
+            onChange={(value) => handleChange(value, "clusterValue")} // Pass name 'wsForm' to handleChange
             placeholder={"Select Cluster Values"}
           >
-            {filteredOptions?.map((option, index) => (
-              <Option key={index} value={option}>
-                {option}
+            {clusterValuesVals?.map((option, index) => (
+              <Option key={index} value={option.id}>
+                {option.value}
               </Option>
             ))}
           </Select>

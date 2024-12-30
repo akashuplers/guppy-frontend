@@ -233,7 +233,11 @@ const cleanEmptySections = (data) => {
   return data;
 };
 
-const allData = [...filterData, ...filterDatas || []]
+const findAllData = [...filterData, ...filterDatas || []]
+const allData = findAllData.filter((value, index, self) => 
+  index === self.findIndex((t) => t.id === value.id)
+);
+
 const transformedData = allData ?  transformData(allData): transformData(filterData);
 const cleanedData = transformedData
 
