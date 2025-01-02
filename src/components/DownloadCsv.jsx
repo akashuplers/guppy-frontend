@@ -6,15 +6,17 @@ const DownloadCSVFile = (props) => {
     { label: "W's Form", key: "ws" },
     { label: "Type", key: "type" },
     { label: "Cluster Head", key: "ClusterHead" },
-    { label: "Cluster Value", key: "ClusterValue" }
+    { label: "Cluster Value", key: "clusterValues" }
   ];
+
+  const fileNameWithCSV = props?.fileName?.replace(/\.txt$/, ".csv"); // Replace .txt with .csv
   
     return (
         <>
       <CSVLink
         data={props?.csvDat} 
         headers={headers} 
-        filename={'storyworld_storyFilename.csv'} 
+        filename={props?.storyWorld + '_' + fileNameWithCSV} 
       >
         Download
       </CSVLink>     

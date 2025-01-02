@@ -108,6 +108,7 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
   }
 
   const handleSubmit = async (values, { setSubmitting }) => {
+    debugger
     let alertKey;
     try {
       const apiUrl = API_BASE_PATH + API_ROUTES.UPLOAD_STORY;
