@@ -93,42 +93,6 @@ const wsForm = [
     },
   ];
 
-  // const fetchStoryWorlds = async (tokenVal) => {
-  //   try {
-  //     const apiUrl = API_BASE_PATH + API_ROUTES.GET_STORY_WORLD;
-  //     const config = {
-  //       headers: {
-  //         Authorization: `Bearer ${tokenVal}`,
-  //       },
-  //     };
-  //     const response = await axios.get(apiUrl, config);
-  //     const outputArr = response?.data?.data;
-  //     if(outputArr?.length > 0) {
-  //       setStoryWorldOptions(outputArr);
-  //       message.success("Story Worlds Fetched Succesfully !");
-  //     } else {
-  //       message.error("Error in fetching story worlds !");
-  //       setStoryWorldOptions(storyWorldsLocal);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //     setStoryWorldOptions(storyWorldsLocal);
-  //     const statusCode = error?.response?.status;
-  //     if(statusCode === 401) {
-  //       navigate("/");
-  //     } else if(statusCode === 500) {
-  //       message.error("Internal Server Error !");
-  //     } else {
-  //       const errorMessage = error?.response?.data?.message;
-  //       if(errorMessage) {
-  //         message.error(errorMessage);
-  //       } else {
-  //         message.error("Error in fetching story worlds !");
-  //       }
-  //     }      
-  //   }
-  // }
-
   const handleSubmit = async (values, { setSubmitting }) => {
     debugger
     let alertKey;
@@ -180,8 +144,6 @@ const wsForm = [
     setSubmitting(false);
   }
 
-  
-  
   const filterData = [
     { id: 1, ws: "Who", type: "Primary", clusterHead: "Abc", clusterValue: ["kajshs", "value2", "value3"] },
     { id: 2, ws: "What", type: "Secondary", clusterHead: "Qiodj", clusterValue: ["Kajil", "extraValue"] },
@@ -190,9 +152,7 @@ const wsForm = [
     { id: 5, ws: "Whats", type: "Primary", clusterHead: "Aoldkdh", clusterValue: ["Kloand", "newValue"] },
   ];
   
-  
   const [ filteredData, setFilteredData ] = useState([]);
-  console.log("aaaaaaaaaa", filteredData);
   const processData = (data) => {
     const result = [];
 
