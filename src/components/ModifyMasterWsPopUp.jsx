@@ -35,25 +35,18 @@ const ModifyMasterWsPopup = ({
   const [clusterHeadVals, setclusterHeadVals] = useState([]);
   const [clusterValuesVals, setclusterValuesVals] = useState([]);
   const clusterHeadsOptions = whoCluster ?? whatCluster ?? whereCluster;
-  
   const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged,} = useContext(StoryUploadApiContext);  
   const { token, story_id, storyWorld, fileName, primaryWhos, masterWs, filterDatas } = storyUploadApiResponse;
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
 
-  console.log("dddddddddd", wsForm);
-  console.log("modifyItemObj", modifyItemObj);
-  console.log("clusterHeadsOptions", clusterHeadsOptions);
-  
-  console.log("filteredOptions", filteredOptions);
-
   const handleClusterChange = () => {
-    if (wsForm === "Who's") {
+    if (wsForm === "who") {
       setclusterHeadVals(clusterList.Who)
       setWhoCluster(clusterList?.Who);
-    } else if (wsForm === "What's") {
+    } else if (wsForm === "what") {
       setclusterHeadVals(clusterList.What)
       setWhatCluster(clusterList?.What);
-    } else if (wsForm === "Where's") {
+    } else if (wsForm === "where") {
       setWhereCluster(clusterList?.Where);
       setclusterHeadVals(clusterList.Where);
     } else {
@@ -84,10 +77,10 @@ const ModifyMasterWsPopup = ({
     setClusterHead(modifyItemObj?.masterHead);
     setTypo(modifyItemObj?.type || []);
     setWsForm(modifyItemObj?.ws || []);
-    setClusterValue(modifyItemObj?.clusterValue?.map(obj => obj.id) || [])
+    setClusterValue(modifyItemObj?.clusterValues?.map(obj => obj.value) || [])
     if(clusterValuesVals?.length === 0 && modifyItemObj?.masterHead?.id === clusterHead?.id){
       const allMH = clusterList[modifyItemObj?.ws.split("'")[0]];
-      getClusterValueData(allMH.findIndex(obj =>obj.id===clusterHead.id))
+      getClusterValueData(allMH?.findIndex(obj =>obj.id===clusterHead.id))
     }
   }, [modifyItemObj, type, clusterHead, clusterHeadVals]);
 
@@ -134,6 +127,19 @@ const ModifyMasterWsPopup = ({
       setWhereCluster(null);
     }
   };
+
+  const onWsChange = (value) => {
+    setWsForm(value);
+  }
+
+  const onTypeChange = (value) => {
+    setTypo(value);
+  }
+
+  const onClusterHead = (value) => {
+    setClusterHead(value);
+  }
+  
   const getClusterValueData = async (e, name) => {
     const apiUrl = API_BASE_PATH + API_ROUTES.SORT_WS + story_id;
     const payload = {
@@ -168,11 +174,10 @@ const ModifyMasterWsPopup = ({
     const clusterVals = clusterValuesVals?.filter((obj) => clusterValue?.includes(obj?.id))
     const updatedObj = {
       id: modifyItemObj.isNewField ? "" : modifyItemObj.id, 
-      ws: wsForm || modifyItemObj.ws, 
+      ws: wsForm, 
       type: typo || modifyItemObj.type, 
-      masterHead: clusterHead || modifyItemObj.masterHead, 
-      clusterValue: clusterVals || modifyItemObj.clusterValue,
-      ...(type === "title" ? { title: currentValue } : { idea: currentValue }), 
+      masterHead: clusterHead , 
+      clusterValues:  modifyItemObj.clusterValues,
       ...(modifyItemObj.isNewField ? { isNewField: true } : { isEditField: true }), 
     };
     onModify(updatedObj);
@@ -213,11 +218,11 @@ const ModifyMasterWsPopup = ({
             size="large"
             className="w-full"
             value={wsForm} 
-            onChange={(value) => handleChange(value, "wsForm")}
+            onChange={(value) => onWsChange(value, "wsForm")}
             placeholder={"Select Ws Form"}
           >
             {storyWorldOptions?.map((item, index) => (
-              <Option key={index} value={item?._id}>
+              <Option key={item.name} value={item?.name}>
                 {item?.name}
               </Option>
             ))}
@@ -231,11 +236,11 @@ const ModifyMasterWsPopup = ({
             size="large"
             className="w-full"
             value={typo} // Bind value to the state variable
-            onChange={(value) => handleChange(value, "typo")} // Pass name 'wsForm' to handleChange
+            onChange={(value) => onTypeChange(value, "typo")} // Pass name 'wsForm' to handleChange
             placeholder={"Select Type"}
           >
             {types?.map((item, index) => (
-              <Option key={index} value={item?._id}>
+              <Option key={item.name} value={item?.name}>
                 {item?.name}
               </Option>
             ))}
@@ -249,11 +254,11 @@ const ModifyMasterWsPopup = ({
             size="large"
             className="w-full"
             value={clusterHead}
-            onChange={(value) => handleChange(value, "clusterHead")} // Pass name 'wsForm' to handleChange
+            onChange={(value) => onClusterHead(value, "clusterHead")} // Pass name 'wsForm' to handleChange
             placeholder="Select Cluster Head"
           >
             {clusterHeadVals?.map((item, index) => (
-              <Option key={index} value={item?._id}>
+              <Option key={item?.value} value={item?.value}>
                 {item.value}
               </Option>
             ))}
@@ -275,7 +280,7 @@ const ModifyMasterWsPopup = ({
             placeholder={"Select Cluster Values"}
           >
             {clusterValuesVals?.map((option, index) => (
-              <Option key={index} value={option.id}>
+              <Option key={option.value} value={option.value}>
                 {option.value}
               </Option>
             ))}

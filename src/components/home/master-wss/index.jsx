@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useContext } from "react";
+import React, { useEffect, useState, useRef, useContext, useMemo } from "react";
 import { useFormik, Field, Form, ErrorMessage } from "formik";
 import { Formik } from "formik";
 import { StoryUploadApiContext } from "../../../contexts/ApiContext";
@@ -27,6 +27,8 @@ const MasterWssPage = ({
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [dialogPopup, setDialogPopup] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
+  const [deleteIndex, setDeleteIndex] = useState(null);
+  const [editIndex, setEditIndex] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);  
   const [stories, setStories] = useState([]);
   const [filteredStories, setFilteredStories] = useState([]);
@@ -51,16 +53,15 @@ const MasterWssPage = ({
   const downloadLinkRef = useRef(null);
   const [selected, setSelected] = useState([]);
   const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged,} = useContext(StoryUploadApiContext);  
-  const { token, story_id, storyWorld, fileName, primaryWhos, masterWs, filterDatas } = storyUploadApiResponse;
+  const { token, story_id, storyWorld, fileName, storyWorldId,  primaryWhos, masterWs, filterDatas } = storyUploadApiResponse;
   const [searchTerm, setSearchTerm] = useState('');
-console.log("filterDatas", filterDatas);
 
   const formik = useFormik({
     initialValues: {
       ws: "",
       masterHead: "",
       type: "",
-      clusterValue: [],
+      clusterValues: [],
     },
     onSubmit: () => {
       console.log("submit");
@@ -71,44 +72,58 @@ console.log("filterDatas", filterDatas);
   const [whats, setWhats] = useState();
   const [wheres, setWheres] = useState();
   const [filteredOptions, setFilteredOption] = useState();
-console.log("qqqqqqqqqqaaaaaaaaa", whos);
+  const [isVersionLoading, setIsVersionLoading] = useState(false);
+  const [ tableData, setTableData ] = useState([])
 
   const options = (filteredOptions || [])?.map((item) => ({
     label: item.value,
     value: item.id,
   }));
-console.log("optionsoptions", options);
 
   const [filterData, setFilteredData] = useState([]);
-
-  console.log("filterDatafilterData", filterData);
   
-  const handleDelete = () => {
-        const curData = [...filterData];
-        const updated = curData.filter((ele) => ele.id !== selectedRow.id);
-        setFilteredData(updated);
-        message.success("Deleted Successfully !");
-        handleAnythingChanged(true);
-  };
-
-useEffect(() => {
-  if(filterData?.length > 0) {
-    const masterHeadIds = filterData.map(item => item.masterHead.id);
-    const updatedWhos = whos?.filter(item => !masterHeadIds.includes(item.id));
-    const updatedWheres = wheres?.filter(item => !masterHeadIds.includes(item.id));
-    const updatedWhats = whats?.filter(item => !masterHeadIds.includes(item.id));  
-    setWhos(updatedWhos);
-    setWheres(updatedWheres);
-    setWhats(updatedWhats);
-    const updatedFilteredOptions = filteredOptions?.ws?.clusterValues.filter(item => 
-      !masterHeadIds.includes(item.id) 
-    );
-  
-    setFilteredOption(updatedFilteredOptions);
+  const fetchMasterWsList = async () => {
+    try {
+        const apiUrl = API_BASE_PATH + API_ROUTES.MASTER_WS_LIST + storyWorldId;
+        const config = {
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${tokenVal}`,
+        },
+        };
+        const output = await axios.get(apiUrl, config);
+        setTableData(processData(output.data?.masterWs));
+        // setTempUsers(output.data?.data);
+    } catch (error) {
+        console.log("error: ", error);
+        message.error(errorMsg);
+    }
   }
 
-}, [filterData]);
+  useEffect(() => {
+    fetchMasterWsList();
+  }, [storyWorldId])
 
+  const handleDelete = () => {
+    if (deleteIndex !== null) {
+      const itemToDelete = myNewData[deleteIndex]; 
+      if (itemToDelete?.id === null) {
+        if (tableData?.length > 0) {
+          const updatedData = tableData?.filter((_, index) => index !== deleteIndex);
+          setTableData(updatedData);
+        }
+      } else {
+        if (filterData?.length > 0) {
+          const updatedData = filterData?.filter((_, index) => index !== deleteIndex);
+          setFilteredData(updatedData);
+        }
+      }
+  
+      setShowDeleteModal(false);
+      message.success("Deleted Successfully!"); 
+    }
+  };
+  
   useEffect(() => {
     if (!tokenVal) {
       navigate("/");
@@ -167,85 +182,10 @@ useEffect(() => {
     clusterHeadWsList();
   },[])
 
-const transformData = (data) => {
-  const result = {
-    who: {
-      primary: [],
-      secondary: []
-    },
-    what: {
-      primary: [],
-      secondary: []
-    },
-    where: {
-      primary: [],
-      secondary: []
-    }
-  };
-
-  data?.forEach(item => {
-    const newItem = {
-      id: item.masterHead.id, 
-      masterHead: item.masterHead.value, 
-      clusterValues: item.clusterValue?.map(cluster => ({
-        id: cluster.id,
-        value: cluster.value
-      })),
-      new: true,
-      updated: false
-    };
-
-    if (item.ws === "Who's") {
-      if (item.type === "Primary") {
-        result.who.primary.push(newItem);
-      } else {
-        result.who.secondary.push(newItem);
-      }
-    } else if (item.ws === "What's") {
-      if (item.type === "Primary") {
-        result.what.primary.push(newItem);
-      } else {
-        result.what.secondary.push(newItem);
-      }
-    } else if (item.ws === "Where's") {
-      if (item.type === "Primary") {
-        result.where.primary.push(newItem);
-      } else {
-        result.where.secondary.push(newItem);
-      }
-    }
-  });
-
-  return cleanEmptySections(result);
-};
-
-const cleanEmptySections = (data) => {
-  for (const key in data) {
-    if (data.hasOwnProperty(key)) {
-      const sections = data[key];
-      for (const section in sections) {
-        if (sections[section].length === 0) {
-          delete sections[section];
-        }
-      }
-    }
-  }
-  return data;
-};
-
-const findAllData = [...filterData, ...filterDatas || []]
-const allData = findAllData.filter((value, index, self) => 
-  index === self.findIndex((t) => t.id === value.id)
-);
-
-const transformedData = allData ?  transformData(allData): transformData(filterData);
-const cleanedData = transformedData
-
   const fetchStories = async () => {
     setIsLoading(true);
     let alertKey;
     try {
-      // api call
       const apiUrl = API_BASE_PATH + API_ROUTES.LIST_STORIES_UPLOAD_BY_USER;
       const config = {
         headers: {
@@ -305,13 +245,36 @@ const cleanedData = transformedData
   };
 
   const handleRemoveChip = (value, index) => {
-    const updatedClusterValues = [...filterData[index]?.clusterValue];  
-    const newClusterValues = updatedClusterValues?.filter(item => item?.id !== value?.id); 
-    updateClusterValue(index, newClusterValues);
+    if(filterData?.length > 0 ) {
+      if (!filterData[index]) return;
+      const updatedClusterValues = [...filterData[index]?.clusterValues];
+      const newClusterValues = updatedClusterValues?.filter(item => item?.id !== value?.id);
+      const updatedData = [...filterData];
+      updatedData[index] = {
+        ...updatedData[index],
+        clusterValues: newClusterValues, 
+      };
+      setFilteredData(updatedData);
+    } else if(tableData?.length > 0) {
+    if (!tableData[index]) return;
+ const updatedClusterValues = [...tableData[index]?.clusterValues];
+  
+ const newClusterValues = updatedClusterValues?.filter(item => item?.value !== value?.value);
+
+ const updatedData = [...tableData];
+ updatedData[index] = {
+   ...updatedData[index],
+   clusterValues: newClusterValues, 
+ };
+
+ setTableData(updatedData);
+  }
+   
   };
+  
   const updateClusterValue = (index, newClusterValues) => {
-    const updatedTableData = [...filterData];
-    updatedTableData[index].clusterValue = newClusterValues;
+    const updatedTableData = [...myNewData];
+    updatedTableData[index].clusterValues = newClusterValues;
     setFilteredData(updatedTableData);
   };
  
@@ -332,13 +295,7 @@ const cleanedData = transformedData
         return (
           <div>
             <span>
-              {record?.ws === "0"
-                ? Who
-                : record?.ws === "1"
-                ? What
-                : record?.ws === "2"
-                ? Where
-                : record?.ws}
+              {record?.ws}
             </span>{" "}
           </div>
         );
@@ -348,16 +305,10 @@ const cleanedData = transformedData
       dataIndex: "type",
       title: "Type",
       render: (text, record) => {
-        const Primary = "Primary";
-        const Secondary = "Secondary";
         return (
           <div>
             <span>
-              {record?.type === "0"
-                ? Primary
-                : record?.type === "1"
-                ? Secondary
-                : record?.type}
+              {record?.type}
             </span>{" "}
           </div>
         );
@@ -369,27 +320,32 @@ const cleanedData = transformedData
       render: (text, record) => {
         return (
           <div>
-            <span>{record?.masterHead?.value}</span>
+            <span>{record?.masterHead?.value ?? record?.masterHead}</span>
           </div>
         );
       },
     },
     {
-      dataIndex: "clusterValue",
+      dataIndex: "clusterValues",
       title: "Cluster Value",
-      render: (clusterValue, record, index) => {
+      render: (clusterValues, record, index) => {
+        const normalizedClusterValues =
+          typeof clusterValues === "string"
+            ? clusterValues.split(", ").map((value) => ({ value: value?.trim() }))
+            : clusterValues || [];
+        
         return (
           <div className="flex flex-wrap gap-2">
-            {clusterValue?.length > 0
-              ? clusterValue?.map((value, idx) => (
+            {normalizedClusterValues?.length > 0
+              ? normalizedClusterValues?.map((value, idx) => (
                   <div
                     key={idx}
                     className="flex items-center bg-gray-200 rounded-lg px-2.5 py-1.5 text-sm text-gray-800 border border-gray-300"
                   >
-                    <span>{value?.value}</span>
+                    <span>{value?.value ?? value ?? []}</span>
                     <button
                       className="text-red-600 bg-transparent border-none cursor-pointer ml-2"
-                      onClick={() => handleRemoveChip(value, index)}
+                      onClick={() => handleRemoveChip(value, index)} // Pass the value and index to remove
                       title="Remove"
                     >
                       <svg
@@ -412,12 +368,12 @@ const cleanedData = transformedData
               : "NA"}
           </div>
         );
-      },
+      }
     },
     {
       dataIndex: "action",
       title: "Action",
-      render: (val, record) => {
+      render: (val, record, index) => {
         return (
           <div style={{ display: "flex", gap: "15px" }}>
             <button
@@ -426,6 +382,7 @@ const cleanedData = transformedData
                 setShowModifyPopup(true);
                 setDialogPopup(true);
                 setSelectedRow(record);
+                setEditIndex(index)
               }}
             >
               <svg
@@ -447,6 +404,7 @@ const cleanedData = transformedData
               title="Delete story"
               onClick={() => {
                 setShowDeleteModal(true);
+                setDeleteIndex(index);   
                 setSelectedRow(record);
               }}
             >
@@ -472,27 +430,6 @@ const cleanedData = transformedData
     },
   ];
 
-  const headers = [
-    { label: "W's Form", key: "ws" },
-    { label: "Type", key: "type" },
-    { label: "Cluster Head", key: "Cluster Head" },
-    { label: "Cluster Value", key: "Cluster Value" }
-  ];
-
-console.log("filterData",filterData);
-
-const flattenData = filterData?.map(item => ({
-  
-  ws: item?.ws,  // Directly mapping the 'ws' field
-  type: item?.type,  // Mapping the 'type' field
-  "ClusterHead": item.masterHead?.value,  // Flattening 'masterHead' and getting its 'value'
-  "ClusterValue": item.clusterValue?.map(val => val?.value)?.join(", ")  // Flattening 'clusterValue' array and joining values with commas
-}));
-console.log("flattenDataflattenDataflattenData", flattenData);
-
-
-console.log("Flatten Data", allData, "filterDatas",filterDatas, "fffffffff", filterDatas);
-
   const storyWorldOptions = [
     { id: 1, name: "Who's" },
     { id: 2, name: "What's" },
@@ -515,7 +452,7 @@ console.log("Flatten Data", allData, "filterDatas",filterDatas, "fffffffff", fil
       wsForm: [],
       type: [],
       masterHead: [],
-      clusterValue: [],
+      clusterValues: [],
       new: true,
     };
     const curData = [newObj, ...filterData];
@@ -593,13 +530,9 @@ console.log("Flatten Data", allData, "filterDatas",filterDatas, "fffffffff", fil
     }));
       try {
         const response = await axios.post(apiUrl, payload, config); 
-        console.log("API Response:", response.data);
-        // setApiResponse(response.data);  
           const filteredArray = response?.data?.ws?.clusterValues?.filter(
-        (item) => item.value !== e.target.value
+        (item) => item?.value !== e?.target?.value
       );
-      console.log("filteredArray", filteredArray);
-      
         setFilteredOption(filteredArray);
       } catch (error) {
         console.error("Error calling the API:", error);
@@ -613,7 +546,7 @@ console.log("Flatten Data", allData, "filterDatas",filterDatas, "fffffffff", fil
           value: option.value,
         }));
         setSelected(selectedValues);
-        formik.setFieldValue("clusterValue", selectedValues);
+        formik.setFieldValue("clusterValues", selectedValues);
     
     }
   };
@@ -637,6 +570,7 @@ console.log("Flatten Data", allData, "filterDatas",filterDatas, "fffffffff", fil
     }
     return [];
   }
+
 
   const onSave = async () => {
     setIsSubmitting(true);
@@ -696,58 +630,231 @@ console.log("Flatten Data", allData, "filterDatas",filterDatas, "fffffffff", fil
     }
     setIsSubmitting(false);
   };
-  console.log("stssssssssss", StoryUploadApiContext);
   
   const handleSaveCluster = (values, resetForm) => {
-    if (
-      formik.values.ws &&
-      formik.values.type &&
-      formik.values.masterHead 
-    ) {
-      const newRow = {
-        id: filterData?.length + 1,
-        ws: formik.values.ws,
-        type: formik.values.type,
-        masterHead: formik.values.masterHead,
-        clusterValue: formik.values.clusterValue
-        .map((val) => ({
-          id: val.value,         
-          value: val.label    
-        }))
-      };
-      setFilteredData((prevArray) => [...prevArray, newRow]);
-      formik.resetForm(formik.values);
-      setWhats([]);
-      setWhos([]);
-      setWheres([]);
-      setFilteredOption([]);
+    if (formik.values.ws && formik.values.type && formik.values.masterHead) {
+        const newRow = {
+            id: (filterData?.length || 0) + 1, // Ensure filterData is defined
+            ws: formik.values.ws,
+            type: formik.values.type,
+            masterHead: formik.values.masterHead,
+            clusterValues: formik.values.clusterValues?.map((val) => ({
+                id: val.value,
+                value: val.label
+            })),
+            new: true,
+            updated: false
+        };
+        
+        setFilteredData((prevArray = []) => [...prevArray, newRow]); // Default to an empty array
+        formik.resetForm(formik.values);
+        setWhats([]);
+        setWhos([]);
+        setWheres([]);
+        setFilteredOption([]);
     }
+};
+
+function convertData(inputData) {
+  const result = {};
+
+  inputData.forEach((item) => {
+    const wsKey = item.ws.toLowerCase().replace(/'s$/, ''); // Convert "Who's" to "who"
+    const typeKey = item.type.toLowerCase(); // Convert "Primary" to "primary"
+
+    if (!result[wsKey]) {
+      result[wsKey] = {};
+    }
+
+    if (!result[wsKey][typeKey]) {
+      result[wsKey][typeKey] = [];
+    }
+
+    const formattedItem = {
+      id: item.clusterValues[0]?.id, // Assuming clusterValues always has at least one item
+      masterHead: item?.masterHead?.value || item?.masterHead, // Use the value from masterHead
+      clusterValues: item?.clusterValues?.map((cluster) => ({
+        id: cluster?.id,
+        value: cluster?.value,
+      })),
+      new: item?.new,
+      updated: item?.updated,
+    };
+
+    result[wsKey][typeKey].push(formattedItem);
+  });
+
+  return result;
+}
+
+  const manualData = convertData(filterData);
+
+  const processData = (data) => {
+    const result = [];
+
+    Object?.keys(data)?.forEach((ws) => {
+      Object?.keys(data[ws])?.forEach((type) => {
+        data[ws][type]?.forEach((item) => {
+          result?.push({
+            ws,
+            id:item?.id,
+            type,
+            masterHead: item?.masterHead,
+            clusterValues: item?.clusterValues?.map(cluster => ({
+              id: cluster?.id,
+              value: cluster?.value
+            })),
+            // clusterValues: item?.clusterValues?.map((cv) => cv?.value)?.join(", "),
+            status: item?.new ? "New" : item?.updated ? "Updated" : "Old",
+          });
+        });
+      });
+    });
+
+    return result;
   };
 
-  console.log("flattenDatadddddddddddddddd", flattenData);
+  const newManualData = useMemo(() => processData(manualData || []), [manualData]);  
+  const [myNewData, setMyNewData] = useState([]);
+
+  useEffect(() => {
+    const combinedData = [...tableData, ...newManualData];
+        if (JSON?.stringify(combinedData) !== JSON?.stringify(myNewData)) {
+      setMyNewData(combinedData); 
+    }
+  }, [tableData, newManualData, myNewData]);
+
+  const flattenData = myNewData?.map(item => {
+    const normalizedClusterValues = (() => {
+      if (Array?.isArray(item?.clusterValues)) {
+        return item?.clusterValues.map(val => (typeof val === "object" ? val?.value : val));
+      } else if (typeof item?.clusterValues === "string") {
+        return item?.clusterValues?.split(",").map(value => value?.trim());
+      }
+      return []; 
+    })();
+  
+    return {
+      ws: item?.ws ?? "", 
+      type: item?.type ?? "", 
+      ClusterHead: item?.masterHead ?? "", 
+      clusterValues: normalizedClusterValues.join(", "), 
+    };
+  });
+  
+  const transformData = (data) => {
+    const result = {
+      who: {
+        primary: [],
+        secondary: []
+      },
+      what: {
+        primary: [],
+        secondary: []
+      },
+      where: {
+        primary: [],
+        secondary: []
+      }
+    };
+  
+    data?.forEach(item => {
+      // Normalize clusterValues to always be an array of objects
+      const normalizedClusterValues = (() => {
+        if (Array.isArray(item.clusterValues)) {
+          return item.clusterValues.map(cluster => ({
+            id: cluster.id ?? null,
+            value: cluster.value ?? cluster
+          }));
+        } else if (typeof item.clusterValues === "string") {
+          return item.clusterValues.split(",").map(value => ({
+            id: null, // No ID in the string format
+            value: value.trim()
+          }));
+        }
+        return []; // Default to an empty array
+      })();
+  
+      const newItem = {
+        id: item.id ?? null, // Handle cases where ID is missing
+        masterHead: item?.masterHead?.value ?? item.masterHead, // Support plain string or object format
+        clusterValues: item.clusterValues?.map(cluster => ({
+          id: cluster.id,
+          value: cluster.value
+        })),
+        new: item.status === "New",
+        updated: item.status === "Updated"
+      };
+  
+      // Add the newItem to the appropriate section
+      if (item.ws === "who") {
+        if (item.type.toLowerCase() === "primary") {
+          result.who.primary.push(newItem);
+        } else {
+          result.who.secondary.push(newItem);
+        }
+      } else if (item.ws === "what") {
+        if (item.type.toLowerCase() === "primary") {
+          result.what.primary.push(newItem);
+        } else {
+          result.what.secondary.push(newItem);
+        }
+      } else if (item.ws === "where") {
+        if (item.type.toLowerCase() === "primary") {
+          result.where.primary.push(newItem);
+        } else {
+          result.where.secondary.push(newItem);
+        }
+      }
+    });
+  
+    return cleanEmptySections(result);
+  };
+  
+  
+  const cleanEmptySections = (data) => {
+    for (const key in data) {
+      if (data.hasOwnProperty(key)) {
+        const sections = data[key];
+        for (const section in sections) {
+          if (sections[section].length === 0) {
+            delete sections[section];
+          }
+        }
+      }
+    }
+    return data;
+  };
+
+  const transformedData = transformData(myNewData);
+  useEffect(() => {
+    if (myNewData?.length > 0) {
+      const masterHeadIds = myNewData.map(item => item.masterHead); 
+      const updatedWhos = whos?.filter(item => !masterHeadIds.includes(item.masterHead));
+      const updatedWheres = wheres?.filter(item => !masterHeadIds.includes(item.masterHead));
+      const updatedWhats = whats?.filter(item => !masterHeadIds.includes(item.masterHead));  
+      setWhos(updatedWhos);
+      setWheres(updatedWheres);
+      setWhats(updatedWhats);    
+      const updatedFilteredOptions = filteredOptions?.ws?.clusterValues.filter(item => 
+        !masterHeadIds.includes(item.masterHead)
+      );
+      
+      setFilteredOption(updatedFilteredOptions);
+        
+    }
+  
+  }, [myNewData]);
+  
   const onModify = (updatedObj) => {
-  
-    // Clone the current data to avoid mutation
     const curData = [...filterData];
-    console.log("Current Data:", curData);
-    console.log("Selected Row:", selectedRow);
-    console.log("Updated Object:", updatedObj);
+    curData[editIndex] = { ...curData[editIndex], ...updatedObj };
   
-    // Update the matching row
-    const modified = curData.map((ele) =>
-      ele.id === selectedRow.id ? { ...ele, ...updatedObj } : ele
-    );
-  
-    console.log("Modified Data:", modified);
-  
-    // Update the state
-    setFilteredData(modified);
-  
-    // Show success message
+    setFilteredData(curData);
     message.success("Updated Successfully!");
     handleAnythingChanged(true);
   };
-  console.log("aaaaaaaaaaaaaaaaaaa", filterData);
+  
   
   return (
     <div>
@@ -757,7 +864,7 @@ console.log("Flatten Data", allData, "filterDatas",filterDatas, "fffffffff", fil
             ws: "",
             masterHead: "",
             type: "",
-            clusterValue: [],
+            clusterValues: [],
           }}
           onSubmit={formik.handleSubmit}
         >
@@ -780,6 +887,8 @@ console.log("Flatten Data", allData, "filterDatas",filterDatas, "fffffffff", fil
                   >
                     <DownloadCSVFile
                     csvDat={flattenData}
+                    fileName={fileName}
+                    storyWorld={storyWorld}
                     // header={headers}
                     />
                   </button>
@@ -901,24 +1010,24 @@ console.log("Flatten Data", allData, "filterDatas",filterDatas, "fffffffff", fil
                 </div>
                 <div className="flex-1 min-w-[200px]">
                   <label
-                    htmlFor="clusterValue"
+                    htmlFor="clusterValues"
                     className="block mb-2 text-sm font-medium text-gray-900 md:text-sm"
                   >
                     Select Cluster Values
                   </label>
-                  <Field name="clusterValue">
+                  <Field name="clusterValues">
                     {({ field, form }) => (
                       <MultiSelect
-                        id="clusterValue"
+                        id="clusterValues"
                         options={options}
-                        onChange={(e) => handleChange(e, "clusterValue")}
-                        value={formik.values.clusterValue}
+                        onChange={(e) => handleChange(e, "clusterValues")}
+                        value={formik?.values?.clusterValues}
                         labelledBy="Please Select"
                       />
                     )}
                   </Field>
                   <ErrorMessage
-                    name="clusterValue"
+                    name="clusterValues"
                     component="div"
                     className="mt-1 text-sm text-red-500"
                   />
@@ -930,7 +1039,7 @@ console.log("Flatten Data", allData, "filterDatas",filterDatas, "fffffffff", fil
 
         <div className="mt-8">
           {!isLoading && (
-            <Table dataSource={ allData ?? filterData  } columns={historyColumns} bordered />
+            <Table dataSource={ myNewData } columns={historyColumns} bordered />
           )}
         </div>
       </div>
@@ -969,7 +1078,7 @@ console.log("Flatten Data", allData, "filterDatas",filterDatas, "fffffffff", fil
           types={type}
           clusterHeads={whos ? whats : wheres}
           onModify={onModify}
-          type="title" 
+          // type="title" 
         />
       )}
       <FooterButtons

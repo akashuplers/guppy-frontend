@@ -71,7 +71,7 @@ const wsForm = [
         navigate('/');
     } else {
         setToken(tokenVal);
-        fetchStoryWorlds(tokenVal);
+        // fetchStoryWorlds(tokenVal);
     }
   }, []);
 
@@ -93,42 +93,6 @@ const wsForm = [
     },
   ];
 
-  const fetchStoryWorlds = async (tokenVal) => {
-    try {
-      const apiUrl = API_BASE_PATH + API_ROUTES.GET_STORY_WORLD;
-      const config = {
-        headers: {
-          Authorization: `Bearer ${tokenVal}`,
-        },
-      };
-      const response = await axios.get(apiUrl, config);
-      const outputArr = response?.data?.data;
-      if(outputArr?.length > 0) {
-        setStoryWorldOptions(outputArr);
-        message.success("Story Worlds Fetched Succesfully !");
-      } else {
-        message.error("Error in fetching story worlds !");
-        setStoryWorldOptions(storyWorldsLocal);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setStoryWorldOptions(storyWorldsLocal);
-      const statusCode = error?.response?.status;
-      if(statusCode === 401) {
-        navigate("/");
-      } else if(statusCode === 500) {
-        message.error("Internal Server Error !");
-      } else {
-        const errorMessage = error?.response?.data?.message;
-        if(errorMessage) {
-          message.error(errorMessage);
-        } else {
-          message.error("Error in fetching story worlds !");
-        }
-      }      
-    }
-  }
-
   const handleSubmit = async (values, { setSubmitting }) => {
     debugger
     let alertKey;
@@ -143,9 +107,10 @@ const wsForm = [
         };
         alertKey = message.loading("Fetching Master Ws...", 0).key;
         const response = await axios.get(apiUrl, config); // post api request
-        const output = response?.data?.masterWS;
+        const output = response?.data?.masterWs;
         if(output) {
           const { Who, What, Where } = output;
+          setFilteredData(output)
           setWhos(Who);
           setWhats(What);
           setWheres(Where);
@@ -187,9 +152,32 @@ const wsForm = [
     { id: 5, ws: "Whats", type: "Primary", clusterHead: "Aoldkdh", clusterValue: ["Kloand", "newValue"] },
   ];
   
+  const [ filteredData, setFilteredData ] = useState([]);
+  const processData = (data) => {
+    const result = [];
 
-const [ filteredData, setFilteredData ] = useState(filterData);
+    Object.keys(data).forEach((ws) => {
+      Object.keys(data[ws]).forEach((type) => {
+        data[ws][type].forEach((item) => {
+          console.log("iteee",item);
+          
+          result.push({
+            ws,
+            type,
+            masterHead: item?.masterHead,
+            clusterValues: item?.clusterValues?.map((cv) => cv?.value)?.join(", "),
+            status: item?.new ? "New" : item?.updated ? "Updated" : "Old",
+          });
+        });
+      });
+    });
 
+    return result;
+  };
+
+  const newTableData = processData(filteredData)
+  console.log("newTableData,", newTableData);
+  
   const historyColumns = [
     {
       title: "S.No",
@@ -205,12 +193,12 @@ const [ filteredData, setFilteredData ] = useState(filterData);
       title: "Type"
     },
     {
-      dataIndex: "clusterHead",
+      dataIndex: "masterHead",
       title: "Cluster Head"
       
     },
     {
-      dataIndex: "clusterValue",
+      dataIndex: "clusterValues",
       title: "Cluster Value",
       render: (clusterValue, record, index) => {
         const valuesArray = Array.isArray(clusterValue) ? clusterValue : clusterValue?.split(", ") || [];
@@ -257,7 +245,7 @@ const [ filteredData, setFilteredData ] = useState(filterData);
     {
       dataIndex: "action",
       title: "Action",
-      render: (val, record) => {
+      render: (val, record,) => {
         return (
           <div style={{ display: 'flex', gap: '15px' }}>
             <button
@@ -419,7 +407,7 @@ const [ filteredData, setFilteredData ] = useState(filterData);
           <div className="mt-10 px-5">
             {/* <Tabs defaultActiveKey="1" items={items} /> */}
             <Table
-              dataSource={filteredData}
+              dataSource={newTableData}
               columns={historyColumns}
               bordered
             />
