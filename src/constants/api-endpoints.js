@@ -1,4 +1,4 @@
-export const API_BASE_PATH = "https://guppy.lille.ai";
+export const API_BASE_PATH = "https://guppy-backend.lille.ai";
 
 export const API_ROUTES = {
     SIGNUP: '/auth/signup',
@@ -27,5 +27,6 @@ export const API_ROUTES = {
     HARMONIZATION: '/story/harmonization/',
     LIST_WS: '/story/ws/',
     SAVE_CLUSTER: '/story/save-clusters/',
-    SORT_WS:'/story/sort-ws/'
+    SORT_WS:'/story/sort-ws/',
+    MASTER_WS_LIST:'/story/fetch-master-ws/'
 }
