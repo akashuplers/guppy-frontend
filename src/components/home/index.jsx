@@ -71,6 +71,7 @@ const Home = () => {
   }
 
   const getWsPayload = (list, type) => {
+    debugger
     let names = [];
     if(type==='prim') {
       for (let i = 0; i < list.length; i++) {
@@ -90,6 +91,7 @@ const Home = () => {
   }
 
   const getUpdatedJsonTitles = (list) => {
+    debugger
     const arr = list[0]?.titles || [];
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
@@ -157,12 +159,12 @@ const Home = () => {
           updatedWhats: getUpdatedJsonWs(What),
           wheres: getUpdatedJsonWs(Where),
           updatedWheres: getUpdatedJsonWs(Where),
-          primaryWhos: getWsPayload(Who, 'prim'),
-          secondaryWhos: getWsPayload(Who, 'sec'),
-          primaryWhats: getWsPayload(What, 'prim'),
-          secondaryWhats: getWsPayload(What, 'sec'),
-          primaryWheres: getWsPayload(Where, 'prim'),
-          secondaryWheres: getWsPayload(Where, 'sec'),
+          // primaryWhos: getWsPayload(Who, 'prim'),
+          // secondaryWhos: getWsPayload(Who, 'sec'),
+          // primaryWhats: getWsPayload(What, 'prim'),
+          // secondaryWhats: getWsPayload(What, 'sec'),
+          // primaryWheres: getWsPayload(Where, 'prim'),
+          // secondaryWheres: getWsPayload(Where, 'sec'),
           titles: getUpdatedJsonTitles(titles),
           updatedTitles: getUpdatedJsonTitles(titles),
           situations: getUpdatedJson(sitautions),

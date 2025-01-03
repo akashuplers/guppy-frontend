@@ -13,16 +13,12 @@ const ModifyMasterWsPopup = ({
   onModify = () => {},
   storyWorldOptions,
   types,
-  wsForms,
-  clusterHeads,
-  filteredOptions,
   clusterList
 }) => {
   const [currentValue, setCurrentValue] = useState("");
   const [popupTitle, setPopupTitle] = useState("");
   const [secondaryWhoOptions, setSecondaryWhoOptions] = useState([]);
   const [secondaryWhoSelectedOptions, setSecondaryWhoSelectedOptions] = useState([]);
-  const [primaryWhatOptions, setPrimaryWhatOptions] = useState([]);
   const [wsForm, setWsForm] = useState([]);
   const [typo, setTypo] = useState([]);
   const [clusterHead, setClusterHead] = useState([]);
@@ -33,7 +29,6 @@ const ModifyMasterWsPopup = ({
   const [clusterHeadVals, setclusterHeadVals] = useState([]);
   const [clusterValuesVals, setclusterValuesVals] = useState([]);
   const [anythingChanged, setAnythingChanged] = useState(false)
-  const clusterHeadsOptions = whoCluster ?? whatCluster ?? whereCluster;
   const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged,} = useContext(StoryUploadApiContext);  
   const { token, story_id, storyWorld, fileName, primaryWhos, masterWs, filterDatas } = storyUploadApiResponse;
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
@@ -95,9 +90,9 @@ const ModifyMasterWsPopup = ({
     setAnythingChanged(true)
   }
   const [clusterHeadId, setClusterHeadId] = useState("");
-
+  const [clusterValueSet, setClusterValueSet] = useState();
   const onClusterHead = (selectedValue, fieldName) => {
-    const selectedCluster = clusterHeadVals.find(item => item.value === selectedValue);
+    const selectedCluster = clusterHeadVals.find(item => item?.value === selectedValue);
     setClusterHead(selectedCluster?.value);
     setClusterHeadId(selectedCluster?.id); 
     getClusterValueData(selectedCluster?.value,selectedCluster?.id)
@@ -105,7 +100,17 @@ const ModifyMasterWsPopup = ({
   };
 
   const onClusterValues = (selectedValue, fieldName) => {
-    setClusterValue(selectedValue)
+    const valuesArray = Array.isArray(selectedValue) ? selectedValue : [selectedValue];
+    const selectedClusterObjects = valuesArray
+    ?.map(value => clusterValuesVals.find(item => item?.value === value))
+    ?.filter(Boolean);
+    const updatedClusterValues = selectedClusterObjects?.map(item => item.value);
+    const mergedClusterObjects = selectedClusterObjects?.map(item => ({
+      id: item?.id,
+      value: item?.value
+    }));
+    setClusterValue(updatedClusterValues);
+    setClusterValueSet(mergedClusterObjects);
     setAnythingChanged(true);
   };
   
@@ -115,7 +120,6 @@ const ModifyMasterWsPopup = ({
       clusterHead: { value: value, id: clusterId }, 
       ws: clusterHeadVals
     };
-    
     const config = {
       headers: {
           "Content-Type": "application/json",
@@ -132,14 +136,12 @@ const ModifyMasterWsPopup = ({
   }
 
   const handleUpdate = () => {
-    const clusterVals = clusterValuesVals?.filter((obj) => clusterValue?.includes(obj?.id))
     const updatedObj = {
       id: clusterHeadId ? clusterHeadId : modifyItemObj.id, 
       ws: wsForm, 
       type: typo || modifyItemObj.type, 
       masterHead: clusterHead , 
-      clusterValues:  modifyItemObj.clusterValues,
-      ...(modifyItemObj.isNewField ? { isNewField: true } : { isEditField: true }), 
+      clusterValues: clusterValueSet, 
     };
     onModify(updatedObj);
     onClose();
@@ -220,7 +222,7 @@ const ModifyMasterWsPopup = ({
           >
             {clusterHeadVals?.map((item, index) => (
               <Option key={item?.id} value={item?.value}>
-                {item.value}
+                {item?.value}
               </Option>
             ))}
           </Select>
@@ -242,7 +244,7 @@ const ModifyMasterWsPopup = ({
           >
             {clusterValuesVals?.map((option, index) => (
               <Option key={option.id} value={option.value}>
-                {option.value}
+                {option?.value}
               </Option>
             ))}
           </Select>
