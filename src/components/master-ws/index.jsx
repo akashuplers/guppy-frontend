@@ -25,6 +25,7 @@ const validationSchema = Yup.object().shape({
 
 const MasterWsPage = () => {
   const navigate = useNavigate();
+  const flow = false;
   const [storyWorldOptions, setStoryWorldOptions] = useState(storyWorldsLocal);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showModifyPopup, setShowModifyPopup] = useState(false);
@@ -413,7 +414,7 @@ const wsForm = [
             />
           </div>
        
-        {dialogPopup && (
+        {dialogPopup && flow && (
           <ModifyMasterWsPopup
             open={dialogPopup}
             modifyItemObj={selectedRow} // Pass selected row data for editing

@@ -2,8 +2,8 @@ import React, { useEffect, useState, useRef, useContext, useMemo } from "react";
 import { useFormik, Field, Form, ErrorMessage } from "formik";
 import { Formik } from "formik";
 import { StoryUploadApiContext } from "../../../contexts/ApiContext";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Table, message, Button, Checkbox, Modal, Select  } from "antd";
+import { useNavigate } from "react-router-dom";
+import { Table, message, Modal, Select  } from "antd";
 import { API_BASE_PATH, API_ROUTES } from "../../../constants/api-endpoints";
 import axios from "axios";
 import ShareModal from "../ShareModal";
@@ -13,16 +13,14 @@ import { MultiSelect } from "react-multi-select-component";
  import FooterButtons from "../FooterButtons";
 import ModifyMasterWsPopup from "../../ModifyMasterWsPopUp";
 import DownloadCSVFile from "../../DownloadCsv";
-// import Select from 'react-select'; // Import react-select
+
 const MasterWssPage = ({
   onDiscard = () => {},
   saveTitles,
   handleSaveSuccess = () => {},
 }) => {
   const navigate = useNavigate();
-  const location = useLocation();
-
-  
+  const flow = true
   const [isLoading, setIsLoading] = useState(false);
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [dialogPopup, setDialogPopup] = useState(false);
@@ -54,7 +52,6 @@ const MasterWssPage = ({
   const [selected, setSelected] = useState([]);
   const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged,} = useContext(StoryUploadApiContext);  
   const { token, story_id, storyWorld, fileName, storyWorldId,  primaryWhos, masterWs, filterDatas } = storyUploadApiResponse;
-  const [searchTerm, setSearchTerm] = useState('');
 
   const formik = useFormik({
     initialValues: {
@@ -74,7 +71,6 @@ const MasterWssPage = ({
   const [filteredOptions, setFilteredOption] = useState();
   const [isVersionLoading, setIsVersionLoading] = useState(false);
   const [ tableData, setTableData ] = useState([])
-
   const options = (filteredOptions || [])?.map((item) => ({
     label: item.value,
     value: item.id,
@@ -289,9 +285,6 @@ const MasterWssPage = ({
       dataIndex: "ws",
       title: "W's Form",
       render: (text, record) => {
-        const Who = "Who's";
-        const What = "What's";
-        const Where = "Where's";
         return (
           <div>
             <span>
@@ -431,9 +424,9 @@ const MasterWssPage = ({
   ];
 
   const storyWorldOptions = [
-    { id: 1, name: "Who's" },
-    { id: 2, name: "What's" },
-    { id: 3, name: "Where's" },
+    { id: 1, name: "who" },
+    { id: 2, name: "what" },
+    { id: 3, name: "where" },
   ];
 
   const type = [
@@ -470,17 +463,17 @@ const MasterWssPage = ({
   };
   
   const handleChange = async (e, name) => {
-    if (e?.target?.value === "Who's") {
+    if (e?.target?.value === "who") {
       setWhos(clusterList?.Who);
       setWhats([]);
       setWheres([]);
       setFilteredOption(clusterList?.Who);
-    } else if (e?.target?.value === "What's") {
+    } else if (e?.target?.value === "what") {
       setWhats(clusterList?.What);
       setWhos([]);
       setWheres([]);
       setFilteredOption(clusterList?.What);
-    } else if (e?.target?.value === "Where's") {
+    } else if (e?.target?.value === "where") {
       setWheres(clusterList?.Where);
       setWhats([]);
       setWhos([]);
@@ -506,11 +499,11 @@ const MasterWssPage = ({
         clusterHead: { value: value, id: id },  // Set selected masterHead as clusterHead
         ws: []  // Initialize ws as an empty array
       };
-      if (e?.target?.value === "Who's") {
+      if (e?.target?.value === "who") {
         payload.ws = clusterList?.Who || [];
-      } else if (e?.target?.value === "What's") {
+      } else if (e?.target?.value === "what") {
         payload.ws = clusterList?.What || [];
-      } else if (e?.target?.value === "Where's") {
+      } else if (e?.target?.value === "where") {
         payload.ws = clusterList?.Where || [];
       }
          // Add dynamically selected whos, whats, or wheres to the payload if any
@@ -717,6 +710,7 @@ function convertData(inputData) {
   const newManualData = useMemo(() => processData(manualData || []), [manualData]);  
   const [myNewData, setMyNewData] = useState([]);
 
+
   useEffect(() => {
     const combinedData = [...tableData, ...newManualData];
         if (JSON?.stringify(combinedData) !== JSON?.stringify(myNewData)) {
@@ -847,12 +841,21 @@ function convertData(inputData) {
   }, [myNewData]);
   
   const onModify = (updatedObj) => {
-    const curData = [...filterData];
-    curData[editIndex] = { ...curData[editIndex], ...updatedObj };
-  
-    setFilteredData(curData);
-    message.success("Updated Successfully!");
-    handleAnythingChanged(true);
+    if(filterData?.length > 0){
+      const curData = [...filterData];
+      curData[editIndex] = { ...curData[editIndex], ...updatedObj };
+    
+      setFilteredData(curData);
+      message.success("Updated Successfully!");
+      handleAnythingChanged(true);
+    } else if(tableData?.length > 0) {
+      const curData = [...tableData];
+      curData[editIndex] = { ...curData[editIndex], ...updatedObj };
+    
+      setTableData(curData);
+      message.success("Updated Successfully!");
+    }
+ 
   };
   
   
@@ -1067,7 +1070,7 @@ function convertData(inputData) {
             onConfirm={handleDelete}
           />
         )}
-      {dialogPopup && (
+      {dialogPopup && flow && (
         <ModifyMasterWsPopup
           open={dialogPopup}
           modifyItemObj={selectedRow} 
@@ -1078,7 +1081,7 @@ function convertData(inputData) {
           types={type}
           clusterHeads={whos ? whats : wheres}
           onModify={onModify}
-          // type="title" 
+          // type="InFlow" 
         />
       )}
       <FooterButtons

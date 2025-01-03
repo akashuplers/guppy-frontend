@@ -29,6 +29,7 @@ const ModifySelectionPopup = ({
   // story upload context
   const { storyUploadApiResponse } = useContext(StoryUploadApiContext);
   const { primaryWhos, secondaryWhos, primaryWhats, secondaryWhats, primaryWheres, secondaryWheres } = storyUploadApiResponse;
+console.log("secondaryWhatOptions",secondaryWhatOptions);
 
   useEffect(() => {
     if(type === "title") {
@@ -226,8 +227,8 @@ const ModifySelectionPopup = ({
                         </label>
                     </Option>
                     {secondaryWhoOptions?.map((option, index) => (
-                        <Option key={index} value={option}>
-                            {option}
+                        <Option key={index} value={option.id}>
+                            {option.value}
                         </Option>
                     ))}
                 </Select>         
@@ -263,8 +264,8 @@ const ModifySelectionPopup = ({
                         </label>
                     </Option>
                     {primaryWhatOptions?.map((option, index) => (
-                        <Option key={index} value={option}>
-                            {option}
+                        <Option key={index} value={option.id}>
+                            {option.value}
                         </Option>
                     ))}
                 </Select>         
@@ -300,8 +301,8 @@ const ModifySelectionPopup = ({
                         </label>
                     </Option>
                     {secondaryWhatOptions?.map((option, index) => (
-                        <Option key={index} value={option}>
-                            {option}
+                        <Option key={index} value={option?.id}>
+                            {option?.value}
                         </Option>
                     ))}
                 </Select>         
@@ -337,8 +338,8 @@ const ModifySelectionPopup = ({
                         </label>
                     </Option>
                     {primaryWhereOptions?.map((option, index) => (
-                        <Option key={index} value={option}>
-                            {option}
+                        <Option key={index} value={option?.id}>
+                            {option?.value}
                         </Option>
                     ))}
                 </Select>         
@@ -374,8 +375,8 @@ const ModifySelectionPopup = ({
                         </label>
                     </Option>
                     {secondaryWhereOptions?.map((option, index) => (
-                        <Option key={index} value={option}>
-                            {option}
+                        <Option key={index} value={option?.id}>
+                            {option?.value}
                         </Option>
                     ))}
                 </Select>         
