@@ -13,12 +13,13 @@ const ModifyMasterWsPopup = ({
   onModify = () => {},
   storyWorldOptions,
   types,
-  clusterList
+  clusterList,
 }) => {
   const [currentValue, setCurrentValue] = useState("");
   const [popupTitle, setPopupTitle] = useState("");
   const [secondaryWhoOptions, setSecondaryWhoOptions] = useState([]);
-  const [secondaryWhoSelectedOptions, setSecondaryWhoSelectedOptions] = useState([]);
+  const [secondaryWhoSelectedOptions, setSecondaryWhoSelectedOptions] =
+    useState([]);
   const [wsForm, setWsForm] = useState([]);
   const [typo, setTypo] = useState([]);
   const [clusterHead, setClusterHead] = useState([]);
@@ -28,17 +29,21 @@ const ModifyMasterWsPopup = ({
   const [whereCluster, setWhereCluster] = useState([]);
   const [clusterHeadVals, setclusterHeadVals] = useState([]);
   const [clusterValuesVals, setclusterValuesVals] = useState([]);
-  const [anythingChanged, setAnythingChanged] = useState(false)
-  const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged,} = useContext(StoryUploadApiContext);  
-  const { token, story_id, storyWorld, fileName, primaryWhos, masterWs, filterDatas } = storyUploadApiResponse;
+  const [anythingChanged, setAnythingChanged] = useState(false);
+  const {
+    storyUploadApiResponse,
+    setStoryUploadApiResponse,
+    handleAnythingChanged,
+  } = useContext(StoryUploadApiContext);
+  const { story_id } = storyUploadApiResponse;
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
 
   const handleClusterChange = () => {
     if (wsForm === "who") {
-      setclusterHeadVals(clusterList.Who)
+      setclusterHeadVals(clusterList.Who);
       setWhoCluster(clusterList?.Who);
     } else if (wsForm === "what") {
-      setclusterHeadVals(clusterList.What)
+      setclusterHeadVals(clusterList.What);
       setWhatCluster(clusterList?.What);
     } else if (wsForm === "where") {
       setWhereCluster(clusterList?.Where);
@@ -51,11 +56,11 @@ const ModifyMasterWsPopup = ({
   };
 
   useEffect(() => {
-    handleClusterChange(); 
-  }, [wsForm, clusterList]); 
-  
+    handleClusterChange();
+  }, [wsForm, clusterList]);
+
   useEffect(() => {
-    if(!anythingChanged){
+    if (!anythingChanged) {
       if (type === "title") {
         setCurrentValue(modifyItemObj?.title || "");
         setPopupTitle("Update Master W's");
@@ -72,81 +77,97 @@ const ModifyMasterWsPopup = ({
       setClusterHeadId(modifyItemObj?.id || "");
       setTypo(modifyItemObj?.type || []);
       setWsForm(modifyItemObj?.ws || []);
-      setClusterValue(modifyItemObj?.clusterValues?.map(obj => obj.value) || [])
-      if(clusterValuesVals?.length === 0 && modifyItemObj?.masterHead?.id === clusterHead?.id){
-        getClusterValueData(modifyItemObj?.masterHead,modifyItemObj?.id)
+      setClusterValue(
+        modifyItemObj?.clusterValues?.map((obj) => obj.value) || []
+      );
+    } else {
+      console.log("iam here", modifyItemObj?.masterHead);
+      console.log("clusterHead", clusterHead);
+
+      if (
+        clusterValuesVals?.length === 0 &&
+        modifyItemObj?.masterHead === clusterHead
+      ) {
+        getClusterValueData(modifyItemObj?.masterHead, modifyItemObj?.id);
       }
     }
-
-  }, [modifyItemObj, type, clusterHead, clusterHeadVals]);
+  }, [anythingChanged, modifyItemObj, type, clusterHead, clusterHeadVals]);
 
   const onWsChange = (value) => {
+    console.log("wschange");
     setWsForm(value);
-    setAnythingChanged(true)
-  }
+    setAnythingChanged(true);
+  };
 
   const onTypeChange = (value) => {
+    console.log("onTypeChange");
     setTypo(value);
-    setAnythingChanged(true)
-  }
+    setAnythingChanged(true);
+  };
   const [clusterHeadId, setClusterHeadId] = useState("");
   const [clusterValueSet, setClusterValueSet] = useState();
   const onClusterHead = (selectedValue, fieldName) => {
-    const selectedCluster = clusterHeadVals.find(item => item?.value === selectedValue);
+    const selectedCluster = clusterHeadVals.find(
+      (item) => item?.value === selectedValue
+    );
     setClusterHead(selectedCluster?.value);
-    setClusterHeadId(selectedCluster?.id); 
-    getClusterValueData(selectedCluster?.value,selectedCluster?.id)
-    setAnythingChanged(true) 
+    setClusterHeadId(selectedCluster?.id);
+    getClusterValueData(selectedCluster?.value, selectedCluster?.id);
+    setAnythingChanged(true);
   };
 
   const onClusterValues = (selectedValue, fieldName) => {
-    const valuesArray = Array.isArray(selectedValue) ? selectedValue : [selectedValue];
+    const valuesArray = Array.isArray(selectedValue)
+      ? selectedValue
+      : [selectedValue];
     const selectedClusterObjects = valuesArray
-    ?.map(value => clusterValuesVals.find(item => item?.value === value))
-    ?.filter(Boolean);
-    const updatedClusterValues = selectedClusterObjects?.map(item => item.value);
-    const mergedClusterObjects = selectedClusterObjects?.map(item => ({
+      ?.map((value) => clusterValuesVals.find((item) => item?.value === value))
+      ?.filter(Boolean);
+    const updatedClusterValues = selectedClusterObjects?.map(
+      (item) => item.value
+    );
+    const mergedClusterObjects = selectedClusterObjects?.map((item) => ({
       id: item?.id,
-      value: item?.value
+      value: item?.value,
     }));
     setClusterValue(updatedClusterValues);
     setClusterValueSet(mergedClusterObjects);
     setAnythingChanged(true);
   };
-  
+
   const getClusterValueData = async (value, clusterId) => {
     const apiUrl = API_BASE_PATH + API_ROUTES.SORT_WS + story_id;
     const payload = {
-      clusterHead: { value: value, id: clusterId }, 
-      ws: clusterHeadVals
+      clusterHead: { value: value, id: clusterId },
+      ws: clusterHeadVals,
     };
     const config = {
       headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tokenVal}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tokenVal}`,
       },
-      };
+    };
     try {
-      const response = await axios.post(apiUrl, payload, config); 
-      const filteredArray = response?.data?.ws?.clusterValues
-      setclusterValuesVals(filteredArray)
+      const response = await axios.post(apiUrl, payload, config);
+      const filteredArray = response?.data?.ws?.clusterValues;
+      setclusterValuesVals(filteredArray);
     } catch (error) {
       console.error("Error calling the API:", error);
     }
-  }
+  };
 
   const handleUpdate = () => {
     const updatedObj = {
-      id: clusterHeadId ? clusterHeadId : modifyItemObj.id, 
-      ws: wsForm, 
-      type: typo || modifyItemObj.type, 
-      masterHead: clusterHead , 
-      clusterValues: clusterValueSet, 
+      id: clusterHeadId ? clusterHeadId : modifyItemObj.id,
+      ws: wsForm,
+      type: typo || modifyItemObj.type,
+      masterHead: clusterHead,
+      clusterValues: clusterValueSet,
     };
     onModify(updatedObj);
     onClose();
   };
-  
+
   return (
     <Modal
       open={open}
@@ -174,13 +195,13 @@ const ModifyMasterWsPopup = ({
           {popupTitle}
         </label>
         <div className="mt-8 mb-6">
-        <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
+          <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
             Ws Form
           </label>
           <Select
             size="large"
             className="w-full"
-            value={wsForm} 
+            value={wsForm}
             onChange={(value) => onWsChange(value, "wsForm")}
             placeholder={"Select Ws Form"}
           >
@@ -192,7 +213,7 @@ const ModifyMasterWsPopup = ({
           </Select>
         </div>
         <div className="mt-8 mb-6">
-        <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
+          <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
             Type
           </label>
           <Select

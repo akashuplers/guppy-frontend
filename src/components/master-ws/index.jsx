@@ -1,39 +1,39 @@
-import React, { useEffect, useState, useContext } from 'react'
-import SidebarWithHeader from '../sidebar-with-header'
-import { useNavigate } from 'react-router-dom';
-import { Table, Tabs, message } from 'antd';
-import { API_BASE_PATH, API_ROUTES } from '../../constants/api-endpoints';
-import axios from 'axios';
-import { ErrorMessage, Field, Form, Formik } from 'formik';
-import LoadingButtonPrimary from '../../utils/LoadingButtonPrimary';
+import React, { useEffect, useState, useContext } from "react";
+import SidebarWithHeader from "../sidebar-with-header";
+import { useNavigate } from "react-router-dom";
+import { Table, Tabs, message } from "antd";
+import { API_BASE_PATH, API_ROUTES } from "../../constants/api-endpoints";
+import axios from "axios";
+import { ErrorMessage, Field, Form, Formik } from "formik";
+import LoadingButtonPrimary from "../../utils/LoadingButtonPrimary";
 import * as Yup from "yup";
-import WsList from './WsList';
-import ModifyMasterWsPopup from '../ModifyMasterWsPopUp';
-import { StoryUploadApiContext } from '../../contexts/ApiContext';
-import DeleteConfirmationDialog from '../../utils/modals/DeleteConfirmationDialog';
+import WsList from "./WsList";
+import ModifyMasterWsPopup from "../ModifyMasterWsPopUp";
+import { StoryUploadApiContext } from "../../contexts/ApiContext";
+import DeleteConfirmationDialog from "../../utils/modals/DeleteConfirmationDialog";
+import { StoryWorldOptions, StoryType } from "../../utils/data";
 
-const notFoundMsg = "No Master Ws Found With Selected Story World !"
+const notFoundMsg = "No Master Ws Found With Selected Story World !";
 
 const storyWorldsLocal = [
-    { _id: 1, name: "story_world_1", lead_who: "Alice" },
-    { _id: 2, name: "story_world_2", lead_who: "Sara" },
+  { _id: 1, name: "story_world_1", lead_who: "Alice" },
+  { _id: 2, name: "story_world_2", lead_who: "Sara" },
 ];
 
 const validationSchema = Yup.object().shape({
-    storyWorld: Yup.string().required("Please Select A Story World"),
+  storyWorld: Yup.string().required("Please Select A Story World"),
 });
 
 const MasterWsPage = () => {
   const navigate = useNavigate();
-  const flow = false;
   const [storyWorldOptions, setStoryWorldOptions] = useState(storyWorldsLocal);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showModifyPopup, setShowModifyPopup] = useState(false);
-  const [selectedStoryId, setSelectedStoryId] = useState('');
-  const [showDeleteStoryModal, setShowDeleteStoryModal] = useState(false);  
+  const [selectedStoryId, setSelectedStoryId] = useState("");
+  const [showDeleteStoryModal, setShowDeleteStoryModal] = useState(false);
   const [isStoryDeleted, setIsStoryDeleted] = useState(false);
   const [token, setToken] = useState("");
-  const [selectedRow, setSelectedRow] = useState(null); 
+  const [selectedRow, setSelectedRow] = useState(null);
   const [stories, setStories] = useState([]);
   const [dialogPopup, setDialogPopup] = useState(false);
   const [whos, setWhos] = useState([]);
@@ -42,7 +42,18 @@ const MasterWsPage = () => {
   const [isFetched, setIsFetched] = useState(false);
   const [notFetched, setNotFetched] = useState(false);
   const [filteredOptions, setFilteredOption] = useState();
-  const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
+  const [clusterList, setClusterList] = useState([]);
+  const {
+    storyUploadApiResponse,
+    setStoryUploadApiResponse,
+    handleAnythingChanged,
+  } = useContext(StoryUploadApiContext);
+  const { story_id } = storyUploadApiResponse;
+
+  const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
+
+  console.log(story_id, "story_id");
+  const errorMsg = "Failed to fetch cluster heads";
 
   const handleModify = (updatedObj) => {
     const curData = [...filteredData];
@@ -54,74 +65,87 @@ const MasterWsPage = () => {
     handleAnythingChanged(true);
   };
 
-const type = [
-  { id: 1, name: "Primary" },
-  { id: 2, name: "Secondary" }
-]
-const wsForm = [
-  { id: 1, name: "Who" },
-  { id: 2, name: "What" },
-  { id: 3, name: "Where" }
-
-]
-
-const fetchStoryWorlds = async (tokenVal) => {
-  try {
-    const apiUrl = API_BASE_PATH + API_ROUTES.GET_STORY_WORLD;
-    const config = {
-      headers: {
-        Authorization: `Bearer ${tokenVal}`,
-      },
-    };
-    const response = await axios.get(apiUrl, config);
-    const outputArr = response?.data?.data;
-    if(outputArr?.length > 0) {
-      setStoryWorldOptions(outputArr);
-    } else {
-      setStoryWorldOptions(storyWorldsLocal);
+  const clusterHeadWsList = async () => {
+    try {
+      const apiUrl = API_BASE_PATH + API_ROUTES.LIST_WS + story_id;
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenVal}`,
+        },
+      };
+      const output = await axios.get(apiUrl, config);
+      console.log("output?.data?", output?.data);
+      setClusterList(output?.data?.ws?.ws_data);
+    } catch (error) {
+      console.log("error: ", error);
+      message.error(errorMsg);
     }
-  } catch (error) {
-    console.error('Error:', error);
-    const statusCode = error?.response?.status;
-    if(statusCode === 401) {
-      navigate("/");
-    } else if(statusCode === 500) {
-      message.error("Internal Server Error !");
-    } else {
-      const errorMessage = error?.response?.data?.message;
-      if(errorMessage) {
-        message.error(errorMessage);
+  };
+
+  useEffect(() => {
+    clusterHeadWsList();
+  }, []);
+
+  const fetchStoryWorlds = async (tokenVal) => {
+    try {
+      const apiUrl = API_BASE_PATH + API_ROUTES.GET_STORY_WORLD;
+      const config = {
+        headers: {
+          Authorization: `Bearer ${tokenVal}`,
+        },
+      };
+      const response = await axios.get(apiUrl, config);
+      const outputArr = response?.data?.data;
+      if (outputArr?.length > 0) {
+        setStoryWorldOptions(outputArr);
       } else {
-        message.error("Something Went Wrong ! Not able to fetch story worlds !");
+        setStoryWorldOptions(storyWorldsLocal);
       }
-    }      
-  }
-}
+    } catch (error) {
+      console.error("Error:", error);
+      const statusCode = error?.response?.status;
+      if (statusCode === 401) {
+        navigate("/");
+      } else if (statusCode === 500) {
+        message.error("Internal Server Error !");
+      } else {
+        const errorMessage = error?.response?.data?.message;
+        if (errorMessage) {
+          message.error(errorMessage);
+        } else {
+          message.error(
+            "Something Went Wrong ! Not able to fetch story worlds !"
+          );
+        }
+      }
+    }
+  };
 
   useEffect(() => {
     const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
-    if(!tokenVal) {
-        navigate('/');
+    if (!tokenVal) {
+      navigate("/");
     } else {
-        setToken(tokenVal);
-        fetchStoryWorlds(tokenVal);
+      setToken(tokenVal);
+      fetchStoryWorlds(tokenVal);
     }
   }, []);
 
   const items = [
     {
-      key: '1',
-      label: <p className='text-lg'>WHOs</p>,
+      key: "1",
+      label: <p className="text-lg">WHOs</p>,
       children: <WsList type="WHOs" list={whos} />,
     },
     {
-      key: '2',
-      label: <p className='text-lg'>WHATs</p>,
+      key: "2",
+      label: <p className="text-lg">WHATs</p>,
       children: <WsList type="WHATs" list={whats} />,
     },
     {
-      key: '3',
-      label: <p className='text-lg'>WHEREs</p>,
+      key: "3",
+      label: <p className="text-lg">WHEREs</p>,
       children: <WsList type="WHEREs" list={wheres} />,
     },
   ];
@@ -129,84 +153,124 @@ const fetchStoryWorlds = async (tokenVal) => {
   const handleSubmit = async (values, { setSubmitting }) => {
     let alertKey;
     try {
-        const storyWorldId = values?.storyWorld;
-        const apiUrl = API_BASE_PATH + API_ROUTES.FETCH_MASTER_Ws + `/${storyWorldId}`;
-  
-        const config = {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        };
-        alertKey = message.loading("Fetching Master Ws...", 0).key;
-        const response = await axios.get(apiUrl, config); // post api request
-        const output = response?.data?.masterWs;
-        if(output) {
-          const { Who, What, Where } = output;
-          setFilteredData(output)
-          setWhos(Who);
-          setWhats(What);
-          setWheres(Where);
-          setIsFetched(true);
-          message.destroy(alertKey);
-          message.success("Master Ws Fetched Successfully !");
-        } else {
-          setNotFetched(true);
-          message.destroy(alertKey);
-          message.error("Error In Fetching Master Ws !");
-        }
-    } catch (error) {
-        console.error("Error:", error);
+      const storyWorldId = values?.storyWorld;
+      const apiUrl =
+        API_BASE_PATH + API_ROUTES.FETCH_MASTER_Ws + `/${storyWorldId}`;
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      alertKey = message.loading("Fetching Master Ws...", 0).key;
+      const response = await axios.get(apiUrl, config); // post api request
+      const output = response?.data?.masterWs;
+      if (output) {
+        const { Who, What, Where } = output;
+        setFilteredData(output);
+        setWhos(Who);
+        setWhats(What);
+        setWheres(Where);
+        setIsFetched(true);
+        message.destroy(alertKey);
+        message.success("Master Ws Fetched Successfully !");
+      } else {
         setNotFetched(true);
         message.destroy(alertKey);
-        const statusCode = error?.response?.status;
-        if (statusCode === 401) {
-            message.error("Not Authorized ! You need to login first !");
-            navigate("/");
-        } else if (statusCode === 500) {
-            message.error("Internal Server Error !");
+        message.error("Error In Fetching Master Ws !");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setNotFetched(true);
+      message.destroy(alertKey);
+      const statusCode = error?.response?.status;
+      if (statusCode === 401) {
+        message.error("Not Authorized ! You need to login first !");
+        navigate("/");
+      } else if (statusCode === 500) {
+        message.error("Internal Server Error !");
+      } else {
+        const errorMessage = error?.response?.data?.message;
+        if (errorMessage) {
+          message.error(errorMessage);
         } else {
-            const errorMessage = error?.response?.data?.message;
-            if (errorMessage) {
-              message.error(errorMessage);
-            } else {
-              message.error("Error In Fetching Master Ws !");
-            }
+          message.error("Error In Fetching Master Ws !");
         }
+      }
     }
     setSubmitting(false);
-  }
+  };
 
   const filterData = [
-    { id: 1, ws: "Who", type: "Primary", clusterHead: "Abc", clusterValue: ["kajshs", "value2", "value3"] },
-    { id: 2, ws: "What", type: "Secondary", clusterHead: "Qiodj", clusterValue: ["Kajil", "extraValue"] },
-    { id: 3, ws: "Where", type: "Primary", clusterHead: "Qolak", clusterValue: ["NAhil", "anotherValue"] },
-    { id: 4, ws: "Where", type: "Secondary", clusterHead: "Lospdi", clusterValue: ["Opaea", "value4"] },
-    { id: 5, ws: "Whats", type: "Primary", clusterHead: "Aoldkdh", clusterValue: ["Kloand", "newValue"] },
+    {
+      id: 1,
+      ws: "Who",
+      type: "Primary",
+      clusterHead: "Abc",
+      clusterValue: ["kajshs", "value2", "value3"],
+    },
+    {
+      id: 2,
+      ws: "What",
+      type: "Secondary",
+      clusterHead: "Qiodj",
+      clusterValue: ["Kajil", "extraValue"],
+    },
+    {
+      id: 3,
+      ws: "Where",
+      type: "Primary",
+      clusterHead: "Qolak",
+      clusterValue: ["NAhil", "anotherValue"],
+    },
+    {
+      id: 4,
+      ws: "Where",
+      type: "Secondary",
+      clusterHead: "Lospdi",
+      clusterValue: ["Opaea", "value4"],
+    },
+    {
+      id: 5,
+      ws: "Whats",
+      type: "Primary",
+      clusterHead: "Aoldkdh",
+      clusterValue: ["Kloand", "newValue"],
+    },
   ];
-  
-  const [ filteredData, setFilteredData ] = useState([]);
+
+  const [filteredData, setFilteredData] = useState([]);
   const processData = (data) => {
+    console.log("data", data);
     const result = [];
 
     Object.keys(data).forEach((ws) => {
       Object.keys(data[ws]).forEach((type) => {
         data[ws][type].forEach((item) => {
+          console.log(
+            "clusterv",
+            item?.clusterValues?.map((cv) => cv?.value)?.join(", ")
+          );
           result.push({
             ws,
             type,
             masterHead: item?.masterHead,
-            clusterValues: item?.clusterValues?.map((cv) => cv?.value)?.join(", "),
+            clusterValues: item?.clusterValues?.map((cluster) => ({
+              id: cluster?.id,
+              value: cluster?.value,
+            })),
             status: item?.new ? "New" : item?.updated ? "Updated" : "Old",
           });
         });
       });
     });
 
+    console.log("result", result);
     return result;
   };
 
-  const newTableData = processData(filteredData)
-  
+  const newTableData = processData(filteredData);
+
   const historyColumns = [
     {
       title: "S.No",
@@ -215,44 +279,51 @@ const fetchStoryWorlds = async (tokenVal) => {
     },
     {
       dataIndex: "ws",
-      title: "W's Form"
+      title: "W's Form",
     },
     {
       dataIndex: "type",
-      title: "Type"
+      title: "Type",
     },
     {
       dataIndex: "masterHead",
-      title: "Cluster Head"
-      
+      title: "Cluster Head",
     },
     {
       dataIndex: "clusterValues",
       title: "Cluster Value",
       render: (clusterValue, record, index) => {
+        console.log("clusterValue", clusterValue);
         // Ensure we always have an array, even if clusterValue is a string or undefined
-        const valuesArray = Array.isArray(clusterValue)
-          ? clusterValue
-          : clusterValue?.split(", ").filter(Boolean) || [];
-    
+        const normalizedClusterValues =
+          typeof clusterValue === "string"
+            ? clusterValue
+                .split(", ")
+                .map((value) => ({ value: value?.trim() }))
+            : clusterValue || [];
+
+        console.log("normalizedClusterValues", normalizedClusterValues);
         const handleRemoveChip = (valueToRemove) => {
-          const updatedClusterValues = valuesArray.filter(value => value !== valueToRemove);
+          const updatedClusterValues = normalizedClusterValues.filter(
+            (value) => value !== valueToRemove
+          );
           record.clusterValues = updatedClusterValues;
           // Add any state update or re-render logic here if needed
         };
-    
+        // Add any state update or re-render logic here if needed
+
         return (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-            {valuesArray.length > 0 ? (
-              valuesArray.map((value, idx) => (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+            {normalizedClusterValues.length > 0 ? (
+              normalizedClusterValues.map((value, idx) => (
                 <div
                   key={idx}
                   className="flex items-center bg-gray-200 rounded-lg px-2.5 py-1.5 text-sm text-gray-800 border border-gray-300"
                 >
-                  <span>{value}</span>
+                  <span>{value.value}</span>
                   <button
                     className="text-red-600 bg-transparent border-none cursor-pointer ml-2"
-                    onClick={() => handleRemoveChip(value)}
+                    onClick={() => handleRemoveChip(value.value)}
                     title="Remove"
                   >
                     <svg
@@ -282,14 +353,15 @@ const fetchStoryWorlds = async (tokenVal) => {
     {
       dataIndex: "action",
       title: "Action",
-      render: (val, record,) => {
+      render: (val, record) => {
         return (
-          <div style={{ display: 'flex', gap: '15px' }}>
+          <div style={{ display: "flex", gap: "15px" }}>
             <button
               title="View/Modify"
               onClick={() => {
                 setShowModifyPopup(true);
                 setDialogPopup(true);
+                console.log("record", record);
                 setSelectedRow(record);
               }}
             >
@@ -315,7 +387,7 @@ const fetchStoryWorlds = async (tokenVal) => {
                 setSelectedRow(record);
               }}
             >
-             <svg
+              <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
                 height="16"
@@ -332,33 +404,33 @@ const fetchStoryWorlds = async (tokenVal) => {
               </svg>
             </button>
           </div>
-        )
-      }
+        );
+      },
     },
   ];
 
   const handleDelete = () => {
-      const curData = [...filteredData];
-      const updated = curData.filter((ele) => ele.id !== selectedRow.id);
-      setFilteredData(updated);
-      message.success("Deleted Successfully !");
-      handleAnythingChanged(true);
+    const curData = [...filteredData];
+    const updated = curData.filter((ele) => ele.id !== selectedRow.id);
+    setFilteredData(updated);
+    message.success("Deleted Successfully !");
+    handleAnythingChanged(true);
   };
 
-    const handleAddRow = () => {
-      const newObj = {
-        id: filterData?.length + 1,
-        wsForm: [],
-        type: [],
-        clusterHead: [],
-        // clusterValue: [],
-        isNewField: true
-      };
-      const curData = [newObj, ...filterData];
-      setFilteredData(curData);
-      message.success("New Row Added Successfully !");
-      handleAnythingChanged(true);
+  const handleAddRow = () => {
+    const newObj = {
+      id: filterData?.length + 1,
+      wsForm: [],
+      type: [],
+      clusterHead: [],
+      // clusterValue: [],
+      isNewField: true,
     };
+    const curData = [newObj, ...filterData];
+    setFilteredData(curData);
+    message.success("New Row Added Successfully !");
+    handleAnythingChanged(true);
+  };
 
   return (
     <SidebarWithHeader>
@@ -439,27 +511,23 @@ const fetchStoryWorlds = async (tokenVal) => {
         </div>
 
         {/* master Ws Tabs */}
-        
-          <div className="mt-10 px-5">
-            {/* <Tabs defaultActiveKey="1" items={items} /> */}
-            <Table
-              dataSource={newTableData}
-              columns={historyColumns}
-              bordered
-            />
-          </div>
-       
-        {dialogPopup && flow && (
+
+        <div className="mt-10 px-5">
+          {/* <Tabs defaultActiveKey="1" items={items} /> */}
+          <Table dataSource={newTableData} columns={historyColumns} bordered />
+        </div>
+
+        {dialogPopup && (
           <ModifyMasterWsPopup
             open={dialogPopup}
             modifyItemObj={selectedRow} // Pass selected row data for editing
             onClose={() => setDialogPopup(false)}
-            storyWorldOptions={storyWorldOptions}
-            wsForms={wsForm}
+            storyWorldOptions={StoryWorldOptions}
             filteredOptions={filteredOptions}
-            types={type}
+            types={StoryType}
             clusterHead={whos ? whats : wheres}
             onModify={handleModify}
+            clusterList={clusterList}
             type="title" // Modify this as per the field you want to edit
           />
         )}
@@ -480,6 +548,6 @@ const fetchStoryWorlds = async (tokenVal) => {
       </div>
     </SidebarWithHeader>
   );
-}
+};
 
-export default MasterWsPage
+export default MasterWsPage;

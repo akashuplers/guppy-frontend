@@ -3,16 +3,17 @@ import { useFormik, Field, Form, ErrorMessage } from "formik";
 import { Formik } from "formik";
 import { StoryUploadApiContext } from "../../../contexts/ApiContext";
 import { useNavigate } from "react-router-dom";
-import { Table, message, Modal, Select  } from "antd";
+import { Table, message, Modal, Select } from "antd";
 import { API_BASE_PATH, API_ROUTES } from "../../../constants/api-endpoints";
 import axios from "axios";
 import ShareModal from "../ShareModal";
 import DownloadVersionSelectPopup from "../DownloadVersionSelectPopup";
 import DeleteConfirmationDialog from "../../../utils/modals/DeleteConfirmationDialog";
 import { MultiSelect } from "react-multi-select-component";
- import FooterButtons from "../FooterButtons";
+import FooterButtons from "../FooterButtons";
 import ModifyMasterWsPopup from "../../ModifyMasterWsPopUp";
 import DownloadCSVFile from "../../DownloadCsv";
+import { StoryType, StoryWorldOptions } from "../../../utils/data";
 
 const MasterWssPage = ({
   onDiscard = () => {},
@@ -20,14 +21,14 @@ const MasterWssPage = ({
   handleSaveSuccess = () => {},
 }) => {
   const navigate = useNavigate();
-  const flow = true
+  const flow = true;
   const [isLoading, setIsLoading] = useState(false);
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [dialogPopup, setDialogPopup] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
   const [deleteIndex, setDeleteIndex] = useState(null);
   const [editIndex, setEditIndex] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);  
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [stories, setStories] = useState([]);
   const [filteredStories, setFilteredStories] = useState([]);
   const [isShareModalOpen, setShareModalOpen] = useState(false);
@@ -38,36 +39,48 @@ const MasterWssPage = ({
   const [updatedShareIds, setUpdatedShareIds] = useState([]);
   const [titleSelectionItems, setTitleSelectionItems] = useState([]);
   const [showVersionModal, setShowVersionModal] = useState(false);
-  const [ selectedMasterHeadLabel, setSelectedMasterHeadLabel] = useState();
+  const [selectedMasterHeadLabel, setSelectedMasterHeadLabel] = useState();
   const [isStoryDeleted, setIsStoryDeleted] = useState(false);
-  const [showDeleteStoryModal, setShowDeleteStoryModal] = useState(false);  
+  const [showDeleteStoryModal, setShowDeleteStoryModal] = useState(false);
   const [selectedStoryId, setSelectedStoryId] = useState("");
   const [selectedVersionId, setSelectedVersionId] = useState("");
   const [clusterList, setClusterList] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);  
+  const [isSaved, setIsSaved] = useState(false);
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const errorMsg = "Error In Fetching Saved Response";
   const downloadLinkRef = useRef(null);
   const [selected, setSelected] = useState([]);
-   const [primaryWhos, setPrimaryWho] = useState([]);
-    const [secondaryWhos, setSecondaryWho] = useState([]);
-    const [primaryWhats, setPrimaryWhat] = useState([]);
-    const [secondaryWhats, setSecondaryWhat] = useState([]);
-    const [primaryWheres, setPrimaryWhere] = useState([]);
-    const [secondaryWheres, setSecondaryWhere] = useState([]);
-  const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged,} = useContext(StoryUploadApiContext);  
-  const { token, story_id, storyWorld, fileName, storyWorldId, masterWs, filterDatas } = storyUploadApiResponse;
-console.log("primaryWhos",primaryWhos);
-console.log("storyUploadApiResplllllllllonse",storyUploadApiResponse);
+  const [primaryWhos, setPrimaryWho] = useState([]);
+  const [secondaryWhos, setSecondaryWho] = useState([]);
+  const [primaryWhats, setPrimaryWhat] = useState([]);
+  const [secondaryWhats, setSecondaryWhat] = useState([]);
+  const [primaryWheres, setPrimaryWhere] = useState([]);
+  const [secondaryWheres, setSecondaryWhere] = useState([]);
+  const {
+    storyUploadApiResponse,
+    setStoryUploadApiResponse,
+    handleAnythingChanged,
+  } = useContext(StoryUploadApiContext);
+  const {
+    token,
+    story_id,
+    storyWorld,
+    fileName,
+    storyWorldId,
+    masterWs,
+    filterDatas,
+  } = storyUploadApiResponse;
+  console.log("primaryWhos", primaryWhos);
+  console.log("storyUploadApiResplllllllllonse", storyUploadApiResponse);
 
-console.log("secondaryWhos",secondaryWhos);
-console.log("primaryWhats",primaryWhats);
-console.log("secondaryWhats",secondaryWhats);
-console.log("primaryWheres",primaryWheres);
+  console.log("secondaryWhos", secondaryWhos);
+  console.log("primaryWhats", primaryWhats);
+  console.log("secondaryWhats", secondaryWhats);
+  console.log("primaryWheres", primaryWheres);
 
-console.log("secondaryWheres",secondaryWheres);
-
+  console.log("secondaryWheres", secondaryWheres);
+  console.log("debug1", story_id);
 
   const formik = useFormik({
     initialValues: {
@@ -86,56 +99,60 @@ console.log("secondaryWheres",secondaryWheres);
   const [wheres, setWheres] = useState();
   const [filteredOptions, setFilteredOption] = useState();
   const [isVersionLoading, setIsVersionLoading] = useState(false);
-  const [ tableData, setTableData ] = useState([])
+  const [tableData, setTableData] = useState([]);
   const options = (filteredOptions || [])?.map((item) => ({
     label: item.value,
     value: item.id,
   }));
 
   const [filterData, setFilteredData] = useState([]);
-  
+
   const fetchMasterWsList = async () => {
     try {
-        const apiUrl = API_BASE_PATH + API_ROUTES.MASTER_WS_LIST + storyWorldId;
-        const config = {
+      const apiUrl = API_BASE_PATH + API_ROUTES.MASTER_WS_LIST + storyWorldId;
+      const config = {
         headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${tokenVal}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenVal}`,
         },
-        };
-        const output = await axios.get(apiUrl, config);
-        setTableData(processData(output.data?.masterWs));
-        // setTempUsers(output.data?.data);
+      };
+      const output = await axios.get(apiUrl, config);
+      setTableData(processData(output.data?.masterWs));
+      // setTempUsers(output.data?.data);
     } catch (error) {
-        console.log("error: ", error);
-        message.error(errorMsg);
+      console.log("error: ", error);
+      message.error(errorMsg);
     }
-  }
+  };
 
   useEffect(() => {
     fetchMasterWsList();
-  }, [storyWorldId])
+  }, [storyWorldId]);
 
   const handleDelete = () => {
     if (deleteIndex !== null) {
-      const itemToDelete = myNewData[deleteIndex]; 
+      const itemToDelete = myNewData[deleteIndex];
       if (itemToDelete?.id === null) {
         if (tableData?.length > 0) {
-          const updatedData = tableData?.filter((_, index) => index !== deleteIndex);
+          const updatedData = tableData?.filter(
+            (_, index) => index !== deleteIndex
+          );
           setTableData(updatedData);
         }
       } else {
         if (filterData?.length > 0) {
-          const updatedData = filterData?.filter((_, index) => index !== deleteIndex);
+          const updatedData = filterData?.filter(
+            (_, index) => index !== deleteIndex
+          );
           setFilteredData(updatedData);
         }
       }
-  
+
       setShowDeleteModal(false);
-      message.success("Deleted Successfully!"); 
+      message.success("Deleted Successfully!");
     }
   };
-  
+
   useEffect(() => {
     if (!tokenVal) {
       navigate("/");
@@ -175,24 +192,24 @@ console.log("secondaryWheres",secondaryWheres);
 
   const clusterHeadWsList = async () => {
     try {
-        const apiUrl = API_BASE_PATH + API_ROUTES.LIST_WS + story_id;
-        const config = {
+      const apiUrl = API_BASE_PATH + API_ROUTES.LIST_WS + story_id;
+      const config = {
         headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${tokenVal}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenVal}`,
         },
-        };
-        const output = await axios.get(apiUrl, config);
-        setClusterList(output?.data?.ws?.ws_data); 
+      };
+      const output = await axios.get(apiUrl, config);
+      setClusterList(output?.data?.ws?.ws_data);
     } catch (error) {
-        console.log("error: ", error);
-        message.error(errorMsg);
+      console.log("error: ", error);
+      message.error(errorMsg);
     }
-  }
+  };
 
-  useEffect (()=>{
+  useEffect(() => {
     clusterHeadWsList();
-  },[])
+  }, []);
 
   const fetchStories = async () => {
     setIsLoading(true);
@@ -257,32 +274,36 @@ console.log("secondaryWheres",secondaryWheres);
   };
 
   const handleRemoveChip = (value, index) => {
-    if(filterData?.length > 0 ) {
+    if (filterData?.length > 0) {
       if (!filterData[index]) return;
       const updatedClusterValues = [...filterData[index]?.clusterValues];
-      const newClusterValues = updatedClusterValues?.filter(item => item?.id !== value?.id);
+      const newClusterValues = updatedClusterValues?.filter(
+        (item) => item?.id !== value?.id
+      );
       const updatedData = [...filterData];
       updatedData[index] = {
         ...updatedData[index],
-        clusterValues: newClusterValues, 
+        clusterValues: newClusterValues,
       };
       setFilteredData(updatedData);
-    } else if(tableData?.length > 0) {
-    if (!tableData[index]) return;
- const updatedClusterValues = [...tableData[index]?.clusterValues];
-  
- const newClusterValues = updatedClusterValues?.filter(item => item?.value !== value?.value);
+    } else if (tableData?.length > 0) {
+      if (!tableData[index]) return;
+      const updatedClusterValues = [...tableData[index]?.clusterValues];
 
- const updatedData = [...tableData];
- updatedData[index] = {
-   ...updatedData[index],
-   clusterValues: newClusterValues, 
- };
+      const newClusterValues = updatedClusterValues?.filter(
+        (item) => item?.value !== value?.value
+      );
 
- setTableData(updatedData);
-  }
+      const updatedData = [...tableData];
+      updatedData[index] = {
+        ...updatedData[index],
+        clusterValues: newClusterValues,
+      };
+
+      setTableData(updatedData);
+    }
   };
- 
+
   const historyColumns = [
     {
       dataIndex: "id",
@@ -296,9 +317,7 @@ console.log("secondaryWheres",secondaryWheres);
       render: (text, record) => {
         return (
           <div>
-            <span>
-              {record?.ws}
-            </span>{" "}
+            <span>{record?.ws}</span>{" "}
           </div>
         );
       },
@@ -309,9 +328,7 @@ console.log("secondaryWheres",secondaryWheres);
       render: (text, record) => {
         return (
           <div>
-            <span>
-              {record?.type}
-            </span>{" "}
+            <span>{record?.type}</span>{" "}
           </div>
         );
       },
@@ -333,9 +350,11 @@ console.log("secondaryWheres",secondaryWheres);
       render: (clusterValues, record, index) => {
         const normalizedClusterValues =
           typeof clusterValues === "string"
-            ? clusterValues.split(", ").map((value) => ({ value: value?.trim() }))
+            ? clusterValues
+                .split(", ")
+                .map((value) => ({ value: value?.trim() }))
             : clusterValues || [];
-        
+
         return (
           <div className="flex flex-wrap gap-2">
             {normalizedClusterValues?.length > 0
@@ -370,7 +389,7 @@ console.log("secondaryWheres",secondaryWheres);
               : "NA"}
           </div>
         );
-      }
+      },
     },
     {
       dataIndex: "action",
@@ -384,7 +403,7 @@ console.log("secondaryWheres",secondaryWheres);
                 setShowModifyPopup(true);
                 setDialogPopup(true);
                 setSelectedRow(record);
-                setEditIndex(index)
+                setEditIndex(index);
               }}
             >
               <svg
@@ -406,7 +425,7 @@ console.log("secondaryWheres",secondaryWheres);
               title="Delete story"
               onClick={() => {
                 setShowDeleteModal(true);
-                setDeleteIndex(index);   
+                setDeleteIndex(index);
                 setSelectedRow(record);
               }}
             >
@@ -430,17 +449,6 @@ console.log("secondaryWheres",secondaryWheres);
         );
       },
     },
-  ];
-
-  const storyWorldOptions = [
-    { id: 1, name: "who" },
-    { id: 2, name: "what" },
-    { id: 3, name: "where" },
-  ];
-
-  const type = [
-    { id: 1, name: "Primary" },
-    { id: 2, name: "Secondary" },
   ];
 
   const onReset = () => {
@@ -470,7 +478,7 @@ console.log("secondaryWheres",secondaryWheres);
       Authorization: `Bearer ${token}`,
     },
   };
-  
+
   const handleChange = async (e, name) => {
     if (e?.target?.value === "who") {
       setWhos(clusterList?.Who);
@@ -488,25 +496,23 @@ console.log("secondaryWheres",secondaryWheres);
       setWhos([]);
       setFilteredOption(clusterList?.Where);
     }
-  
+
     const selectedOption = [
       ...clusterList?.Who,
       ...clusterList?.What,
-      ...clusterList?.Where
+      ...clusterList?.Where,
     ]?.find((option) => option?.value === e?.target?.value);
 
     if (name === "ws") {
       formik.setFieldValue("ws", e.target.value);
-    }else if ( name === "masterHead" && selectedOption) {
-     
+    } else if (name === "masterHead" && selectedOption) {
       const { id, value } = selectedOption;
-    
-        formik.setFieldValue("masterHead", { id: id, value:value });
-      
+
+      formik.setFieldValue("masterHead", { id: id, value: value });
 
       const payload = {
-        clusterHead: { value: value, id: id },  // Set selected masterHead as clusterHead
-        ws: []  // Initialize ws as an empty array
+        clusterHead: { value: value, id: id }, // Set selected masterHead as clusterHead
+        ws: [], // Initialize ws as an empty array
       };
       if (e?.target?.value === "who") {
         payload.ws = clusterList?.Who || [];
@@ -515,26 +521,26 @@ console.log("secondaryWheres",secondaryWheres);
       } else if (e?.target?.value === "where") {
         payload.ws = clusterList?.Where || [];
       }
-         // Add dynamically selected whos, whats, or wheres to the payload if any
-    if (whos?.length > 0) {
-      payload.ws = [...payload.ws, ...whos];
-    }
-    if (whats?.length > 0) {
-      payload.ws = [...payload.ws, ...whats];
-    }
-    if (wheres?.length > 0) {
-      payload.ws = [...payload.ws, ...wheres];
-    }
+      // Add dynamically selected whos, whats, or wheres to the payload if any
+      if (whos?.length > 0) {
+        payload.ws = [...payload.ws, ...whos];
+      }
+      if (whats?.length > 0) {
+        payload.ws = [...payload.ws, ...whats];
+      }
+      if (wheres?.length > 0) {
+        payload.ws = [...payload.ws, ...wheres];
+      }
 
-    payload.ws = payload.ws.map(item => ({
-      value: item.value,
-      id: item.id
-    }));
+      payload.ws = payload.ws.map((item) => ({
+        value: item.value,
+        id: item.id,
+      }));
       try {
-        const response = await axios.post(apiUrl, payload, config); 
-          const filteredArray = response?.data?.ws?.clusterValues?.filter(
-        (item) => item?.value !== e?.target?.value
-      );
+        const response = await axios.post(apiUrl, payload, config);
+        const filteredArray = response?.data?.ws?.clusterValues?.filter(
+          (item) => item?.value !== e?.target?.value
+        );
         setFilteredOption(filteredArray);
       } catch (error) {
         console.error("Error calling the API:", error);
@@ -542,21 +548,19 @@ console.log("secondaryWheres",secondaryWheres);
     } else if (name === "type") {
       formik.setFieldValue("type", e.target.value);
     } else {
-    
-        const selectedValues = e?.map((option) => ({
-          label: option.label,
-          value: option.value,
-        }));
-        setSelected(selectedValues);
-        formik.setFieldValue("clusterValues", selectedValues);
-    
+      const selectedValues = e?.map((option) => ({
+        label: option.label,
+        value: option.value,
+      }));
+      setSelected(selectedValues);
+      formik.setFieldValue("clusterValues", selectedValues);
     }
   };
   const { values, setFieldValue } = formik;
 
   const getUpdatedJson = (list) => {
     const arr = list || [];
-    if(arr && arr.length>0) {
+    if (arr && arr.length > 0) {
       const updated = arr.map((item, index) => ({
         id: item.id,
         title: item.Title,
@@ -566,16 +570,15 @@ console.log("secondaryWheres",secondaryWheres);
         secondaryWhats: item.What_Secondary,
         primaryWheres: item.Where_Primary,
         secondaryWheres: item.Where_Secondary,
-        comment: item.comment
+        comment: item.comment,
       }));
       return updated;
     }
     return [];
-  }
-
+  };
 
   const onSave = async () => {
-    debugger
+    // debugger
     setIsSubmitting(true);
     let alertKey;
     try {
@@ -588,7 +591,7 @@ console.log("secondaryWheres",secondaryWheres);
         },
       };
       alertKey = message.loading("Saving Ws...", 0).key;
-      const response = await axios.post(apiUrl, payload, config); 
+      const response = await axios.post(apiUrl, payload, config);
       const output = response?.data;
       if (output) {
         const { masterWs, titles } = output;
@@ -596,30 +599,29 @@ console.log("secondaryWheres",secondaryWheres);
         const updatedContextObj = {
           ...contextObj,
           masterWs: masterWs,
-          filterDatas:filterData,
+          filterDatas: filterData,
           titles: getUpdatedJson(titles),
           updatedTitles: getUpdatedJson(titles),
-          primaryWhos:   primaryWhos,
+          primaryWhos: primaryWhos,
           secondaryWhos: secondaryWhos,
           primaryWhats: primaryWhats,
           secondaryWhats: secondaryWhats,
           primaryWheres: primaryWheres,
-          secondaryWheres: secondaryWheres
+          secondaryWheres: secondaryWheres,
         };
         setStoryUploadApiResponse(updatedContextObj);
         setIsSaved(true);
-        message.destroy(alertKey); 
+        message.destroy(alertKey);
         message.success("Clusters Saved Successfully !");
         handleSaveSuccess(true);
         handleAnythingChanged(false);
-
       } else {
-        message.destroy(alertKey); 
+        message.destroy(alertKey);
         message.error("Error In Saving Ws ! Unable To Fetch Response !");
       }
     } catch (error) {
       console.error("Error:", error);
-      message.destroy(alertKey); 
+      message.destroy(alertKey);
       const statusCode = error?.response?.status;
       if (statusCode === 401) {
         message.error("Not Authorized ! You need to login first !");
@@ -631,70 +633,68 @@ console.log("secondaryWheres",secondaryWheres);
         if (errorMessage) {
           message.error(errorMessage);
         } else {
-          message.error(
-            "Error In Saving Ws ! Unable To Fetch Response !"
-          );
+          message.error("Error In Saving Ws ! Unable To Fetch Response !");
         }
       }
     }
     setIsSubmitting(false);
   };
-  
+
   const handleSaveCluster = (values, resetForm) => {
     if (formik.values.ws && formik.values.type && formik.values.masterHead) {
-        const newRow = {
-            id: (filterData?.length || 0) + 1, // Ensure filterData is defined
-            ws: formik.values.ws,
-            type: formik.values.type,
-            masterHead: formik.values.masterHead,
-            clusterValues: formik.values.clusterValues?.map((val) => ({
-                id: val.value,
-                value: val.label
-            })),
-            new: true,
-            updated: false
-        };
-        
-        setFilteredData((prevArray = []) => [...prevArray, newRow]); // Default to an empty array
-        formik.resetForm(formik.values);
-        setWhats([]);
-        setWhos([]);
-        setWheres([]);
-        setFilteredOption([]);
+      const newRow = {
+        id: (filterData?.length || 0) + 1, // Ensure filterData is defined
+        ws: formik.values.ws,
+        type: formik.values.type,
+        masterHead: formik.values.masterHead,
+        clusterValues: formik.values.clusterValues?.map((val) => ({
+          id: val.value,
+          value: val.label,
+        })),
+        new: true,
+        updated: false,
+      };
+
+      setFilteredData((prevArray = []) => [...prevArray, newRow]); // Default to an empty array
+      formik.resetForm(formik.values);
+      setWhats([]);
+      setWhos([]);
+      setWheres([]);
+      setFilteredOption([]);
     }
-};
+  };
 
-function convertData(inputData) {
-  const result = {};
+  function convertData(inputData) {
+    const result = {};
 
-  inputData.forEach((item) => {
-    const wsKey = item.ws.toLowerCase().replace(/'s$/, ''); // Convert "Who's" to "who"
-    const typeKey = item.type.toLowerCase(); // Convert "Primary" to "primary"
+    inputData.forEach((item) => {
+      const wsKey = item.ws.toLowerCase().replace(/'s$/, ""); // Convert "Who's" to "who"
+      const typeKey = item.type.toLowerCase(); // Convert "Primary" to "primary"
 
-    if (!result[wsKey]) {
-      result[wsKey] = {};
-    }
+      if (!result[wsKey]) {
+        result[wsKey] = {};
+      }
 
-    if (!result[wsKey][typeKey]) {
-      result[wsKey][typeKey] = [];
-    }
+      if (!result[wsKey][typeKey]) {
+        result[wsKey][typeKey] = [];
+      }
 
-    const formattedItem = {
-      id: item.clusterValues[0]?.id, // Assuming clusterValues always has at least one item
-      masterHead: item?.masterHead?.value || item?.masterHead, // Use the value from masterHead
-      clusterValues: item?.clusterValues?.map((cluster) => ({
-        id: cluster?.id,
-        value: cluster?.value,
-      })),
-      new: item?.new,
-      updated: item?.updated,
-    };
+      const formattedItem = {
+        id: item.clusterValues[0]?.id, // Assuming clusterValues always has at least one item
+        masterHead: item?.masterHead?.value || item?.masterHead, // Use the value from masterHead
+        clusterValues: item?.clusterValues?.map((cluster) => ({
+          id: cluster?.id,
+          value: cluster?.value,
+        })),
+        new: item?.new,
+        updated: item?.updated,
+      };
 
-    result[wsKey][typeKey].push(formattedItem);
-  });
+      result[wsKey][typeKey].push(formattedItem);
+    });
 
-  return result;
-}
+    return result;
+  }
 
   const manualData = convertData(filterData);
 
@@ -706,14 +706,13 @@ function convertData(inputData) {
         data[ws][type]?.forEach((item) => {
           result?.push({
             ws,
-            id:item?.id,
+            id: item?.id,
             type,
             masterHead: item?.masterHead,
-            clusterValues: item?.clusterValues?.map(cluster => ({
+            clusterValues: item?.clusterValues?.map((cluster) => ({
               id: cluster?.id,
-              value: cluster?.value
+              value: cluster?.value,
             })),
-            // clusterValues: item?.clusterValues?.map((cv) => cv?.value)?.join(", "),
             status: item?.new ? "New" : item?.updated ? "Updated" : "Old",
           });
         });
@@ -723,79 +722,83 @@ function convertData(inputData) {
     return result;
   };
 
-  const newManualData = useMemo(() => processData(manualData || []), [manualData]);  
+  const newManualData = useMemo(
+    () => processData(manualData || []),
+    [manualData]
+  );
   const [myNewData, setMyNewData] = useState([]);
-
 
   useEffect(() => {
     const combinedData = [...tableData, ...newManualData];
-        if (JSON?.stringify(combinedData) !== JSON?.stringify(myNewData)) {
-      setMyNewData(combinedData); 
+    if (JSON?.stringify(combinedData) !== JSON?.stringify(myNewData)) {
+      setMyNewData(combinedData);
     }
   }, [tableData, newManualData, myNewData]);
 
-  const flattenData = myNewData?.map(item => {
+  const flattenData = myNewData?.map((item) => {
     const normalizedClusterValues = (() => {
       if (Array?.isArray(item?.clusterValues)) {
-        return item?.clusterValues.map(val => (typeof val === "object" ? val?.value : val));
+        return item?.clusterValues.map((val) =>
+          typeof val === "object" ? val?.value : val
+        );
       } else if (typeof item?.clusterValues === "string") {
-        return item?.clusterValues?.split(",").map(value => value?.trim());
+        return item?.clusterValues?.split(",").map((value) => value?.trim());
       }
-      return []; 
+      return [];
     })();
-  
+
     return {
-      ws: item?.ws ?? "", 
-      type: item?.type ?? "", 
-      ClusterHead: item?.masterHead ?? "", 
-      clusterValues: normalizedClusterValues.join(", "), 
+      ws: item?.ws ?? "",
+      type: item?.type ?? "",
+      ClusterHead: item?.masterHead ?? "",
+      clusterValues: normalizedClusterValues.join(", "),
     };
   });
-  
+
   const transformData = (data) => {
     const result = {
       who: {
         primary: [],
-        secondary: []
+        secondary: [],
       },
       what: {
         primary: [],
-        secondary: []
+        secondary: [],
       },
       where: {
         primary: [],
-        secondary: []
-      }
+        secondary: [],
+      },
     };
-  
-    data?.forEach(item => {
+
+    data?.forEach((item) => {
       // Normalize clusterValues to always be an array of objects
       const normalizedClusterValues = (() => {
         if (Array.isArray(item.clusterValues)) {
-          return item.clusterValues.map(cluster => ({
+          return item.clusterValues.map((cluster) => ({
             id: cluster.id ?? null,
-            value: cluster.value ?? cluster
+            value: cluster.value ?? cluster,
           }));
         } else if (typeof item.clusterValues === "string") {
-          return item.clusterValues.split(",").map(value => ({
+          return item.clusterValues.split(",").map((value) => ({
             id: null, // No ID in the string format
-            value: value.trim()
+            value: value.trim(),
           }));
         }
         return []; // Default to an empty array
       })();
-  
+
       const newItem = {
         id: item.id ?? null, // Handle cases where ID is missing
         masterHead: item?.masterHead?.value ?? item.masterHead, // Support plain string or object format
-        clusterValues: item.clusterValues?.map(cluster => ({
+        clusterValues: item.clusterValues?.map((cluster) => ({
           id: cluster.id,
-          value: cluster.value
+          value: cluster.value,
         })),
         new: item.status === "New",
-        updated: item.status === "Updated"
+        updated: item.status === "Updated",
       };
-  
+
       // Add the newItem to the appropriate section
       if (item.ws === "who") {
         if (item.type.toLowerCase() === "primary") {
@@ -817,11 +820,10 @@ function convertData(inputData) {
         }
       }
     });
-  
+
     return cleanEmptySections(result);
   };
-  
-  
+
   const cleanEmptySections = (data) => {
     for (const key in data) {
       if (data.hasOwnProperty(key)) {
@@ -839,39 +841,42 @@ function convertData(inputData) {
   const transformedData = transformData(myNewData);
   useEffect(() => {
     if (myNewData?.length > 0) {
-      const masterHeadIds = myNewData.map(item => item.masterHead); 
-      const updatedWhos = whos?.filter(item => !masterHeadIds.includes(item.masterHead));
-      const updatedWheres = wheres?.filter(item => !masterHeadIds.includes(item.masterHead));
-      const updatedWhats = whats?.filter(item => !masterHeadIds.includes(item.masterHead));  
+      const masterHeadIds = myNewData.map((item) => item.masterHead);
+      const updatedWhos = whos?.filter(
+        (item) => !masterHeadIds.includes(item.masterHead)
+      );
+      const updatedWheres = wheres?.filter(
+        (item) => !masterHeadIds.includes(item.masterHead)
+      );
+      const updatedWhats = whats?.filter(
+        (item) => !masterHeadIds.includes(item.masterHead)
+      );
       setWhos(updatedWhos);
       setWheres(updatedWheres);
-      setWhats(updatedWhats);    
-      const updatedFilteredOptions = filteredOptions?.ws?.clusterValues.filter(item => 
-        !masterHeadIds.includes(item.masterHead)
+      setWhats(updatedWhats);
+      const updatedFilteredOptions = filteredOptions?.ws?.clusterValues.filter(
+        (item) => !masterHeadIds.includes(item.masterHead)
       );
-      
+
       setFilteredOption(updatedFilteredOptions);
-        
     }
-  
   }, [myNewData]);
-  
+
   const onModify = (updatedObj) => {
-    if(filterData?.length > 0){
+    if (filterData?.length > 0) {
       const curData = [...filterData];
       curData[editIndex] = { ...curData[editIndex], ...updatedObj };
       setFilteredData(curData);
       message.success("Updated Successfully!");
       handleAnythingChanged(true);
-    } else if(tableData?.length > 0) {
+    } else if (tableData?.length > 0) {
       const curData = [...tableData];
       curData[editIndex] = { ...curData[editIndex], ...updatedObj };
       setTableData(curData);
       message.success("Updated Successfully!");
     }
- 
   };
-  
+
   console.log("traaaaaaaaaa", transformedData);
   // Assuming `data` is your provided JSON object
   useEffect(() => {
@@ -911,9 +916,8 @@ function convertData(inputData) {
     }
   }, [myNewData]); //
 
-// Call the function with the JSON data
-// extractAndSetState(transformedData || "");
-
+  // Call the function with the JSON data
+  // extractAndSetState(transformedData || "");
 
   return (
     <div>
@@ -945,10 +949,10 @@ function convertData(inputData) {
                     onClick={() => handleSaveCluster(values, resetForm)}
                   >
                     <DownloadCSVFile
-                    csvDat={flattenData}
-                    fileName={fileName}
-                    storyWorld={storyWorld}
-                    // header={headers}
+                      csvDat={flattenData}
+                      fileName={fileName}
+                      storyWorld={storyWorld}
+                      // header={headers}
                     />
                   </button>
                   <button
@@ -976,10 +980,10 @@ function convertData(inputData) {
                     onChange={(e) => {
                       handleChange(e, "ws");
                     }}
-                    value={formik.values.ws }
+                    value={formik.values.ws}
                   >
                     <option value="">Please Select...</option>
-                    {storyWorldOptions?.map((item, index) => (
+                    {StoryWorldOptions?.map((item, index) => (
                       <option key={index} value={item?._id}>
                         {item?.name}
                       </option>
@@ -1006,7 +1010,7 @@ function convertData(inputData) {
                     onChange={(e) => {
                       handleChange(e, "masterHead");
                     }}
-                    value={formik.values.masterHead?.value} 
+                    value={formik.values.masterHead?.value}
                   >
                     <option value="">Please Select...</option>
                     {whos &&
@@ -1035,7 +1039,6 @@ function convertData(inputData) {
                   />
                 </div>
 
-
                 {/* Select Type */}
                 <div className="flex-1 min-w-[200px]">
                   <labeltable
@@ -1052,10 +1055,10 @@ function convertData(inputData) {
                     onChange={(e) => {
                       handleChange(e, "type");
                     }}
-                    value={formik.values.type} 
+                    value={formik.values.type}
                   >
                     <option value="">Please Select...</option>
-                    {type?.map((item, index) => (
+                    {StoryType?.map((item, index) => (
                       <option key={index} value={item?._id}>
                         {item?.name}
                       </option>
@@ -1098,7 +1101,7 @@ function convertData(inputData) {
 
         <div className="mt-8">
           {!isLoading && (
-            <Table dataSource={ myNewData } columns={historyColumns} bordered />
+            <Table dataSource={myNewData} columns={historyColumns} bordered />
           )}
         </div>
       </div>
@@ -1119,25 +1122,25 @@ function convertData(inputData) {
           onClose={() => setShowVersionModal(false)}
         />
       )}
-       {showDeleteModal && (
-          <DeleteConfirmationDialog
-            open={showDeleteModal}
-            onClose={() => setShowDeleteModal(false)}
-            onConfirm={handleDelete}
-          />
-        )}
+      {showDeleteModal && (
+        <DeleteConfirmationDialog
+          open={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleDelete}
+        />
+      )}
       {dialogPopup && flow && (
         <ModifyMasterWsPopup
           open={dialogPopup}
-          modifyItemObj={selectedRow} 
+          modifyItemObj={selectedRow}
           clusterList={clusterList}
           onClose={() => setDialogPopup(false)}
-          storyWorldOptions={storyWorldOptions}
+          storyWorldOptions={StoryWorldOptions}
           filteredOptions={options}
-          types={type}
+          types={StoryType}
           clusterHeads={whos ? whats : wheres}
           onModify={onModify}
-          // type="InFlow" 
+          // type="InFlow"
         />
       )}
       <FooterButtons
