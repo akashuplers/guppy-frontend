@@ -341,12 +341,12 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
         const contextObj = { ...storyUploadApiResponse };
         const updatedContextObj = {
           ...contextObj,
-          primaryWhos,
-          secondaryWhos,
-          primaryWhats,
-          secondaryWhats,
-          primaryWheres,
-          secondaryWheres,
+          // primaryWhos,
+          // secondaryWhos,
+          // primaryWhats,
+          // secondaryWhats,
+          // primaryWheres,
+          // secondaryWheres,
           titles: getUpdatedJson(titles),
           updatedTitles: getUpdatedJson(titles),
           updatedWhos: getWhoValues(ws_data.Who),

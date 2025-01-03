@@ -50,8 +50,24 @@ const MasterWssPage = ({
   const errorMsg = "Error In Fetching Saved Response";
   const downloadLinkRef = useRef(null);
   const [selected, setSelected] = useState([]);
+   const [primaryWhos, setPrimaryWho] = useState([]);
+    const [secondaryWhos, setSecondaryWho] = useState([]);
+    const [primaryWhats, setPrimaryWhat] = useState([]);
+    const [secondaryWhats, setSecondaryWhat] = useState([]);
+    const [primaryWheres, setPrimaryWhere] = useState([]);
+    const [secondaryWheres, setSecondaryWhere] = useState([]);
   const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged,} = useContext(StoryUploadApiContext);  
-  const { token, story_id, storyWorld, fileName, storyWorldId,  primaryWhos, masterWs, filterDatas } = storyUploadApiResponse;
+  const { token, story_id, storyWorld, fileName, storyWorldId, masterWs, filterDatas } = storyUploadApiResponse;
+console.log("primaryWhos",primaryWhos);
+console.log("storyUploadApiResplllllllllonse",storyUploadApiResponse);
+
+console.log("secondaryWhos",secondaryWhos);
+console.log("primaryWhats",primaryWhats);
+console.log("secondaryWhats",secondaryWhats);
+console.log("primaryWheres",primaryWheres);
+
+console.log("secondaryWheres",secondaryWheres);
+
 
   const formik = useFormik({
     initialValues: {
@@ -265,13 +281,6 @@ const MasterWssPage = ({
 
  setTableData(updatedData);
   }
-   
-  };
-  
-  const updateClusterValue = (index, newClusterValues) => {
-    const updatedTableData = [...myNewData];
-    updatedTableData[index].clusterValues = newClusterValues;
-    setFilteredData(updatedTableData);
   };
  
   const historyColumns = [
@@ -566,6 +575,7 @@ const MasterWssPage = ({
 
 
   const onSave = async () => {
+    debugger
     setIsSubmitting(true);
     let alertKey;
     try {
@@ -589,6 +599,12 @@ const MasterWssPage = ({
           filterDatas:filterData,
           titles: getUpdatedJson(titles),
           updatedTitles: getUpdatedJson(titles),
+          primaryWhos:   primaryWhos,
+          secondaryWhos: secondaryWhos,
+          primaryWhats: primaryWhats,
+          secondaryWhats: secondaryWhats,
+          primaryWheres: primaryWheres,
+          secondaryWheres: secondaryWheres
         };
         setStoryUploadApiResponse(updatedContextObj);
         setIsSaved(true);
@@ -844,21 +860,61 @@ function convertData(inputData) {
     if(filterData?.length > 0){
       const curData = [...filterData];
       curData[editIndex] = { ...curData[editIndex], ...updatedObj };
-    
       setFilteredData(curData);
       message.success("Updated Successfully!");
       handleAnythingChanged(true);
     } else if(tableData?.length > 0) {
       const curData = [...tableData];
       curData[editIndex] = { ...curData[editIndex], ...updatedObj };
-    
       setTableData(curData);
       message.success("Updated Successfully!");
     }
  
   };
   
-  
+  console.log("traaaaaaaaaa", transformedData);
+  // Assuming `data` is your provided JSON object
+  useEffect(() => {
+    if (myNewData) {
+      // Destructure primary and secondary from the top-level keys
+      const { who, what, where } = transformedData;
+      const extractIdAndValue = (data = []) =>
+        data.map(({ id, masterHead }) => ({
+          id,
+          value: masterHead || null,
+        }));
+      // Extract each category
+      const primaryWho = extractIdAndValue(who?.primary || []);
+      const secondaryWho = extractIdAndValue(who?.secondary || []);
+      const primaryWhat = extractIdAndValue(what?.primary || []);
+      const secondaryWhat = extractIdAndValue(what?.secondary || []);
+      const primaryWhere = extractIdAndValue(where?.primary || []);
+      const secondaryWhere = extractIdAndValue(where?.secondary || []);
+
+      // Set states
+      setPrimaryWho(primaryWho);
+      setSecondaryWho(secondaryWho);
+      setPrimaryWhat(primaryWhat);
+      setSecondaryWhat(secondaryWhat);
+      setPrimaryWhere(primaryWhere);
+      setSecondaryWhere(secondaryWhere);
+
+      // Log results for debugging
+      console.log({
+        primaryWho,
+        secondaryWho,
+        primaryWhat,
+        secondaryWhat,
+        primaryWhere,
+        secondaryWhere,
+      });
+    }
+  }, [myNewData]); //
+
+// Call the function with the JSON data
+// extractAndSetState(transformedData || "");
+
+
   return (
     <div>
       <div className="px-5 pb-5 border rounded-md">
