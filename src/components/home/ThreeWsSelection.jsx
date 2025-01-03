@@ -318,8 +318,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
       const apiUrl = API_BASE_PATH + API_ROUTES.SELECT_Ws;
       const payload = bodyForSaveWsApi();
       
-      console.log('payload',payload);
-
       const config = {
         headers: {
           "Content-Type": "application/json",
@@ -341,12 +339,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
         const contextObj = { ...storyUploadApiResponse };
         const updatedContextObj = {
           ...contextObj,
-          primaryWhos,
-          secondaryWhos,
-          primaryWhats,
-          secondaryWhats,
-          primaryWheres,
-          secondaryWheres,
           titles: getUpdatedJson(titles),
           updatedTitles: getUpdatedJson(titles),
           updatedWhos: getWhoValues(ws_data.Who),

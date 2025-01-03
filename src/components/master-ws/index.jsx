@@ -44,8 +44,6 @@ const MasterWsPage = () => {
   const [filteredOptions, setFilteredOption] = useState();
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
 
-console.log("wwwwwwwwwwwww", selectedRow)
-
   const handleModify = (updatedObj) => {
     const curData = [...filteredData];
     const modified = curData.map((ele) =>
@@ -66,13 +64,47 @@ const wsForm = [
   { id: 3, name: "Where" }
 
 ]
+
+const fetchStoryWorlds = async (tokenVal) => {
+  try {
+    const apiUrl = API_BASE_PATH + API_ROUTES.GET_STORY_WORLD;
+    const config = {
+      headers: {
+        Authorization: `Bearer ${tokenVal}`,
+      },
+    };
+    const response = await axios.get(apiUrl, config);
+    const outputArr = response?.data?.data;
+    if(outputArr?.length > 0) {
+      setStoryWorldOptions(outputArr);
+    } else {
+      setStoryWorldOptions(storyWorldsLocal);
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    const statusCode = error?.response?.status;
+    if(statusCode === 401) {
+      navigate("/");
+    } else if(statusCode === 500) {
+      message.error("Internal Server Error !");
+    } else {
+      const errorMessage = error?.response?.data?.message;
+      if(errorMessage) {
+        message.error(errorMessage);
+      } else {
+        message.error("Something Went Wrong ! Not able to fetch story worlds !");
+      }
+    }      
+  }
+}
+
   useEffect(() => {
     const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
     if(!tokenVal) {
         navigate('/');
     } else {
         setToken(tokenVal);
-        // fetchStoryWorlds(tokenVal);
+        fetchStoryWorlds(tokenVal);
     }
   }, []);
 
@@ -95,7 +127,6 @@ const wsForm = [
   ];
 
   const handleSubmit = async (values, { setSubmitting }) => {
-    debugger
     let alertKey;
     try {
         const storyWorldId = values?.storyWorld;
@@ -160,8 +191,6 @@ const wsForm = [
     Object.keys(data).forEach((ws) => {
       Object.keys(data[ws]).forEach((type) => {
         data[ws][type].forEach((item) => {
-          console.log("iteee",item);
-          
           result.push({
             ws,
             type,
@@ -177,7 +206,6 @@ const wsForm = [
   };
 
   const newTableData = processData(filteredData)
-  console.log("newTableData,", newTableData);
   
   const historyColumns = [
     {
@@ -202,42 +230,50 @@ const wsForm = [
       dataIndex: "clusterValues",
       title: "Cluster Value",
       render: (clusterValue, record, index) => {
-        const valuesArray = Array.isArray(clusterValue) ? clusterValue : clusterValue?.split(", ") || [];
+        // Ensure we always have an array, even if clusterValue is a string or undefined
+        const valuesArray = Array.isArray(clusterValue)
+          ? clusterValue
+          : clusterValue?.split(", ").filter(Boolean) || [];
+    
         const handleRemoveChip = (valueToRemove) => {
-          const updatedClusterValues = clusterValue.filter(value => value !== valueToRemove);
-          record.clusterValue = updatedClusterValues;
+          const updatedClusterValues = valuesArray.filter(value => value !== valueToRemove);
+          record.clusterValues = updatedClusterValues;
+          // Add any state update or re-render logic here if needed
         };
     
         return (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
             {valuesArray.length > 0 ? (
               valuesArray.map((value, idx) => (
-                <div key={idx} className="flex items-center bg-gray-200 rounded-lg px-2.5 py-1.5 text-sm text-gray-800 border border-gray-300">
+                <div
+                  key={idx}
+                  className="flex items-center bg-gray-200 rounded-lg px-2.5 py-1.5 text-sm text-gray-800 border border-gray-300"
+                >
                   <span>{value}</span>
                   <button
-                        className="text-red-600 bg-transparent border-none cursor-pointer ml-2"
-                        onClick={() => handleRemoveChip(value, index)} 
-                        title="Remove"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="w-6 h-6" 
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
+                    className="text-red-600 bg-transparent border-none cursor-pointer ml-2"
+                    onClick={() => handleRemoveChip(value)}
+                    title="Remove"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-6 h-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
                 </div>
               ))
             ) : (
-              "NA" 
+              <span>NA</span>
             )}
           </div>
         );
@@ -309,7 +345,6 @@ const wsForm = [
       handleAnythingChanged(true);
   };
 
-  // console.log("selectedRow",selectedRow);
     const handleAddRow = () => {
       const newObj = {
         id: filterData?.length + 1,

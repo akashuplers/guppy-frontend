@@ -30,7 +30,8 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
   const [modalType, setModalType] = useState('');
   const navigate = useNavigate();
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
-  const { token, story_id, storyWorld, fileName, titles, updatedTitles, primaryWhos } = storyUploadApiResponse;
+  const { token, story_id, storyWorld, fileName, titles, updatedTitles } = storyUploadApiResponse;
+  console.log("storyUplossssssssssssssadApiResponse", storyUploadApiResponse);
   
   useEffect(() => {
     setTitleSelectionItems(updatedTitles);
@@ -215,157 +216,234 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
       dataIndex: "title",
       title: <p className="text-center">Title / Sentence</p>,
       width: 330,
-      align: 'justify',
+      align: "justify",
     },
     {
       dataIndex: "primaryWhos",
       title: <p className="text-center">Primary WHOs</p>,
       filters: storyUploadApiResponse.primaryWhos.map((who) => ({
-        text: who,  
-        value: who, 
+        text: who,
+        value: who,
       })),
       onFilter: (value, record) => {
-        return record.primaryWhos && record.primaryWhos.includes(value);
+        return (
+          record.primaryWhos &&
+          record.primaryWhos.some((item) =>
+            item?.value?.toLowerCase()?.includes(value.toLowerCase())
+          )
+        );
       },
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
-        generateFilterDropdown(storyUploadApiResponse.primaryWhos, selectedKeys, setSelectedKeys, confirm, clearFilters, "Primary WHOs"),
-      sortDirections: ['descend', 'ascend'],
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) =>
+        generateFilterDropdown(
+          storyUploadApiResponse.primaryWhos,
+          selectedKeys,
+          setSelectedKeys,
+          confirm,
+          clearFilters,
+          "Primary WHOs"
+        ),
+      sortDirections: ["descend", "ascend"],
       render: (val) => {
         // const csvStr = getCSVsFromList(val);
         const csvStr = Array.isArray(val)
-        ? val.map((item) => item?.value).join(", ") 
-        : "NA";
-        return (
-          <p>
-            {csvStr ? csvStr : "NA"}
-          </p>
-        );
+          ? val.map((item) => item?.value).join(", ")
+          : "NA";
+        return <p>{csvStr ? csvStr : "NA"}</p>;
       },
     },
     {
       dataIndex: "secondaryWhos",
       title: <p className="text-center">Secondary WHOs</p>,
       filters: storyUploadApiResponse.secondaryWhos.map((who) => ({
-        text: who,  
-        value: who, 
+        text: who,
+        value: who,
       })),
       onFilter: (value, record) => {
-        return record.secondaryWhos && record.secondaryWhos.includes(value);
+        return (
+          record.secondaryWhos &&
+          record.secondaryWhos.some((item) =>
+            item?.value?.toLowerCase()?.includes(value.toLowerCase())
+          )
+        );
       },
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
-        generateFilterDropdown(storyUploadApiResponse.secondaryWhos, selectedKeys, setSelectedKeys, confirm, clearFilters, "Secondary WHOs"),
-      sortDirections: ['descend', 'ascend'],
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) =>
+        generateFilterDropdown(
+          storyUploadApiResponse.secondaryWhos,
+          selectedKeys,
+          setSelectedKeys,
+          confirm,
+          clearFilters,
+          "Secondary WHOs"
+        ),
+      sortDirections: ["descend", "ascend"],
       render: (val) => {
         // const csvStr = getCSVsFromList(val);
         const csvStr = Array.isArray(val)
-        ? val.map((item) => item?.value).join(", ") 
-        : "NA";
-        return (
-          <p>
-            {csvStr ? csvStr : "NA"}
-          </p>
-        );
+          ? val.map((item) => item?.value).join(", ")
+          : "NA";
+        return <p>{csvStr ? csvStr : "NA"}</p>;
       },
     },
     {
       dataIndex: "primaryWhats",
       title: <p className="text-center">Primary WHATs</p>,
       filters: storyUploadApiResponse.primaryWhats.map((who) => ({
-        text: who,  
+        text: who,
         value: who,
       })),
       onFilter: (value, record) => {
-        return record.primaryWhats && record.primaryWhats.includes(value);
+        return (
+          record.primaryWhats &&
+          record.primaryWhats.some((item) =>
+            item?.value?.toLowerCase()?.includes(value.toLowerCase())
+          )
+        );
       },
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
-        generateFilterDropdown(storyUploadApiResponse.primaryWhats, selectedKeys, setSelectedKeys, confirm, clearFilters, "Primary WHATs"),
-      sortDirections: ['descend', 'ascend'],
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) =>
+        generateFilterDropdown(
+          storyUploadApiResponse.primaryWhats,
+          selectedKeys,
+          setSelectedKeys,
+          confirm,
+          clearFilters,
+          "Primary WHATs"
+        ),
+      sortDirections: ["descend", "ascend"],
       render: (val) => {
         // const csvStr = getCSVsFromList(val);
         const csvStr = Array.isArray(val)
-        ? val.map((item) => item?.value).join(", ") 
-        : "NA";
-        return (
-          <p>
-            {csvStr ? csvStr : "NA"}
-          </p>
-        );
+          ? val.map((item) => item?.value).join(", ")
+          : "NA";
+        return <p>{csvStr ? csvStr : "NA"}</p>;
       },
     },
     {
       dataIndex: "secondaryWhats",
       title: <p className="text-center">Secondary WHATs</p>,
       filters: storyUploadApiResponse.secondaryWhats.map((who) => ({
-        text: who,  
-        value: who, 
+        text: who,
+        value: who,
       })),
       onFilter: (value, record) => {
-        return record.secondaryWhats && record.secondaryWhats.includes(value);
+        return (
+          record.secondaryWhats &&
+          record.secondaryWhats.some((item) =>
+            item?.value?.toLowerCase()?.includes(value.toLowerCase())
+          )
+        );
       },
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
-        generateFilterDropdown(storyUploadApiResponse.secondaryWhats, selectedKeys, setSelectedKeys, confirm, clearFilters, "Secondary WHATs"),
-      sortDirections: ['descend', 'ascend'],
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) =>
+        generateFilterDropdown(
+          storyUploadApiResponse.secondaryWhats,
+          selectedKeys,
+          setSelectedKeys,
+          confirm,
+          clearFilters,
+          "Secondary WHATs"
+        ),
+      sortDirections: ["descend", "ascend"],
       render: (val) => {
         // const csvStr = getCSVsFromList(val);
         const csvStr = Array.isArray(val)
-        ? val.map((item) => item?.value).join(", ") 
-        : "NA";
-        return (
-          <p>
-            {csvStr ? csvStr : "NA"}
-          </p>
-        );
+          ? val.map((item) => item?.value).join(", ")
+          : "NA";
+        return <p>{csvStr ? csvStr : "NA"}</p>;
       },
     },
     {
       dataIndex: "primaryWheres",
       title: <p className="text-center">Primary WHEREs</p>,
       filters: storyUploadApiResponse.primaryWheres.map((who) => ({
-        text: who, 
+        text: who,
         value: who,
       })),
       onFilter: (value, record) => {
-        return record.primaryWheres && record.primaryWheres.includes(value);
+        return (
+          record.primaryWheres &&
+          record.primaryWheres.some((item) =>
+            item?.value?.toLowerCase()?.includes(value.toLowerCase())
+          )
+        );
       },
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
-        generateFilterDropdown(storyUploadApiResponse.primaryWheres, selectedKeys, setSelectedKeys, confirm, clearFilters, "Primary WHEREs"),
-      sortDirections: ['descend', 'ascend'],
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) =>
+        generateFilterDropdown(
+          storyUploadApiResponse.primaryWheres,
+          selectedKeys,
+          setSelectedKeys,
+          confirm,
+          clearFilters,
+          "Primary WHEREs"
+        ),
+      sortDirections: ["descend", "ascend"],
       render: (val) => {
         // const csvStr = getCSVsFromList(val);
         const csvStr = Array.isArray(val)
-        ? val.map((item) => item?.value).join(", ") 
-        : "NA";
-        return (
-          <p>
-            {csvStr ? csvStr : "NA"}
-          </p>
-        );
+          ? val.map((item) => item?.value).join(", ")
+          : "NA";
+        return <p>{csvStr ? csvStr : "NA"}</p>;
       },
     },
     {
       dataIndex: "secondaryWheres",
       title: <p className="text-center">Secondary WHEREs</p>,
       filters: storyUploadApiResponse.secondaryWheres.map((who) => ({
-        text: who, 
+        text: who,
         value: who,
       })),
       onFilter: (value, record) => {
-        return record.secondaryWheres && record.secondaryWheres.some(val => value.includes(val));
+        return (
+          record.secondaryWheres &&
+          record.secondaryWheres.some((item) =>
+            item?.value?.toLowerCase()?.includes(value.toLowerCase())
+          )
+        );
       },
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
-        generateFilterDropdown(storyUploadApiResponse.secondaryWheres, selectedKeys, setSelectedKeys, confirm, clearFilters, "Secondary WHEREs"),
-      
-      sortDirections: ['descend', 'ascend'],
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) =>
+        generateFilterDropdown(
+          storyUploadApiResponse.secondaryWheres,
+          selectedKeys,
+          setSelectedKeys,
+          confirm,
+          clearFilters,
+          "Secondary WHEREs"
+        ),
+      sortDirections: ["descend", "ascend"],
       render: (val) => {
         // const csvStr = getCSVsFromList(val);
         const csvStr = Array.isArray(val)
-        ? val.map((item) => item?.value).join(", ") 
-        : "NA";
-        return (
-          <p>
-            {csvStr ? csvStr : "NA"}
-          </p>
-        );
+          ? val.map((item) => item?.value).join(", ")
+          : "NA";
+        return <p>{csvStr ? csvStr : "NA"}</p>;
       },
     },
     {
@@ -374,20 +452,20 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
       render: (val, record) => {
         return (
           <p
-            className={`cursor-pointer hover:text-blue-600 ${!val && "text-blue-600 underline"}`}
+            className={`cursor-pointer hover:text-blue-600 ${
+              !val && "text-blue-600 underline"
+            }`}
             onClick={() => {
               setSelectedRow(record);
               setShowCommentModal(true);
-              setModalType(val ? 'Edit' : '');
-              setComment(val ? val : '');
+              setModalType(val ? "Edit" : "");
+              setComment(val ? val : "");
             }}
           >
-            {val ?
-            // "Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur quasi soluta laudantium eum enim maiores aperiam eligendi officia nihil fugit neque cupiditate omnis dicta, perspiciatis porro magnam fugiat quaerat doloribus."
-            val
-            :
-            "+ Add Comment"
-            }
+            {val
+              ? // "Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur quasi soluta laudantium eum enim maiores aperiam eligendi officia nihil fugit neque cupiditate omnis dicta, perspiciatis porro magnam fugiat quaerat doloribus."
+                val
+              : "+ Add Comment"}
           </p>
         );
       },

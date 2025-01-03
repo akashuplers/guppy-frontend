@@ -27,71 +27,76 @@ const Home = () => {
   const [prevStep, setPrevStep] = useState(false);
 
   // story upload context
-  const { storyUploadApiResponse, setStoryUploadApiResponse, saveModalOpen, isAnythingChanged, handleAnythingChanged, handleSaveModalOpen } = useContext(StoryUploadApiContext);
-  const { storyWorld, storyWorldLead, titles, situations, actions } = storyUploadApiResponse;
+  const {
+    storyUploadApiResponse,
+    setStoryUploadApiResponse,
+    saveModalOpen,
+    isAnythingChanged,
+    handleAnythingChanged,
+    handleSaveModalOpen,
+  } = useContext(StoryUploadApiContext);
+  const { storyWorld, storyWorldLead, titles, situations, actions } =
+    storyUploadApiResponse;
 
   useEffect(() => {
-    if(storyId && tokenVal) {
+    if (storyId && tokenVal) {
       fetchStoryData(storyId, tokenVal);
     }
-    if(!storyId){
+    if (!storyId) {
       setCurrentStep(0);
     }
   }, []);
 
   useEffect(() => {
-    if(currentStep === 1){
+    if (currentStep === 1) {
       fetchStoryData(storyId, tokenVal);
     }
-  }, [currentStep])
+  }, [currentStep]);
 
   useEffect(() => {
-    if(isSaveSuccess){
-      if(activeStep === "next")
-        setCurrentStep(prevStep => prevStep + 1);
-      else if(activeStep == "prev")
-        setCurrentStep(prevStep => prevStep - 1);
+    if (isSaveSuccess) {
+      if (activeStep === "next") setCurrentStep((prevStep) => prevStep + 1);
+      else if (activeStep == "prev") setCurrentStep((prevStep) => prevStep - 1);
       setIsSaveSuccess(false);
       setActiveStep(null);
     }
-  },[isSaveSuccess])
+  }, [isSaveSuccess]);
 
   const getUpdatedJsonWs = (arr) => {
-    if(arr && arr.length>0) {
+    if (arr && arr.length > 0) {
       const updated = arr.map((item, index) => ({
         id: item.id,
         name: item.value,
         // isRadioSelected: item.type?.toLowerCase()==='primary' ? true : false,
         isCheckboxSelected: item.selected ? true : false,
-        ner: item.ner ?? false
+        ner: item.ner ?? false,
       }));
       return updated;
     }
     return [];
-  }
+  };
 
   const getWsPayload = (list, type) => {
     let names = [];
-    if(type==='prim') {
+    if (type === "prim") {
       for (let i = 0; i < list.length; i++) {
-        if (list[i].type?.toLowerCase() === 'primary') {
+        if (list[i].type?.toLowerCase() === "primary") {
           names.push(list[i].value);
         }
       }
-    }
-    else if(type==='sec') {
+    } else if (type === "sec") {
       for (let i = 0; i < list.length; i++) {
-        if (list[i].type?.toLowerCase() === 'secondary') {
+        if (list[i].type?.toLowerCase() === "secondary") {
           names.push(list[i].value);
         }
       }
     }
     return names;
-  }
+  };
 
   const getUpdatedJsonTitles = (list) => {
     const arr = list[0]?.titles || [];
-    if(arr && arr.length>0) {
+    if (arr && arr.length > 0) {
       const updated = arr.map((item, index) => ({
         id: item.id,
         title: item.Title,
@@ -105,11 +110,11 @@ const Home = () => {
       return updated;
     }
     return [];
-  }
+  };
 
   const getUpdatedJson = (list) => {
     const arr = list[0]?.ideas || [];
-    if(arr && arr.length>0) {
+    if (arr && arr.length > 0) {
       const updated = arr.map((item, index) => ({
         id: item.id,
         idea: item.idea,
@@ -123,11 +128,13 @@ const Home = () => {
       return updated;
     }
     return [];
-  }
-
+  };
+  const [responseData, setResponseData] = useState();
+  const [tableData, setTableData] = useState([]);
   const fetchStoryData = async (story_id, token) => {
     try {
-      const apiUrl = API_BASE_PATH + API_ROUTES.FETCH_STORY_DATA + `/${story_id}`;
+      const apiUrl =
+        API_BASE_PATH + API_ROUTES.FETCH_STORY_DATA + `/${story_id}`;
       const config = {
         headers: {
           "Content-Type": "application/json",
@@ -135,10 +142,19 @@ const Home = () => {
         },
       };
       const output = await axios.get(apiUrl, config);
-      if(output) {
+      if (output) {
         const respObj = output?.data?.data;
-
-        const { story_text, story_id, story_world_id, storyWorld, story_file_name, titles, sitautions, actions } = respObj;
+        setResponseData(respObj);
+        const {
+          story_text,
+          story_id,
+          story_world_id,
+          storyWorld,
+          story_file_name,
+          titles,
+          sitautions,
+          actions,
+        } = respObj;
         const wsDataObj = respObj?.ws[0]?.ws_data;
         const { Who, What, Where } = wsDataObj;
         const contextObj = { ...storyUploadApiResponse };
@@ -157,12 +173,6 @@ const Home = () => {
           updatedWhats: getUpdatedJsonWs(What),
           wheres: getUpdatedJsonWs(Where),
           updatedWheres: getUpdatedJsonWs(Where),
-          primaryWhos: getWsPayload(Who, 'prim'),
-          secondaryWhos: getWsPayload(Who, 'sec'),
-          primaryWhats: getWsPayload(What, 'prim'),
-          secondaryWhats: getWsPayload(What, 'sec'),
-          primaryWheres: getWsPayload(Where, 'prim'),
-          secondaryWheres: getWsPayload(Where, 'sec'),
           titles: getUpdatedJsonTitles(titles),
           updatedTitles: getUpdatedJsonTitles(titles),
           situations: getUpdatedJson(sitautions),
@@ -173,29 +183,86 @@ const Home = () => {
         };
 
         setStoryUploadApiResponse(saveObj); // save fetched data in context
-        if(prevStep == false){
-        if(respObj?.titles?.length === 0) {
-          setCurrentStep(1);
-        } else if(respObj?.titles?.length>0 && respObj?.sitautions?.length===0) {
-          setCurrentStep(2);
-        } 
-        // else if(respObj?.sitautions?.length>0 && respObj?.actions?.length===0) {
-        //   setCurrentStep(3);
-        // } else if(respObj?.sitautions?.length>0 && respObj?.actions?.length===0) {
-        //   setCurrentStep(4);
-        // }
-        else if(respObj?.actions?.length>0) {
-          setCurrentStep(1);
-        } else {
-          message.error(errorMsg);
+        if (prevStep == false) {
+          if (respObj?.titles?.length === 0) {
+            setCurrentStep(1);
+          } else if (
+            respObj?.titles?.length > 0 &&
+            respObj?.sitautions?.length === 0
+          ) {
+            setCurrentStep(2);
+          } else if (
+            respObj?.sitautions?.length > 0 &&
+            respObj?.actions?.length === 0
+          ) {
+            setCurrentStep(3);
+          } else if (
+            respObj?.sitautions?.length > 0 &&
+            respObj?.actions?.length === 0
+          ) {
+            setCurrentStep(4);
+          } else if (respObj?.actions?.length > 0) {
+            setCurrentStep(1);
+          } else {
+            message.error(errorMsg);
+          }
         }
-      } }
+      }
     } catch (error) {
       console.log("error: ", error);
       message.error(errorMsg);
     }
-  }
+  };
 
+  const fetchMasterWsList = async () => {
+    if (!responseData?.story_world_id) return;
+    try {
+      const apiUrl =
+        API_BASE_PATH +
+        API_ROUTES.MASTER_WS_LIST +
+        responseData?.story_world_id;
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenVal}`,
+        },
+      };
+      const output = await axios.get(apiUrl, config);
+      setTableData(output.data?.masterWs);
+      const contextObj = { ...storyUploadApiResponse };
+      const { who, what, where } = output.data?.masterWs;
+      const extractIdAndValue = (data = []) =>
+        data?.map(({ id, masterHead }) => ({
+          id,
+          value: masterHead || null,
+        }));
+      // Extract each category
+      const primaryWho = extractIdAndValue(who?.primary || []);
+      const secondaryWho = extractIdAndValue(who?.secondary || []);
+      const primaryWhat = extractIdAndValue(what?.primary || []);
+      const secondaryWhat = extractIdAndValue(what?.secondary || []);
+      const primaryWhere = extractIdAndValue(where?.primary || []);
+      const secondaryWhere = extractIdAndValue(where?.secondary || []);
+      let saveObj = {
+        ...contextObj,
+        primaryWhos: primaryWho,
+        secondaryWhos: secondaryWho,
+        primaryWhats: primaryWhat,
+        secondaryWhats: secondaryWhat,
+        primaryWheres: primaryWhere,
+        secondaryWheres: secondaryWhere,
+      };
+
+      setStoryUploadApiResponse(saveObj);
+    } catch (error) {
+      console.log("error: ", error);
+      message.error(errorMsg);
+    }
+  };
+
+  useEffect(() => {
+    fetchMasterWsList();
+  }, [responseData?.story_world_id]);
   useEffect(() => {
     const handleResize = () => {
       const bodyHeight = document.body.clientHeight;
@@ -204,64 +271,64 @@ const Home = () => {
     };
 
     handleResize(); // Call initially to set the state
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [currentStep]);
 
   const handlePreviousStep = () => {
-    if(isAnythingChanged){
+    if (isAnythingChanged) {
       setActiveStep("prev");
       handleSaveModalOpen(true);
       setIsSaveChanges(false);
-    }else {
-      setPrevStep(true)
-      setCurrentStep(prevStep => prevStep - 1);
+    } else {
+      setPrevStep(true);
+      setCurrentStep((prevStep) => prevStep - 1);
     }
-  }
+  };
 
   const handleNextStep = () => {
-    if(isAnythingChanged){
+    if (isAnythingChanged) {
       setActiveStep("next");
       handleSaveModalOpen(true);
       setIsSaveChanges(false);
-    }else {
-      setCurrentStep(prevStep => prevStep + 1);
+    } else {
+      setCurrentStep((prevStep) => prevStep + 1);
     }
-  }
+  };
 
   const onDiscard = async () => {
     localStorage.removeItem("storyId");
     setCurrentStep(0);
-    message.success('Changes Discarded Successfully !');
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    message.success("Changes Discarded Successfully !");
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     window.location.reload();
-  }
+  };
 
   const handleSaveSuccess = (isSaved) => {
     setIsSaveSuccess(isSaved);
     setIsSaveChanges(false);
-  }
+  };
 
   const handleSaveModal = () => {
-    setIsSaveChanges(true); 
-    handleSaveModalOpen(false); 
+    setIsSaveChanges(true);
+    handleSaveModalOpen(false);
     handleAnythingChanged(false);
-  }
+  };
 
   const handleSaveModalClose = () => {
-    handleSaveModalOpen(false); 
+    handleSaveModalOpen(false);
     handleAnythingChanged(false);
-    if(activeStep === "next") 
-      setCurrentStep(prevStep => prevStep + 1); 
-    else if(activeStep === "prev") 
-      setCurrentStep(prevStep => prevStep - 1); 
-  }
+    if (activeStep === "next") setCurrentStep((prevStep) => prevStep + 1);
+    else if (activeStep === "prev") setCurrentStep((prevStep) => prevStep - 1);
+  };
 
   return (
     <SidebarWithHeader>
       <div className={`flex flex-col sm:min-h-screen`}>
         {/* head */}
-        <p className="text-xl md:text-3xl mt-1 mb-2 md:mb-0 font-medium">Guppy Stories</p>
+        <p className="text-xl md:text-3xl mt-1 mb-2 md:mb-0 font-medium">
+          Guppy Stories
+        </p>
         {/* body */}
 
         {/* stepper */}
@@ -285,8 +352,7 @@ const Home = () => {
               saveTitles={isSaveChanges}
               handleSaveSuccess={handleSaveSuccess}
             />
-          ):
-          currentStep === 3 ? (
+          ) : currentStep === 3 ? (
             <TitleSelection
               onDiscard={onDiscard}
               saveTitles={isSaveChanges}
@@ -305,16 +371,16 @@ const Home = () => {
               handleSaveSuccess={handleSaveSuccess}
             />
           ) : (
-            <DownloadStory
-              onDiscard={onDiscard}
-            />
+            <DownloadStory onDiscard={onDiscard} />
           )}
         </div>
 
         <div className="flex justify-between flex-shrink-0">
           {!(currentStep === 0 || currentStep === 1) && (
             <button
-              className={`text-white mt-6 bg-gray-500 disabled:bg-gray-400 hover:bg-gray-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5' : ''}`}
+              className={`text-white mt-6 bg-gray-500 disabled:bg-gray-400 hover:bg-gray-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${
+                !isContentOverflowing ? "sm:absolute sm:bottom-5" : ""
+              }`}
               onClick={handlePreviousStep}
               disabled={currentStep === 0}
             >
@@ -322,17 +388,25 @@ const Home = () => {
             </button>
           )}
           <button
-            className={`text-white ml-2 mt-6 bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${!isContentOverflowing ? 'sm:absolute sm:bottom-5 right-0' : 'ml-auto'}`}            onClick={handleNextStep}
-            disabled={(currentStep === 0 && ( !storyWorld || !storyWorldLead ))}
+            className={`text-white ml-2 mt-6 bg-blue-500 hover:bg-blue-300 disabled:bg-blue-300 focus:ring-4 focus:outline-none ring-danger-300 font-medium rounded-lg text-sm px-5 py-3 text-center focus:ring-primary-800 ${
+              !isContentOverflowing
+                ? "sm:absolute sm:bottom-5 right-0"
+                : "ml-auto"
+            }`}
+            onClick={handleNextStep}
+            disabled={currentStep === 0 && (!storyWorld || !storyWorldLead)}
           >
             Next
           </button>
         </div>
 
-        {saveModalOpen && <SaveConfirmationDialog 
-        open={saveModalOpen} 
-        onConfirm = {handleSaveModal} 
-        onClose={handleSaveModalClose}/>}
+        {saveModalOpen && (
+          <SaveConfirmationDialog
+            open={saveModalOpen}
+            onConfirm={handleSaveModal}
+            onClose={handleSaveModalClose}
+          />
+        )}
         {/* footer */}
         {/* <Footer className={"sm:ml-64 p-1 bg-yellow-100 border"} /> */}
       </div>
