@@ -21,9 +21,7 @@ const ModifyMasterWsPopup = ({
   const [currentValue, setCurrentValue] = useState("");
   const [popupTitle, setPopupTitle] = useState("");
   const [secondaryWhoOptions, setSecondaryWhoOptions] = useState([]);
-  const [secondaryWhoSelectedOptions, setSecondaryWhoSelectedOptions] =
-    useState([]);
-
+  const [secondaryWhoSelectedOptions, setSecondaryWhoSelectedOptions] = useState([]);
   const [primaryWhatOptions, setPrimaryWhatOptions] = useState([]);
   const [wsForm, setWsForm] = useState([]);
   const [typo, setTypo] = useState([]);
@@ -34,6 +32,7 @@ const ModifyMasterWsPopup = ({
   const [whereCluster, setWhereCluster] = useState([]);
   const [clusterHeadVals, setclusterHeadVals] = useState([]);
   const [clusterValuesVals, setclusterValuesVals] = useState([]);
+  const [anythingChanged, setAnythingChanged] = useState(false)
   const clusterHeadsOptions = whoCluster ?? whatCluster ?? whereCluster;
   const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged,} = useContext(StoryUploadApiContext);  
   const { token, story_id, storyWorld, fileName, primaryWhos, masterWs, filterDatas } = storyUploadApiResponse;
@@ -50,7 +49,6 @@ const ModifyMasterWsPopup = ({
       setWhereCluster(clusterList?.Where);
       setclusterHeadVals(clusterList.Where);
     } else {
-      // Reset or handle default case if necessary
       setWhoCluster(null);
       setWhatCluster(null);
       setWhereCluster(null);
@@ -58,92 +56,63 @@ const ModifyMasterWsPopup = ({
   };
 
   useEffect(() => {
-    handleClusterChange(); // Trigger the function whenever wsForm or clusterList changes
+    handleClusterChange(); 
   }, [wsForm, clusterList]); 
   
   useEffect(() => {
-    if (type === "title") {
-      setCurrentValue(modifyItemObj?.title || "");
-      setPopupTitle("Update Master W's");
-    } else if (type === "situation") {
-      setCurrentValue(modifyItemObj?.idea || "");
-      setPopupTitle("Situation");
-    } else {
-      setCurrentValue(modifyItemObj?.idea || "");
-      setPopupTitle("Action");
+    if(!anythingChanged){
+      if (type === "title") {
+        setCurrentValue(modifyItemObj?.title || "");
+        setPopupTitle("Update Master W's");
+      } else if (type === "situation") {
+        setCurrentValue(modifyItemObj?.idea || "");
+        setPopupTitle("Situation");
+      } else {
+        setCurrentValue(modifyItemObj?.idea || "");
+        setPopupTitle("Action");
+      }
+      setSecondaryWhoOptions(modifyItemObj?.secondaryWhos || []);
+      setSecondaryWhoSelectedOptions(modifyItemObj?.secondaryWhos || []);
+      setClusterHead(modifyItemObj?.masterHead);
+      setClusterHeadId(modifyItemObj?.id || "");
+      setTypo(modifyItemObj?.type || []);
+      setWsForm(modifyItemObj?.ws || []);
+      setClusterValue(modifyItemObj?.clusterValues?.map(obj => obj.value) || [])
+      if(clusterValuesVals?.length === 0 && modifyItemObj?.masterHead?.id === clusterHead?.id){
+        getClusterValueData(modifyItemObj?.masterHead,modifyItemObj?.id)
+      }
     }
-    setSecondaryWhoOptions(modifyItemObj?.secondaryWhos || []);
-    setSecondaryWhoSelectedOptions(modifyItemObj?.secondaryWhos || []);
-    setClusterHead(modifyItemObj?.masterHead);
-    setTypo(modifyItemObj?.type || []);
-    setWsForm(modifyItemObj?.ws || []);
-    setClusterValue(modifyItemObj?.clusterValues?.map(obj => obj.value) || [])
-    if(clusterValuesVals?.length === 0 && modifyItemObj?.masterHead?.id === clusterHead?.id){
-      const allMH = clusterList[modifyItemObj?.ws.split("'")[0]];
-      getClusterValueData(allMH?.findIndex(obj =>obj.id===clusterHead.id))
-    }
+
   }, [modifyItemObj, type, clusterHead, clusterHeadVals]);
-
-  
-
-  const handleChange = (value, name) => {
-    switch (name) {
-      case 'wsForm':
-        setWsForm(value);
-        if(parseInt(value)===0)
-          setclusterHeadVals(clusterList.Who)
-        else if(parseInt(value)===1)
-          setclusterHeadVals(clusterList.What)
-        else if(parseInt(value)===2)
-          setclusterHeadVals(clusterList.Where)
-        
-        setClusterHead([])
-        setTypo([])
-        setClusterValue([])
-        break;
-      case 'typo':
-        setTypo(value); 
-        break;
-      case 'clusterHead':
-        setClusterHead(value); 
-        getClusterValueData(value)
-        break;
-      case 'clusterValue':
-        setClusterValue(value);
-        break;
-      default:
-        break;
-    }
-    if (value === "0") {
-      setWhoCluster(clusterList?.Who);
-    } else if (value === "1") {
-      setWhatCluster(clusterList?.What);
-    } else if (value === "2") {
-      setWhereCluster(clusterList?.Where);
-    } else {
-      // Reset or handle default case if necessary
-      setWhoCluster(null);
-      setWhatCluster(null);
-      setWhereCluster(null);
-    }
-  };
 
   const onWsChange = (value) => {
     setWsForm(value);
+    setAnythingChanged(true)
   }
 
   const onTypeChange = (value) => {
     setTypo(value);
+    setAnythingChanged(true)
   }
+  const [clusterHeadId, setClusterHeadId] = useState("");
 
-  const onClusterHead = (value) => {
-    setClusterHead(value);
-  }
+  const onClusterHead = (selectedValue, fieldName) => {
+    const selectedCluster = clusterHeadVals.find(item => item.value === selectedValue);
+    setClusterHead(selectedCluster?.value);
+    setClusterHeadId(selectedCluster?.id); 
+    getClusterValueData(selectedCluster?.value,selectedCluster?.id)
+    setAnythingChanged(true) 
+  };
+
+  const onClusterValues = (selectedValue, fieldName) => {
+    setClusterValue(selectedValue)
+    setAnythingChanged(true);
+  };
   
-  const getClusterValueData = async (e, name) => {
+  const getClusterValueData = async (value, clusterId) => {
     const apiUrl = API_BASE_PATH + API_ROUTES.SORT_WS + story_id;
     const payload = {
-      clusterHead: clusterHeadVals[e],
+      clusterHead: { value: value, id: clusterId }, 
       ws: clusterHeadVals
     };
     
@@ -162,18 +131,10 @@ const ModifyMasterWsPopup = ({
     }
   }
 
-  const handleClusterValue = () => {
-    if(secondaryWhoSelectedOptions.length === secondaryWhoOptions?.length) {
-        setSecondaryWhoSelectedOptions([]);
-    } else {
-        setSecondaryWhoSelectedOptions(secondaryWhoOptions);
-    }
-  }
-
   const handleUpdate = () => {
     const clusterVals = clusterValuesVals?.filter((obj) => clusterValue?.includes(obj?.id))
     const updatedObj = {
-      id: modifyItemObj.isNewField ? "" : modifyItemObj.id, 
+      id: clusterHeadId ? clusterHeadId : modifyItemObj.id, 
       ws: wsForm, 
       type: typo || modifyItemObj.type, 
       masterHead: clusterHead , 
@@ -258,7 +219,7 @@ const ModifyMasterWsPopup = ({
             placeholder="Select Cluster Head"
           >
             {clusterHeadVals?.map((item, index) => (
-              <Option key={item?.value} value={item?.value}>
+              <Option key={item?.id} value={item?.value}>
                 {item.value}
               </Option>
             ))}
@@ -276,11 +237,11 @@ const ModifyMasterWsPopup = ({
             mode="tags"
             className="w-full"
             value={clusterValue}
-            onChange={(value) => handleChange(value, "clusterValue")} // Pass name 'wsForm' to handleChange
+            onChange={(value) => onClusterValues(value, "clusterValue")} // Pass name 'wsForm' to handleChange
             placeholder={"Select Cluster Values"}
           >
             {clusterValuesVals?.map((option, index) => (
-              <Option key={option.value} value={option.value}>
+              <Option key={option.id} value={option.value}>
                 {option.value}
               </Option>
             ))}
