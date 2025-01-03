@@ -208,7 +208,10 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
         generateFilterDropdown(storyUploadApiResponse.primaryWhos, selectedKeys, setSelectedKeys, confirm, clearFilters, "Primary WHOs"),
       sortDirections: ['descend', 'ascend'],
       render: (val) => {
-        const csvStr = getCSVsFromList(val);
+        // const csvStr = getCSVsFromList(val);
+        const csvStr = Array.isArray(val)
+        ? val.map((item) => item?.value).join(", ") 
+        : "NA";
         return (
           <p>
             {csvStr ? csvStr : "NA"}
@@ -226,7 +229,10 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
         generateFilterDropdown(storyUploadApiResponse.secondaryWhos, selectedKeys, setSelectedKeys, confirm, clearFilters, "Secondary WHOs"),
       sortDirections: ['descend', 'ascend'],
       render: (val) => {
-        const csvStr = getCSVsFromList(val);
+        // const csvStr = getCSVsFromList(val);
+        const csvStr = Array.isArray(val)
+        ? val.map((item) => item?.value).join(", ") 
+        : "NA";
         return (
           <p>
             {csvStr ? csvStr : "NA"}
@@ -244,7 +250,10 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
         generateFilterDropdown(storyUploadApiResponse.primaryWhats, selectedKeys, setSelectedKeys, confirm, clearFilters, "Primary WHATs"),
       sortDirections: ['descend', 'ascend'],
       render: (val) => {
-        const csvStr = getCSVsFromList(val);
+        // const csvStr = getCSVsFromList(val);
+        const csvStr = Array.isArray(val)
+        ? val.map((item) => item?.value).join(", ") 
+        : "NA";
         return (
           <p>
             {csvStr ? csvStr : "NA"}
@@ -262,7 +271,10 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
         generateFilterDropdown(storyUploadApiResponse.secondaryWhats, selectedKeys, setSelectedKeys, confirm, clearFilters, "Secondary WHATs"),
       sortDirections: ['descend', 'ascend'],
       render: (val) => {
-        const csvStr = getCSVsFromList(val);
+        // const csvStr = getCSVsFromList(val);
+        const csvStr = Array.isArray(val)
+        ? val.map((item) => item?.value).join(", ") 
+        : "NA";
         return (
           <p>
             {csvStr ? csvStr : "NA"}
@@ -280,7 +292,10 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
         generateFilterDropdown(storyUploadApiResponse.primaryWheres, selectedKeys, setSelectedKeys, confirm, clearFilters, "Primary WHEREs"),
       sortDirections: ['descend', 'ascend'],
       render: (val) => {
-        const csvStr = getCSVsFromList(val);
+        // const csvStr = getCSVsFromList(val);
+        const csvStr = Array.isArray(val)
+        ? val.map((item) => item?.value).join(", ") 
+        : "NA";
         return (
           <p>
             {csvStr ? csvStr : "NA"}
@@ -298,7 +313,10 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
         generateFilterDropdown(storyUploadApiResponse.secondaryWheres, selectedKeys, setSelectedKeys, confirm, clearFilters, "Secondary WHEREs"),
       sortDirections: ['descend', 'ascend'],
       render: (val) => {
-        const csvStr = getCSVsFromList(val);
+        // const csvStr = getCSVsFromList(val);
+        const csvStr = Array.isArray(val)
+        ? val.map((item) => item?.value).join(", ") 
+        : "NA";
         return (
           <p>
             {csvStr ? csvStr : "NA"}
