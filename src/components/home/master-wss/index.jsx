@@ -144,15 +144,13 @@ const MasterWssPage = ({
 
   const handleDelete = () => {
     if (deleteIndex !== null) {
-      const itemToDelete = myNewData[deleteIndex];
-      if (itemToDelete?.id === null) {
         if (tableData?.length > 0) {
           const updatedData = tableData?.filter(
             (_, index) => index !== deleteIndex
           );
           setTableData(updatedData);
         }
-      } else {
+       else {
         if (filterData?.length > 0) {
           const updatedData = filterData?.filter(
             (_, index) => index !== deleteIndex
@@ -845,7 +843,10 @@ const MasterWssPage = ({
           );
         }
       }
-    }
+    } 
+    // else if (tableData?.length > 0) {
+
+    // }
   }, [filterData, tableData, whos, whats, wheres]); 
   
   const onModify = (updatedObj) => {
