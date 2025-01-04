@@ -28,7 +28,6 @@ const MasterWssPage = ({
   const [deleteIndex, setDeleteIndex] = useState(null);
   const [editIndex, setEditIndex] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [stories, setStories] = useState([]);
   const [isShareModalOpen, setShareModalOpen] = useState(false);
   const [storyDetails, setStoryDetails] = useState(null);
   const [users, setUsers] = useState([]);
@@ -82,7 +81,7 @@ const MasterWssPage = ({
   const [whos, setWhos] = useState([]);
   const [whats, setWhats] = useState([]);
   const [wheres, setWheres] = useState([]);
-  const [filteredOptions, setFilteredOption] = useState();
+  const [filteredOptions, setFilteredOption] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [isClusterLoading, setClusterLoading] = useState(false);
 
@@ -161,23 +160,9 @@ const MasterWssPage = ({
 
       setShowDeleteModal(false);
       message.success("Deleted Successfully!");
+      handleAnythingChanged(true);
     }
   };
-
-  useEffect(() => {
-    if (!tokenVal) {
-      navigate("/");
-    } else {
-      // fetchStories();
-      // fetchUsers();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (saveTitles) {
-      onSave();
-    }
-  }, [saveTitles]);
 
   useEffect(() => {
     if (!tokenVal) {
@@ -221,7 +206,7 @@ const MasterWssPage = ({
 
   useEffect(() => {
     clusterHeadWsList();
-  }, []);
+  }, [story_id]);
 
   const handleVersionSelect = (versionId) => {
     if (versionId) {
@@ -243,35 +228,55 @@ const MasterWssPage = ({
   };
 
   const handleRemoveChip = (value, index) => {
-    if (filterData?.length > 0) {
-      if (!filterData[index]) return;
-      const updatedClusterValues = [...filterData[index]?.clusterValues];
-      const newClusterValues = updatedClusterValues?.filter(
-        (item) => item?.id !== value?.id
-      );
-      const updatedData = [...filterData];
-      updatedData[index] = {
-        ...updatedData[index],
-        clusterValues: newClusterValues,
-      };
-      setFilteredData(updatedData);
+    const removeChipFromClusterValues = (data, key, isIdCheck) => {
+      const updatedData = [...data];
+      if (updatedData[index]) {
+        const updatedClusterValues = updatedData[index]?.clusterValues.filter(
+          (item) => (isIdCheck ? item?.id !== value?.id : item?.value !== value?.value)
+        );
+  
+        updatedData[index] = {
+          ...updatedData[index],
+          clusterValues: updatedClusterValues,
+        };
+      }
+      return updatedData;
+    };
+  
+    // Check if both filterData and tableData exist
+    if (filterData?.length > 0 && tableData?.length > 0) {
+      // Check if the value belongs to filterData or tableData
+      let updatedFilterData = [...filterData];
+      let updatedTableData = [...tableData];
+      
+      // Attempt to find the value in filterData first
+      const filterIndex = filterData.findIndex((item) => item.clusterValues.some((clusterItem) => clusterItem.id === value.id));
+      if (filterIndex !== -1) {
+        updatedFilterData = removeChipFromClusterValues(updatedFilterData, "id", true);
+        setFilteredData(updatedFilterData);
+      }
+  
+      // Then, attempt to find the value in tableData
+      const tableIndex = tableData.findIndex((item) => item.clusterValues.some((clusterItem) => clusterItem.value === value.value));
+      if (tableIndex !== -1) {
+        updatedTableData = removeChipFromClusterValues(updatedTableData, "value", false);
+        setTableData(updatedTableData);
+      }
+    handleAnythingChanged(true);
+    } else if (filterData?.length > 0) {
+      const updatedFilterData = removeChipFromClusterValues(filterData, "id", true);
+      setFilteredData(updatedFilterData);
+      handleAnythingChanged(true)
+
     } else if (tableData?.length > 0) {
-      if (!tableData[index]) return;
-      const updatedClusterValues = [...tableData[index]?.clusterValues];
+      const updatedTableData = removeChipFromClusterValues(tableData, "value", false);
+      setTableData(updatedTableData);
+      handleAnythingChanged(true)
 
-      const newClusterValues = updatedClusterValues?.filter(
-        (item) => item?.value !== value?.value
-      );
-
-      const updatedData = [...tableData];
-      updatedData[index] = {
-        ...updatedData[index],
-        clusterValues: newClusterValues,
-      };
-
-      setTableData(updatedData);
     }
   };
+  
+  
 
   const historyColumns = [
     {
@@ -618,7 +623,7 @@ const MasterWssPage = ({
     setIsSubmitting(false);
   };
 
-  const handleSaveCluster = (values, resetForm) => {
+  const handleSaveCluster = (values, resetForm) => {    
     if (formik.values.ws && formik.values.type && formik.values.masterHead) {
       const newRow = {
         id: (filterData?.length || 0) + 1, 
@@ -644,7 +649,6 @@ const MasterWssPage = ({
 
   function convertData(inputData) {
     const result = {};
-
     inputData.forEach((item) => {
       const wsKey = item.ws.toLowerCase().replace(/'s$/, ""); 
       const typeKey = item.type.toLowerCase(); 
@@ -658,7 +662,7 @@ const MasterWssPage = ({
       }
 
       const formattedItem = {
-        id: item.clusterValues[0]?.id, 
+        id: item.masterHead?.id, 
         masterHead: item?.masterHead?.value || item?.masterHead, 
         clusterValues: item?.clusterValues?.map((cluster) => ({
           id: cluster?.id,
@@ -709,10 +713,13 @@ const MasterWssPage = ({
 
   useEffect(() => {
     const combinedData = [...tableData, ...newManualData];
-    if (JSON?.stringify(combinedData) !== JSON?.stringify(myNewData)) {
-      setMyNewData(combinedData);
-    }
-  }, [tableData, newManualData, myNewData]);
+    const combinedDataString = JSON.stringify(combinedData);
+  const currentDataString = JSON.stringify(myNewData);
+  if (combinedDataString !== currentDataString) {
+    setMyNewData(combinedData);
+  }
+  handleAnythingChanged(true);
+  }, [tableData, newManualData]);
 
   const flattenData = myNewData?.map((item) => {
     const normalizedClusterValues = (() => {
@@ -749,7 +756,6 @@ const MasterWssPage = ({
         secondary: [],
       },
     };
-
     data?.forEach((item) => {
       const normalizedClusterValues = (() => {
         if (Array.isArray(item.clusterValues)) {
@@ -817,9 +823,12 @@ const MasterWssPage = ({
   };
 
   const transformedData = transformData(myNewData);
+  
   useEffect(() => {
     if (filterData?.length > 0 || tableData?.length > 0) {
       let masterHeadValues = [];
+  
+      // Combine unique values from both filterData and tableData
       if (filterData?.length > 0 && tableData?.length > 0) {
         masterHeadValues = [
           ...new Set([
@@ -827,25 +836,44 @@ const MasterWssPage = ({
             ...tableData.map((item) => item.masterHead),
           ]),
         ];
-      }
-      else if (filterData?.length > 0) {
+      } else if (filterData?.length > 0) {
         masterHeadValues = filterData.map((item) => item.masterHead?.value);
-      }
-      else if (tableData?.length > 0) {
+      } else if (tableData?.length > 0) {
         masterHeadValues = tableData.map((item) => item.masterHead);
       }
   
       if (masterHeadValues?.length > 0) {
-        setWhos((prevWhos) =>
-          prevWhos?.filter((item) => !masterHeadValues.includes(item.value))
-        );
-        setWheres((prevWheres) =>
-          prevWheres?.filter((item) => !masterHeadValues.includes(item.value))
-        );
-        setWhats((prevWhats) =>
-          prevWhats?.filter((item) => !masterHeadValues.includes(item.value))
-        );
+        // Update whos only if there is a real change
+        setWhos((prevWhos) => {
+          const updatedWhos = prevWhos.filter(
+            (item) => !masterHeadValues.includes(item.value)
+          );
+          return JSON.stringify(updatedWhos) !== JSON.stringify(prevWhos)
+            ? updatedWhos
+            : prevWhos; // Avoid redundant updates
+        });
   
+        // Update wheres only if there is a real change
+        setWheres((prevWheres) => {
+          const updatedWheres = prevWheres.filter(
+            (item) => !masterHeadValues.includes(item.value)
+          );
+          return JSON.stringify(updatedWheres) !== JSON.stringify(prevWheres)
+            ? updatedWheres
+            : prevWheres; // Avoid redundant updates
+        });
+  
+        // Update whats only if there is a real change
+        setWhats((prevWhats) => {
+          const updatedWhats = prevWhats.filter(
+            (item) => !masterHeadValues.includes(item.value)
+          );
+          return JSON.stringify(updatedWhats) !== JSON.stringify(prevWhats)
+            ? updatedWhats
+            : prevWhats; // Avoid redundant updates
+        });
+  
+        // Optionally handle filterData-specific filtering
         if (filterData?.length > 0) {
           setFilteredOption((prevFilteredOptions) =>
             prevFilteredOptions?.filter(
@@ -856,6 +884,8 @@ const MasterWssPage = ({
       }
     }
   }, [filterData, tableData, whos, whats, wheres]);
+  
+  
   
   const onModify = (updatedObj) => {
     if (filterData?.length > 0) {
@@ -869,6 +899,7 @@ const MasterWssPage = ({
       curData[editIndex] = { ...curData[editIndex], ...updatedObj };
       setTableData(curData);
       message.success("Updated Successfully!");
+      handleAnythingChanged(true);
     }
   };
 

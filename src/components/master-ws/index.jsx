@@ -30,7 +30,9 @@ const MasterWsPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [selectedStoryId, setSelectedStoryId] = useState('');
-  const [showDeleteStoryModal, setShowDeleteStoryModal] = useState(false);  
+  const [showDeleteStoryModal, setShowDeleteStoryModal] = useState(false); 
+  const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
+  const [clusterList, setClusterList] = useState([]); 
   const [isStoryDeleted, setIsStoryDeleted] = useState(false);
   const [token, setToken] = useState("");
   const [selectedRow, setSelectedRow] = useState(null); 
@@ -41,9 +43,9 @@ const MasterWsPage = () => {
   const [wheres, setWheres] = useState([]);
   const [isFetched, setIsFetched] = useState(false);
   const [notFetched, setNotFetched] = useState(false);
+  const [storyWordId, setStoryWordId] = useState();
   const [filteredOptions, setFilteredOption] = useState();
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
-
   const handleModify = (updatedObj) => {
     const curData = [...filteredData];
     const modified = curData.map((ele) =>
@@ -58,12 +60,35 @@ const type = [
   { id: 1, name: "Primary" },
   { id: 2, name: "Secondary" }
 ]
-const wsForm = [
-  { id: 1, name: "Who" },
-  { id: 2, name: "What" },
-  { id: 3, name: "Where" }
 
-]
+const wsData = [
+  { id: 1, name: "who" },
+  { id: 2, name: "what" },
+  { id: 3, name: "where" },
+];
+
+const clusterHeadWsList = async () => {
+  try {
+    const apiUrl = API_BASE_PATH + API_ROUTES.LIST_WS + storyWordId;
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tokenVal}`,
+      },
+    };
+    const output = await axios.get(apiUrl, config);
+    setClusterList(output?.data?.ws?.ws_data);
+  } catch (error) {
+    console.log("error: ", error);
+    // message.error(errorMsg);
+  }
+};
+
+useEffect(() => {
+  if(storyWordId) {
+    clusterHeadWsList();
+  }
+}, []);
 
 const fetchStoryWorlds = async (tokenVal) => {
   try {
@@ -130,6 +155,7 @@ const fetchStoryWorlds = async (tokenVal) => {
     let alertKey;
     try {
         const storyWorldId = values?.storyWorld;
+        setStoryWordId(storyWorldId)
         const apiUrl = API_BASE_PATH + API_ROUTES.FETCH_MASTER_Ws + `/${storyWorldId}`;
   
         const config = {
@@ -454,13 +480,14 @@ const fetchStoryWorlds = async (tokenVal) => {
             open={dialogPopup}
             modifyItemObj={selectedRow} // Pass selected row data for editing
             onClose={() => setDialogPopup(false)}
-            storyWorldOptions={storyWorldOptions}
-            wsForms={wsForm}
+            storyWorldOptions={wsData}
+            // wsForms={wsData}
             filteredOptions={filteredOptions}
+            clusterList={clusterList}
             types={type}
             clusterHead={whos ? whats : wheres}
             onModify={handleModify}
-            type="title" // Modify this as per the field you want to edit
+            type="saparate" // Modify this as per the field you want to edit
           />
         )}
 
