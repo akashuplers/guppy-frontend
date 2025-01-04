@@ -142,6 +142,11 @@ const Home = () => {
         },
       };
       const output = await axios.get(apiUrl, config);
+      const respObj = output?.data?.data;
+      if (!respObj) {
+        message.error("Invalid response from server. Please try again.");
+        return;
+      }
       if (output) {
         const respObj = output?.data?.data;
         setResponseData(respObj);
@@ -214,7 +219,7 @@ const Home = () => {
     }
   };
 
-  const fetchMasterWsList = async () => {
+  const fetchMasterWsList = async () => {    
     if (!responseData?.story_world_id) return;
     try {
       const apiUrl =
@@ -256,12 +261,13 @@ const Home = () => {
       setStoryUploadApiResponse(saveObj);
     } catch (error) {
       console.log("error: ", error);
-      message.error(errorMsg);
     }
   };
 
   useEffect(() => {
-    fetchMasterWsList();
+      fetchMasterWsList();
+    // }
+    
   }, [responseData?.story_world_id]);
   useEffect(() => {
     const handleResize = () => {

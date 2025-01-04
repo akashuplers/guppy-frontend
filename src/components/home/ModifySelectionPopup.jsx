@@ -33,7 +33,6 @@ console.log("secondaryWhatOptions",secondaryWhatOptions);
 console.log("modifyItemObj", modifyItemObj);
 
   useEffect(() => {
-    debugger
     if(type === "title") {
         setCurrentValue(modifyItemObj.title);
         setPopupTitle("Title/Sentence");
@@ -71,14 +70,8 @@ console.log("modifyItemObj", modifyItemObj);
     setCurrentValue(e.target.value);
   };
 
-  // secondaryWhos
-//   const onSecondaryWhosChange = (value) => {
-//     debugger
-//     setSecondaryWhoSelectedOptions(value);
-//   }
   const [secondaryWhoSet, seSeccondaryWhoSet] = useState()
   const onSecondaryWhosChange = (selectedValue, fieldName) => {
-    debugger
     const valuesArray = Array.isArray(selectedValue) ? selectedValue : [selectedValue];
     const selectedClusterObjects = valuesArray
     ?.map(value => secondaryWhoOptions.find(item => item?.value === value))
@@ -107,7 +100,6 @@ console.log("modifyItemObj", modifyItemObj);
 //   }
   const [primaryWhatSet, setPrimaryWhatSet] = useState()
   const onPrimaryWhatsChange = (selectedValue, fieldName) => {
-    debugger
     const valuesArray = Array.isArray(selectedValue) ? selectedValue : [selectedValue];
     const selectedClusterObjects = valuesArray
     ?.map(value => primaryWhatOptions.find(item => item?.value === value))
@@ -130,15 +122,8 @@ console.log("modifyItemObj", modifyItemObj);
     }
   }
 
-  // secondaryWhats
-//   const onSecondaryWhatsChange = (value) => {
-//     debugger
-//     setSecondaryWhatSelectedOptions(value);
-//   }
-
 const [secondaryWhatSet, setSecondaryWhatSet] = useState()
   const onSecondaryWhatsChange = (selectedValue, fieldName) => {
-    debugger
     const valuesArray = Array.isArray(selectedValue) ? selectedValue : [selectedValue];
     const selectedClusterObjects = valuesArray
     ?.map(value => secondaryWhatOptions.find(item => item?.value === value))
@@ -167,7 +152,6 @@ const [secondaryWhatSet, setSecondaryWhatSet] = useState()
 //   }
   const [primaryWhereSet, setPrimaryWhereSet] = useState()
   const onPrimaryWheresChange = (selectedValue, fieldName) => {
-    debugger
     const valuesArray = Array.isArray(selectedValue) ? selectedValue : [selectedValue];
     const selectedClusterObjects = valuesArray
     ?.map(value => primaryWhereOptions.find(item => item?.value === value))
@@ -190,13 +174,8 @@ const [secondaryWhatSet, setSecondaryWhatSet] = useState()
     }
   }
 
-  // secondaryWheres
-//   const onSecondaryWheresChange = (value) => {
-//     setSecondaryWhereSelectedOptions(value);
-//   }
   const [secondaryWhereSet, setSecondaryWhereSet] = useState()
   const onSecondaryWheresChange = (selectedValue, fieldName) => {
-    debugger
     const valuesArray = Array.isArray(selectedValue) ? selectedValue : [selectedValue];
     const selectedClusterObjects = valuesArray
     ?.map(value => secondaryWhereOptions.find(item => item?.value === value))
@@ -227,7 +206,6 @@ const [secondaryWhatSet, setSecondaryWhatSet] = useState()
   const allSecondaryWhereSelected = secondaryWhereSelectedOptions?.length === secondaryWhereOptions?.length;
 
   const handleUpdate = () => {
-    debugger
     const updatedObj = {
         id: modifyItemObj.isNewField ? '' : modifyItemObj.id,
         ...(type === "title" ? {title: currentValue} : {idea: currentValue}),

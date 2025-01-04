@@ -29,7 +29,6 @@ const MasterWssPage = ({
   const [editIndex, setEditIndex] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [stories, setStories] = useState([]);
-  const [filteredStories, setFilteredStories] = useState([]);
   const [isShareModalOpen, setShareModalOpen] = useState(false);
   const [storyDetails, setStoryDetails] = useState(null);
   const [users, setUsers] = useState([]);
@@ -80,12 +79,13 @@ const MasterWssPage = ({
     },
   });
 
-  const [whos, setWhos] = useState();
-  const [whats, setWhats] = useState();
-  const [wheres, setWheres] = useState();
+  const [whos, setWhos] = useState([]);
+  const [whats, setWhats] = useState([]);
+  const [wheres, setWheres] = useState([]);
   const [filteredOptions, setFilteredOption] = useState();
-  const [isVersionLoading, setIsVersionLoading] = useState(false);
   const [tableData, setTableData] = useState([]);
+  const [isClusterLoading, setClusterLoading] = useState(false);
+
   const options = (filteredOptions || [])?.map((item) => ({
     label: item.value,
     value: item.id,
@@ -94,6 +94,8 @@ const MasterWssPage = ({
   const [filterData, setFilteredData] = useState([]);
 
   const fetchMasterWsList = async () => {
+    setClusterLoading(true);
+    let alertKey = null; // Initialize to prevent undefined errors
     try {
       const apiUrl = API_BASE_PATH + API_ROUTES.MASTER_WS_LIST + storyWorldId;
       const config = {
@@ -102,11 +104,37 @@ const MasterWssPage = ({
           Authorization: `Bearer ${tokenVal}`,
         },
       };
-      const output = await axios.get(apiUrl, config);
-      setTableData(processData(output.data.masterWs));
+      alertKey = message.loading("Fetching Clusters...", 0).key;
+      const response = await axios.get(apiUrl, config);
+      const output = response?.data?.masterWs;
+
+      if(output) {
+      setTableData(processData(output));
+      message.destroy(alertKey);
+      message.success("Clusters Fetched Successfully !");
+      } else {
+        message.destroy(alertKey);
+      }
     } catch (error) {
-      console.log("error: ", error);
-      message.error(errorMsg);
+      console.error("Error:", error);
+      if (alertKey) message.destroy(alertKey);
+      const statusCode = error?.response?.status;
+      if (statusCode === 401) {
+          message.error("Not Authorized ! You need to login first !");
+          navigate("/");
+      } else if (statusCode === 500) {
+          message.error("Internal Server Error !");
+      } else {
+          const errorMessage = error?.response?.data?.message;
+          if (errorMessage) {
+          message.error(errorMessage);
+          } else {
+          message.error("Error In Fetching Clusters !");
+          }
+      }
+    }
+    finally {
+      setClusterLoading(false);
     }
   };
 
@@ -156,9 +184,10 @@ const MasterWssPage = ({
   useEffect(() => {
     if (!tokenVal) {
       navigate("/");
-    } else {
-      isStoryDeleted && fetchStories();
-    }
+    } 
+    // else {
+    //   isStoryDeleted && fetchStories();
+    // }
   }, [isStoryDeleted]);
 
   useEffect(() => {
@@ -195,49 +224,6 @@ const MasterWssPage = ({
   useEffect(() => {
     clusterHeadWsList();
   }, []);
-
-  const fetchStories = async () => {
-    setIsLoading(true);
-    let alertKey;
-    try {
-      const apiUrl = API_BASE_PATH + API_ROUTES.LIST_STORIES_UPLOAD_BY_USER;
-      const config = {
-        headers: {
-          Authorization: `Bearer ${tokenVal}`,
-        },
-      };
-      alertKey = message.loading("Fetching Stories...", 0).key;
-      const response = await axios.post(apiUrl, {}, config);
-      const output = response?.data?.data;
-      if (output) {
-        setStories(output.slice().reverse());
-        setFilteredStories(output.slice().reverse());
-        message.destroy(alertKey);
-        message.success("Stories Fetched Successfully !");
-      } else {
-        message.destroy(alertKey);
-        message.error("Error In Fetching Stories !");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      message.destroy(alertKey);
-      const statusCode = error?.response?.status;
-      if (statusCode === 401) {
-        message.error("Not Authorized ! You need to login first !");
-        navigate("/");
-      } else if (statusCode === 500) {
-        message.error("Internal Server Error !");
-      } else {
-        const errorMessage = error?.response?.data?.message;
-        if (errorMessage) {
-          message.error(errorMessage);
-        } else {
-          message.error("Error In Fetching Stories !");
-        }
-      }
-    }
-    setIsLoading(false);
-  };
 
   const handleVersionSelect = (versionId) => {
     if (versionId) {
@@ -351,7 +337,7 @@ const MasterWssPage = ({
                     <span>{value?.value ?? value ?? []}</span>
                     <button
                       className="text-red-600 bg-transparent border-none cursor-pointer ml-2"
-                      onClick={() => handleRemoveChip(value, index)} // Pass the value and index to remove
+                      onClick={() => handleRemoveChip(value, index)} 
                       title="Remove"
                     >
                       <svg
@@ -507,8 +493,8 @@ const MasterWssPage = ({
       formik.setFieldValue("masterHead", { id: id, value: value });
 
       const payload = {
-        clusterHead: { value: value, id: id }, // Set selected masterHead as clusterHead
-        ws: [], // Initialize ws as an empty array
+        clusterHead: { value: value, id: id }, 
+        ws: [], 
       };
       if (e?.target?.value === "who") {
         payload.ws = clusterList?.Who || [];
@@ -517,7 +503,6 @@ const MasterWssPage = ({
       } else if (e?.target?.value === "where") {
         payload.ws = clusterList?.Where || [];
       }
-      // Add dynamically selected whos, whats, or wheres to the payload if any
       if (whos?.length > 0) {
         payload.ws = [...payload.ws, ...whos];
       }
@@ -638,7 +623,7 @@ const MasterWssPage = ({
   const handleSaveCluster = (values, resetForm) => {
     if (formik.values.ws && formik.values.type && formik.values.masterHead) {
       const newRow = {
-        id: (filterData?.length || 0) + 1, // Ensure filterData is defined
+        id: (filterData?.length || 0) + 1, 
         ws: formik.values.ws,
         type: formik.values.type,
         masterHead: formik.values.masterHead,
@@ -650,7 +635,7 @@ const MasterWssPage = ({
         updated: false,
       };
 
-      setFilteredData((prevArray = []) => [...prevArray, newRow]); // Default to an empty array
+      setFilteredData((prevArray = []) => [...prevArray, newRow]); 
       formik.resetForm(formik.values);
       setWhats([]);
       setWhos([]);
@@ -663,8 +648,8 @@ const MasterWssPage = ({
     const result = {};
 
     inputData.forEach((item) => {
-      const wsKey = item.ws.toLowerCase().replace(/'s$/, ""); // Convert "Who's" to "who"
-      const typeKey = item.type.toLowerCase(); // Convert "Primary" to "primary"
+      const wsKey = item.ws.toLowerCase().replace(/'s$/, ""); 
+      const typeKey = item.type.toLowerCase(); 
 
       if (!result[wsKey]) {
         result[wsKey] = {};
@@ -675,8 +660,8 @@ const MasterWssPage = ({
       }
 
       const formattedItem = {
-        id: item.clusterValues[0]?.id, // Assuming clusterValues always has at least one item
-        masterHead: item?.masterHead?.value || item?.masterHead, // Use the value from masterHead
+        id: item.clusterValues[0]?.id, 
+        masterHead: item?.masterHead?.value || item?.masterHead, 
         clusterValues: item?.clusterValues?.map((cluster) => ({
           id: cluster?.id,
           value: cluster?.value,
@@ -768,7 +753,6 @@ const MasterWssPage = ({
     };
 
     data?.forEach((item) => {
-      // Normalize clusterValues to always be an array of objects
       const normalizedClusterValues = (() => {
         if (Array.isArray(item.clusterValues)) {
           return item.clusterValues.map((cluster) => ({
@@ -777,16 +761,16 @@ const MasterWssPage = ({
           }));
         } else if (typeof item.clusterValues === "string") {
           return item.clusterValues.split(",").map((value) => ({
-            id: null, // No ID in the string format
+            id: null,
             value: value.trim(),
           }));
         }
-        return []; // Default to an empty array
+        return [];
       })();
 
       const newItem = {
-        id: item.id ?? null, // Handle cases where ID is missing
-        masterHead: item?.masterHead?.value ?? item.masterHead, // Support plain string or object format
+        id: item.id ?? null,
+        masterHead: item?.masterHead?.value ?? item.masterHead, 
         clusterValues: item.clusterValues?.map((cluster) => ({
           id: cluster.id,
           value: cluster.value,
@@ -835,34 +819,35 @@ const MasterWssPage = ({
   };
 
   const transformedData = transformData(myNewData);
+
   useEffect(() => {
     if (filterData?.length > 0) {
-      const masterHeadValues = filterData.map((item) => item.masterHead?.value); // Extract masterHead values
-
-      // Filter out items in whos, wheres, whats where value matches any masterHead
-      setWhos(whos?.filter((item) => !masterHeadValues.includes(item.value)));
-      setWheres(
-        wheres?.filter((item) => !masterHeadValues.includes(item.value))
-      );
-      setWhats(whats?.filter((item) => !masterHeadValues.includes(item.value)));
-
-      // Filter the clusterValues in filteredOptions
-      // const updatedFilteredOptions = filteredOptions?.ws?.clusterValues.filter(
-      //   item => !masterHeadValues.includes(item.value)
-      // );
-      // setFilteredOption(updatedFilteredOptions || []);
-    } else if (tableData?.length > 0) {
-      const masterHeadValues = tableData?.map((item) => item.masterHead); // Extract masterHead values
-
-      // Filter out items in whos, wheres, whats where value matches any masterHead
-      setWhos(whos?.filter((item) => !masterHeadValues.includes(item.value)));
-      setWheres(
-        wheres?.filter((item) => !masterHeadValues.includes(item.value))
-      );
-      setWhats(whats?.filter((item) => !masterHeadValues.includes(item.value)));
+      const masterHeadValues =
+        filterData?.length > 0
+          ? filterData.map((item) => item.masterHead?.value)
+          : tableData.map((item) => item.masterHead);
+  
+      if (masterHeadValues?.length > 0) {
+        setWhos((prevWhos) =>
+          prevWhos?.filter((item) => !masterHeadValues.includes(item.value))
+        );
+        setWheres((prevWheres) =>
+          prevWheres?.filter((item) => !masterHeadValues.includes(item.value))
+        );
+        setWhats((prevWhats) =>
+          prevWhats?.filter((item) => !masterHeadValues.includes(item.value))
+        );
+        if (filterData?.length > 0) {
+          setFilteredOption((prevFilteredOptions) =>
+            prevFilteredOptions?.filter(
+              (item) => !masterHeadValues.includes(item.value)
+            )
+          );
+        }
+      }
     }
-  }, [filterData, tableData]);
-
+  }, [filterData, tableData, whos, whats, wheres]); 
+  
   const onModify = (updatedObj) => {
     if (filterData?.length > 0) {
       const curData = [...filterData];
@@ -899,10 +884,7 @@ const MasterWssPage = ({
       setPrimaryWhere(primaryWhere);
       setSecondaryWhere(secondaryWhere);
     }
-  }, [myNewData]); //
-
-  // Call the function with the JSON data
-  // extractAndSetState(transformedData || "");
+  }, [myNewData]); 
 
   return (
     <div>
@@ -1085,7 +1067,7 @@ const MasterWssPage = ({
         </Formik>
 
         <div className="mt-8">
-          {!isLoading && (
+          {!isClusterLoading && (
             <Table dataSource={myNewData} columns={historyColumns} bordered />
           )}
         </div>
