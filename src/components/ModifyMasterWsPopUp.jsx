@@ -129,7 +129,10 @@ const ModifyMasterWsPopup = ({
     try {
       const response = await axios.post(apiUrl, payload, config); 
       const filteredArray = response?.data?.ws?.clusterValues
-      setclusterValuesVals(filteredArray)
+      const filteredArrays = filteredArray?.filter(
+        (item) => item?.value !== value
+      );
+      setclusterValuesVals(filteredArrays)
     } catch (error) {
       console.error("Error calling the API:", error);
     }
