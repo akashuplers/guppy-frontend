@@ -115,28 +115,35 @@ const ModifyMasterWsPopup = ({
   };
   
   const getClusterValueData = async (value, clusterId) => {
+    if (clusterHeadVals?.length === 0) {
+      console.error("clusterHeadVals is not yet available.");
+      return; 
+    }
+  
     const apiUrl = API_BASE_PATH + API_ROUTES.SORT_WS + story_id;
     const payload = {
-      clusterHead: { value: value, id: clusterId }, 
-      ws: clusterHeadVals
+      clusterHead: { value: value, id: clusterId },
+      ws: clusterHeadVals,
     };
     const config = {
       headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tokenVal}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tokenVal}`,
       },
-      };
+    };
+  
     try {
-      const response = await axios.post(apiUrl, payload, config); 
-      const filteredArray = response?.data?.ws?.clusterValues
+      const response = await axios.post(apiUrl, payload, config);
+      const filteredArray = response?.data?.ws?.clusterValues;
       const filteredArrays = filteredArray?.filter(
         (item) => item?.value !== value
       );
-      setclusterValuesVals(filteredArrays)
+      setclusterValuesVals(filteredArrays);
     } catch (error) {
       console.error("Error calling the API:", error);
     }
-  }
+  };
+  
 
   const handleUpdate = () => {
     const updatedObj = {
