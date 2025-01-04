@@ -817,13 +817,23 @@ const MasterWssPage = ({
   };
 
   const transformedData = transformData(myNewData);
-
   useEffect(() => {
-    if (filterData?.length > 0) {
-      const masterHeadValues =
-        filterData?.length > 0
-          ? filterData.map((item) => item.masterHead?.value)
-          : tableData.map((item) => item.masterHead);
+    if (filterData?.length > 0 || tableData?.length > 0) {
+      let masterHeadValues = [];
+      if (filterData?.length > 0 && tableData?.length > 0) {
+        masterHeadValues = [
+          ...new Set([
+            ...filterData.map((item) => item.masterHead?.value),
+            ...tableData.map((item) => item.masterHead),
+          ]),
+        ];
+      }
+      else if (filterData?.length > 0) {
+        masterHeadValues = filterData.map((item) => item.masterHead?.value);
+      }
+      else if (tableData?.length > 0) {
+        masterHeadValues = tableData.map((item) => item.masterHead);
+      }
   
       if (masterHeadValues?.length > 0) {
         setWhos((prevWhos) =>
@@ -835,6 +845,7 @@ const MasterWssPage = ({
         setWhats((prevWhats) =>
           prevWhats?.filter((item) => !masterHeadValues.includes(item.value))
         );
+  
         if (filterData?.length > 0) {
           setFilteredOption((prevFilteredOptions) =>
             prevFilteredOptions?.filter(
@@ -843,11 +854,8 @@ const MasterWssPage = ({
           );
         }
       }
-    } 
-    // else if (tableData?.length > 0) {
-
-    // }
-  }, [filterData, tableData, whos, whats, wheres]); 
+    }
+  }, [filterData, tableData, whos, whats, wheres]);
   
   const onModify = (updatedObj) => {
     if (filterData?.length > 0) {
