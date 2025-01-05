@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Button, Modal, Select, Checkbox } from "antd";
 import axios from "axios";
+import { v4 as uuidv4 } from 'uuid';
 import { API_BASE_PATH, API_ROUTES } from "../constants/api-endpoints";
 import { StoryUploadApiContext } from "../contexts/ApiContext";
 
@@ -31,10 +32,9 @@ const ModifyMasterWsPopup = ({
   const [clusterHeadVals, setclusterHeadVals] = useState([]);
   const [clusterValuesVals, setclusterValuesVals] = useState([]);
   const [anythingChanged, setAnythingChanged] = useState(false)
-  const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged,} = useContext(StoryUploadApiContext);  
-  const { token, story_id, storyWorld, fileName, primaryWhos, masterWs, filterDatas } = storyUploadApiResponse;
+  const {storyUploadApiResponse} = useContext(StoryUploadApiContext);  
+  const { story_id } = storyUploadApiResponse;
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
-  const clusterTextData = clusterData?.map(obj => obj?.value);
 
   const handleClusterChange = () => {
     if (wsForm === "who") {
@@ -135,38 +135,52 @@ const ModifyMasterWsPopup = ({
     setClusterValueSet(mergedClusterObjects);
     setAnythingChanged(true);
   };
-  const onClusterValuesText = (inputValue, fieldName) => {
-    // Split the input values by commas, trim them, and filter out empty strings
-    const valuesArray = inputValue
-      .split(',')
-      .map(value => value.trim())
-      .filter(value => value); // Remove any empty strings
-  
-    // If no values are entered (empty input), do nothinghan
-    if (valuesArray.length === 0) {
-      return;
+const [clusterVals, setClusterValues] = useState([])
+const [tempClusterValue, setTempClusterValue] = useState('');
+const onInputChange = (e) => {
+  setTempClusterValue(e.target.value);
+};
+const onKeyDown = (e) => {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault(); 
+    if (tempClusterValue.trim()) {
+      onClusterValuesText(tempClusterValue); 
     }
-  
-    // Iterate through the clusterData and update only the matching values
-    const updatedClusterData = clusterData.map(item => {
-      // Try to find a matching value from input that starts with the current value in clusterData
-      const match = valuesArray.find(value => value.startsWith(item.value)); // Match starts with the current value
-      if (match) {
-        return { ...item, value: match }; // Update the item with the new matched value
+    setTempClusterValue('');
+  }
+};
+  const onClusterValuesText = (selectedValue) => {
+    const valuesArray = selectedValue
+      .split(',') 
+      .map((value) => value.trim()) 
+      .filter((value) => value); 
+
+    const existingValuesMap = new Map(clusterData.map((item) => [item.value, item]));
+    const updatedClusterData = [];
+    valuesArray.forEach((value) => {
+      const existingItem = existingValuesMap.get(value);
+      if (existingItem) {
+        updatedClusterData.push(existingItem);
+      } else {
+        updatedClusterData.push({ id: uuidv4(), value });
       }
-      return item; // Keep the item unchanged if no match
     });
-  
-    // Update the clusterData state with the edited values
-    setClusterData(updatedClusterData);
-  
-    // Trigger any necessary state changes (like separate logic or change detection)
+
+    const combinedClusterData = [...clusterData, ...updatedClusterData];
+    setClusterData(combinedClusterData);
+    const updatedClusterValues = combinedClusterData.map((item) => item.value);
+    setClusterValues(updatedClusterValues);
     setSaparate(true);
     setAnythingChanged(true);
   };
-  
-  
-  
+
+ const handleDeleteValue = (valueToDelete) => {
+  const updatedData = clusterData.filter((item) => item.value !== valueToDelete);
+  setClusterData(updatedData);
+  setClusterValues(updatedData.map((item) => item.value));
+  setAnythingChanged(true);
+};
+
   const onClusterHeadText = (inputValue, fieldName) => {
     setClusterHeadData(inputValue); 
     setSaparate(true);
@@ -332,25 +346,52 @@ const ModifyMasterWsPopup = ({
         type="text"
         className="w-full p-2 border border-gray-300 rounded-lg text-md"
         value={clusterHeadData}
-        onChange={(e) => onClusterHeadText(e.target.value, "clusterHead")} // Handle input change
+        onChange={(e) => onClusterHeadText(e.target.value, "masterHead")} // Handle input change
         placeholder="Enter Cluster Head"
       />
     </div>
 
-    <div>
+    <div className="space-y-4">
       <label
         htmlFor="clusterVal"
-        className="block mb-2 text-md md:text-lg font-medium text-gray-900"
+        className="block text-md md:text-lg font-medium text-gray-900"
       >
         {"Cluster Value"}
       </label>
-      <input
-        type="text"
-        className="w-full p-2 border border-gray-300 rounded-lg text-md"
-        value={clusterData?.map(obj => obj?.value).join(', ')} // Join the values with commas
-        onChange={(e) => onClusterValuesText(e.target.value, "clusterValue")} // Handle input change
-        placeholder="Enter Cluster Values"
-      />
+      <div
+        className="w-full p-2 border border-gray-300 rounded-lg text-md mb-4"
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: '8px',
+        }}
+      >
+        {clusterData.map((item) => (
+          <div
+            key={item.id}
+            className="flex items-center gap-2 bg-gray-200 text-black-600 rounded-full px-3 py-1"
+          >
+            <span>{item.value}</span>
+            <button
+              onClick={() => handleDeleteValue(item.value)}
+              className="text-red-500 hover:text-red-700"
+            >
+              &#x2716; {/* Unicode for delete (X) */}
+            </button>
+          </div>
+        ))}
+        
+        {/* Text input field for adding values */}
+        <input
+          type="text"
+          className="w-full border-none outline-none bg-transparent focus:outline-none focus:ring-0"
+          value={tempClusterValue} // Use tempClusterValue for the input
+          onChange={onInputChange} // Update tempClusterValue
+          onKeyDown={onKeyDown} // Handle Enter, Comma key press
+          placeholder="Enter Cluster Values"
+        />
+      </div>
     </div>
   </>
 )}

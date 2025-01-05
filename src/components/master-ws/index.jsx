@@ -11,13 +11,7 @@ import WsList from './WsList';
 import ModifyMasterWsPopup from '../ModifyMasterWsPopUp';
 import { StoryUploadApiContext } from '../../contexts/ApiContext';
 import DeleteConfirmationDialog from '../../utils/modals/DeleteConfirmationDialog';
-
-const notFoundMsg = "No Master Ws Found With Selected Story World !"
-
-const storyWorldsLocal = [
-    { _id: 1, name: "story_world_1", lead_who: "Alice" },
-    { _id: 2, name: "story_world_2", lead_who: "Sara" },
-];
+import { v4 as uuidv4 } from 'uuid';
 
 const validationSchema = Yup.object().shape({
     storyWorld: Yup.string().required("Please Select A Story World"),
@@ -26,17 +20,13 @@ const validationSchema = Yup.object().shape({
 const MasterWsPage = () => {
   const navigate = useNavigate();
   const flow = false;
-  const [storyWorldOptions, setStoryWorldOptions] = useState(storyWorldsLocal);
+  const [storyWorldOptions, setStoryWorldOptions] = useState();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showModifyPopup, setShowModifyPopup] = useState(false);
-  const [selectedStoryId, setSelectedStoryId] = useState('');
-  const [showDeleteStoryModal, setShowDeleteStoryModal] = useState(false); 
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const [clusterList, setClusterList] = useState([]); 
-  const [isStoryDeleted, setIsStoryDeleted] = useState(false);
   const [token, setToken] = useState("");
   const [selectedRow, setSelectedRow] = useState(null); 
-  const [stories, setStories] = useState([]);
   const [dialogPopup, setDialogPopup] = useState(false);
   const [whos, setWhos] = useState([]);
   const [whats, setWhats] = useState([]);
@@ -46,7 +36,6 @@ const MasterWsPage = () => {
   const [storyWordId, setStoryWordId] = useState();
   const [filteredOptions, setFilteredOption] = useState();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
     const [editIndex, setEditIndex] = useState(null);
   
@@ -106,9 +95,7 @@ const fetchStoryWorlds = async (tokenVal) => {
     const outputArr = response?.data?.data;
     if(outputArr?.length > 0) {
       setStoryWorldOptions(outputArr);
-    } else {
-      setStoryWorldOptions(storyWorldsLocal);
-    }
+    } 
   } catch (error) {
     console.error('Error:', error);
     const statusCode = error?.response?.status;
@@ -187,14 +174,6 @@ const fetchStoryWorlds = async (tokenVal) => {
     }
     setIsSubmitting(false);
   }
-
-  const filterData = [
-    { id: 1, ws: "Who", type: "Primary", clusterHead: "Abc", clusterValue: ["kajshs", "value2", "value3"] },
-    { id: 2, ws: "What", type: "Secondary", clusterHead: "Qiodj", clusterValue: ["Kajil", "extraValue"] },
-    { id: 3, ws: "Where", type: "Primary", clusterHead: "Qolak", clusterValue: ["NAhil", "anotherValue"] },
-    { id: 4, ws: "Where", type: "Secondary", clusterHead: "Lospdi", clusterValue: ["Opaea", "value4"] },
-    { id: 5, ws: "Whats", type: "Primary", clusterHead: "Aoldkdh", clusterValue: ["Kloand", "newValue"] },
-  ];
   
   const [ filteredData, setFilteredData ] = useState([]);
   const processData = (data) => {
@@ -357,16 +336,36 @@ const fetchStoryWorlds = async (tokenVal) => {
     },
     {
       dataIndex: "ws",
-      title: "W's Form"
+      title: "W's Form",
+      render: (text, record) => {
+        return (
+          <div>
+            <span>{record?.ws && record.ws.trim() !== "" ? record.ws : "NA"}</span>
+          </div>
+        );
+      },
     },
     {
       dataIndex: "type",
-      title: "Type"
+      title: "Type",
+      render: (text, record) => {
+        return (
+          <div>
+            <span>{record?.type && record.type.trim() !== "" ? record.type : "NA"}</span>
+          </div>
+        );
+      },
     },
     {
       dataIndex: "masterHead",
-      title: "Cluster Head"
-      
+      title: "Cluster Head",
+      render: (text, record) => {
+        return (
+          <div>
+            <span>{record?.masterHead && record.masterHead.trim() !== "" ? record.masterHead : "NA"}</span>
+          </div>
+        );
+      },
     },
     {
       dataIndex: "clusterValues",
@@ -390,7 +389,7 @@ const fetchStoryWorlds = async (tokenVal) => {
                     <span>{value?.value ?? value ?? []}</span>
                     <button
                       className="text-red-600 bg-transparent border-none cursor-pointer ml-2"
-                      // onClick={() => handleRemoveChip(value, index)} 
+                      onClick={() => handleRemoveChip(value, index)} 
                       title="Remove"
                     >
                       <svg
@@ -474,6 +473,25 @@ const fetchStoryWorlds = async (tokenVal) => {
     },
   ];
 
+  const handleRemoveChip = (value, index) => {
+    const removeChipFromClusterValues = (data, key, isIdCheck) => {
+      const updatedData = [...data];
+      if (updatedData[index]) {
+        const updatedClusterValues = updatedData[index]?.clusterValues.filter(
+          (item) => (isIdCheck ? item?.id !== value?.id : item?.value !== value?.value)
+        );
+        updatedData[index] = {
+          ...updatedData[index],
+          clusterValues: updatedClusterValues,
+        };
+      }
+      return updatedData;
+    };
+      const updatedFilterData = removeChipFromClusterValues(filteredData, "id", true);
+      setFilteredData(updatedFilterData);
+      handleAnythingChanged(true)
+  };
+
   const handleDelete = () => {
       const curData = [...filteredData];
       const updated = curData.filter((ele) => ele.id !== selectedRow.id);
@@ -481,14 +499,14 @@ const fetchStoryWorlds = async (tokenVal) => {
       message.success("Deleted Successfully !");
       handleAnythingChanged(true);
   };
-const [newRow, setNewRow] = useState([])
+
 const handleAddRow = () => {
   // Create a new row object with default values
   const newRow = {
-    id: null,
-    wsForm: "",
+    id: uuidv4(),
+    ws: "",
     type: "", // Can be updated later in edit
-    clusterHead: "",
+    masterHead: "",
     clusterValues: [],
     status: "New",
   };
@@ -496,8 +514,8 @@ const handleAddRow = () => {
   // Initialize filteredData if it's empty
   let updatedFilteredData = Array.isArray(filteredData) ? [...filteredData] : [];
 
-  // Add the new row to the end of the filteredData array
-  updatedFilteredData.push(newRow);
+  // Insert the new row at the beginning of the filteredData array
+  updatedFilteredData = [newRow, ...updatedFilteredData];
 
   // Update the filteredData state with the modified structure
   setFilteredData(updatedFilteredData);
