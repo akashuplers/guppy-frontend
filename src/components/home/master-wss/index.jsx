@@ -662,7 +662,7 @@ const MasterWssPage = ({
       }
 
       const formattedItem = {
-        id: item.masterHead?.id, 
+        id: item.masterHead?.id ?? item.id, 
         masterHead: item?.masterHead?.value || item?.masterHead, 
         clusterValues: item?.clusterValues?.map((cluster) => ({
           id: cluster?.id,
@@ -1147,7 +1147,7 @@ const MasterWssPage = ({
           types={type}
           clusterHeads={whos ? whats : wheres}
           onModify={onModify}
-          // type="InFlow"
+          modalType="InBetweenFlow"
         />
       )}
       <FooterButtons
