@@ -45,15 +45,19 @@ const MasterWsPage = () => {
   const [notFetched, setNotFetched] = useState(false);
   const [storyWordId, setStoryWordId] = useState();
   const [filteredOptions, setFilteredOption] = useState();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
-  const handleModify = (updatedObj) => {
-    const curData = [...filteredData];
-    const modified = curData.map((ele) =>
-      ele.id === selectedRow.id ? updatedObj : ele
-    );
-    setFilteredData(modified);
-    message.success("Updated Successfully !");
-    handleAnythingChanged(true);
+    const [editIndex, setEditIndex] = useState(null);
+  
+  const onModify = (updatedObj) => {
+    if (filteredData?.length > 0) {
+      const curData = [...filteredData];
+      curData[editIndex] = { ...curData[editIndex], ...updatedObj };
+      setFilteredData(curData);
+      message.success("Updated Successfully!");
+      handleAnythingChanged(true);
+    } 
   };
 
 const type = [
@@ -133,25 +137,7 @@ const fetchStoryWorlds = async (tokenVal) => {
     }
   }, []);
 
-  const items = [
-    {
-      key: '1',
-      label: <p className='text-lg'>WHOs</p>,
-      children: <WsList type="WHOs" list={whos} />,
-    },
-    {
-      key: '2',
-      label: <p className='text-lg'>WHATs</p>,
-      children: <WsList type="WHATs" list={whats} />,
-    },
-    {
-      key: '3',
-      label: <p className='text-lg'>WHEREs</p>,
-      children: <WsList type="WHEREs" list={wheres} />,
-    },
-  ];
-
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const handleSubmit = async (values, { setIsSubmitting }) => {
     let alertKey;
     try {
         const storyWorldId = values?.storyWorld;
@@ -168,7 +154,7 @@ const fetchStoryWorlds = async (tokenVal) => {
         const output = response?.data?.masterWs;
         if(output) {
           const { Who, What, Where } = output;
-          setFilteredData(output)
+          setFilteredData(processData(output))
           setWhos(Who);
           setWhats(What);
           setWheres(Where);
@@ -199,7 +185,7 @@ const fetchStoryWorlds = async (tokenVal) => {
             }
         }
     }
-    setSubmitting(false);
+    setIsSubmitting(false);
   }
 
   const filterData = [
@@ -213,15 +199,19 @@ const fetchStoryWorlds = async (tokenVal) => {
   const [ filteredData, setFilteredData ] = useState([]);
   const processData = (data) => {
     const result = [];
-
-    Object.keys(data).forEach((ws) => {
-      Object.keys(data[ws]).forEach((type) => {
-        data[ws][type].forEach((item) => {
-          result.push({
+    Object?.keys(data)?.forEach((ws) => {
+      Object?.keys(data[ws])?.forEach((type) => {
+        data[ws][type]?.forEach((item) => {
+          result?.push({
             ws,
+            id: item?.id,
             type,
             masterHead: item?.masterHead,
-            clusterValues: item?.clusterValues?.map((cv) => cv?.value)?.join(", "),
+            clusterValues: item?.clusterValues?.map((cluster) => ({
+              id: cluster?.id,
+              value: cluster?.value,
+            })),
+            // clusterValues: item?.clusterValues?.map((cv) => cv?.value)?.join(", "),
             status: item?.new ? "New" : item?.updated ? "Updated" : "Old",
           });
         });
@@ -231,7 +221,133 @@ const fetchStoryWorlds = async (tokenVal) => {
     return result;
   };
 
-  const newTableData = processData(filteredData)
+  const transformData = (data) => {
+    const result = {
+      who: {
+        primary: [],
+        secondary: [],
+      },
+      what: {
+        primary: [],
+        secondary: [],
+      },
+      where: {
+        primary: [],
+        secondary: [],
+      },
+    };
+    data?.forEach((item) => {
+      const normalizedClusterValues = (() => {
+        if (Array.isArray(item.clusterValues)) {
+          return item.clusterValues.map((cluster) => ({
+            id: cluster.id ?? null,
+            value: cluster.value ?? cluster,
+          }));
+        } else if (typeof item.clusterValues === "string") {
+          return item.clusterValues.split(",").map((value) => ({
+            id: null,
+            value: value.trim(),
+          }));
+        }
+        return [];
+      })();
+
+      const newItem = {
+        id: item.id ?? null,
+        masterHead: item?.masterHead?.value ?? item.masterHead, 
+        clusterValues: item.clusterValues?.map((cluster) => ({
+          id: cluster.id,
+          value: cluster.value,
+        })),
+        new: item.status === "New",
+        updated: item.status === "Updated",
+      };
+
+      // Add the newItem to the appropriate section
+      if (item.ws === "who") {
+        if (item.type.toLowerCase() === "primary") {
+          result.who.primary.push(newItem);
+        } else {
+          result.who.secondary.push(newItem);
+        }
+      } else if (item.ws === "what") {
+        if (item.type.toLowerCase() === "primary") {
+          result.what.primary.push(newItem);
+        } else {
+          result.what.secondary.push(newItem);
+        }
+      } else if (item.ws === "where") {
+        if (item.type.toLowerCase() === "primary") {
+          result.where.primary.push(newItem);
+        } else {
+          result.where.secondary.push(newItem);
+        }
+      }
+    });
+
+    return cleanEmptySections(result);
+  };
+
+  const cleanEmptySections = (data) => {
+    for (const key in data) {
+      if (data.hasOwnProperty(key)) {
+        const sections = data[key];
+        for (const section in sections) {
+          if (sections[section].length === 0) {
+            delete sections[section];
+          }
+        }
+      }
+    }
+    return data;
+  };
+
+  const transformedData = transformData(filteredData);
+
+  const handleSaveWs = async () => {
+    setIsSubmitting(true);
+    let alertKey;
+    try {
+      const apiUrl = API_BASE_PATH + API_ROUTES.Update_Master_WS + storyWordId;
+      const payload = transformedData;
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      alertKey = message.loading("Saving Ws...", 0).key;
+      const response = await axios.post(apiUrl, payload, config);      
+      const output = response;
+      if (output) {
+        message.destroy(alertKey);
+        message.success("Clusters Saved Successfully !");
+        handleAnythingChanged(false);
+      } else {
+        message.destroy(alertKey);
+        message.error("Error In Saving Ws ! Unable To Fetch Response !");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      message.destroy(alertKey);
+      const statusCode = error?.response?.status;
+      if (statusCode === 401) {
+        message.error("Not Authorized ! You need to login first !");
+        navigate("/");
+      } else if (statusCode === 500) {
+        message.error("Internal Server Error !");
+      } else {
+        const errorMessage = error?.response?.data?.message;
+        if (errorMessage) {
+          message.error(errorMessage);
+        } else {
+          message.error("Error In Saving Ws ! Unable To Fetch Response !");
+        }
+      }
+    }
+    setIsSubmitting(false);
+  };
+
   
   const historyColumns = [
     {
@@ -255,52 +371,46 @@ const fetchStoryWorlds = async (tokenVal) => {
     {
       dataIndex: "clusterValues",
       title: "Cluster Value",
-      render: (clusterValue, record, index) => {
-        // Ensure we always have an array, even if clusterValue is a string or undefined
-        const valuesArray = Array.isArray(clusterValue)
-          ? clusterValue
-          : clusterValue?.split(", ").filter(Boolean) || [];
-    
-        const handleRemoveChip = (valueToRemove) => {
-          const updatedClusterValues = valuesArray.filter(value => value !== valueToRemove);
-          record.clusterValues = updatedClusterValues;
-          // Add any state update or re-render logic here if needed
-        };
-    
+      render: (clusterValues, record, index) => {
+        const normalizedClusterValues =
+          typeof clusterValues === "string"
+            ? clusterValues
+                .split(", ")
+                .map((value) => ({ value: value?.trim() }))
+            : clusterValues || [];
+
         return (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-            {valuesArray.length > 0 ? (
-              valuesArray.map((value, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center bg-gray-200 rounded-lg px-2.5 py-1.5 text-sm text-gray-800 border border-gray-300"
-                >
-                  <span>{value}</span>
-                  <button
-                    className="text-red-600 bg-transparent border-none cursor-pointer ml-2"
-                    onClick={() => handleRemoveChip(value)}
-                    title="Remove"
+          <div className="flex flex-wrap gap-2">
+            {normalizedClusterValues?.length > 0
+              ? normalizedClusterValues?.map((value, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center bg-gray-200 rounded-lg px-2.5 py-1.5 text-sm text-gray-800 border border-gray-300"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-6 h-6"
+                    <span>{value?.value ?? value ?? []}</span>
+                    <button
+                      className="text-red-600 bg-transparent border-none cursor-pointer ml-2"
+                      // onClick={() => handleRemoveChip(value, index)} 
+                      title="Remove"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              ))
-            ) : (
-              <span>NA</span>
-            )}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-6 h-6"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                ))
+              : "NA"}
           </div>
         );
       },
@@ -308,7 +418,7 @@ const fetchStoryWorlds = async (tokenVal) => {
     {
       dataIndex: "action",
       title: "Action",
-      render: (val, record,) => {
+      render: (val, record, index) => {
         return (
           <div style={{ display: 'flex', gap: '15px' }}>
             <button
@@ -317,6 +427,7 @@ const fetchStoryWorlds = async (tokenVal) => {
                 setShowModifyPopup(true);
                 setDialogPopup(true);
                 setSelectedRow(record);
+                setEditIndex(index);
               }}
             >
               <svg
@@ -370,21 +481,30 @@ const fetchStoryWorlds = async (tokenVal) => {
       message.success("Deleted Successfully !");
       handleAnythingChanged(true);
   };
+const [newRow, setNewRow] = useState([])
+const handleAddRow = () => {
+  // Create a new row object with default values
+  const newRow = {
+    id: null,
+    wsForm: "",
+    type: "", // Can be updated later in edit
+    clusterHead: "",
+    clusterValues: [],
+    status: "New",
+  };
 
-    const handleAddRow = () => {
-      const newObj = {
-        id: filterData?.length + 1,
-        wsForm: [],
-        type: [],
-        clusterHead: [],
-        // clusterValue: [],
-        isNewField: true
-      };
-      const curData = [newObj, ...filterData];
-      setFilteredData(curData);
-      message.success("New Row Added Successfully !");
-      handleAnythingChanged(true);
-    };
+  // Initialize filteredData if it's empty
+  let updatedFilteredData = Array.isArray(filteredData) ? [...filteredData] : [];
+
+  // Add the new row to the end of the filteredData array
+  updatedFilteredData.push(newRow);
+
+  // Update the filteredData state with the modified structure
+  setFilteredData(updatedFilteredData);
+
+  message.success("New row added successfully!");
+  handleAnythingChanged(true);
+};
 
   return (
     <SidebarWithHeader>
@@ -437,19 +557,28 @@ const fetchStoryWorlds = async (tokenVal) => {
                     <>
                       <button
                         type="submit"
-                        className="text-white w-full md:w-[18vw] px-5 py-3 mt-4 md:mt-9 bg-blue-600 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
+                        className="text-white w-auto md:w-[10vw] px-4 py-2 mt-4 md:mt-6 bg-blue-600 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
                         disabled={isSubmitting}
                       >
                         Fetch Master Ws
                       </button>
                       {"  "}
                       <button
-                        type="submit"
-                        className="text-white w-full md:w-[18vw] px-5 py-3 mt-4 md:mt-9 bg-blue-600 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
-                        disabled={isSubmitting}
+                        type="button"
+                        className="text-white w-auto md:w-[10vw] px-4 py-2 mt-4 md:mt-6 bg-blue-600 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
+                        // disabled={isSubmitting}
                         onClick={handleAddRow}
                       >
-                        Add Row
+                        Add Master Row
+                      </button>
+                      {"  "}
+                      <button
+                        type="submit"
+                        className="text-white w-auto md:w-[10vw] px-4 py-2 mt-4 md:mt-6 bg-blue-600 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 font-medium rounded-lg text-sm text-center bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
+                        disabled={isSubmitting}
+                        onClick={handleSaveWs}
+                      >
+                        Save Master Ws
                       </button>
                     </>
                   ) : (
@@ -465,17 +594,13 @@ const fetchStoryWorlds = async (tokenVal) => {
         </div>
 
         {/* master Ws Tabs */}
-        
-          <div className="mt-10 px-5">
-            {/* <Tabs defaultActiveKey="1" items={items} /> */}
-            <Table
-              dataSource={newTableData}
-              columns={historyColumns}
-              bordered
-            />
-          </div>
-       
-        {dialogPopup && flow && (
+
+        <div className="mt-10 px-5">
+          {/* <Tabs defaultActiveKey="1" items={items} /> */}
+          <Table dataSource={filteredData} columns={historyColumns} bordered />
+        </div>
+
+        {dialogPopup && (
           <ModifyMasterWsPopup
             open={dialogPopup}
             modifyItemObj={selectedRow} // Pass selected row data for editing
@@ -486,8 +611,8 @@ const fetchStoryWorlds = async (tokenVal) => {
             clusterList={clusterList}
             types={type}
             clusterHead={whos ? whats : wheres}
-            onModify={handleModify}
-            type="saparate" // Modify this as per the field you want to edit
+            onModify={onModify}
+            modalType="saparate" // Modify this as per the field you want to edit
           />
         )}
 
