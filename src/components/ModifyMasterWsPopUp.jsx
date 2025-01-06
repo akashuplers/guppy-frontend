@@ -59,16 +59,6 @@ const ModifyMasterWsPopup = ({
   
   useEffect(() => {
     if(!anythingChanged){
-      if (type === "title") {
-        setCurrentValue(modifyItemObj?.title || "");
-        setPopupTitle("Update Master W's");
-      } else if (type === "situation") {
-        setCurrentValue(modifyItemObj?.idea || "");
-        setPopupTitle("Situation");
-      } else {
-        setCurrentValue(modifyItemObj?.idea || "");
-        setPopupTitle("Action");
-      }
       if(modalType === "InBetweenFlow") {
         setClusterHead(modifyItemObj?.masterHead);
         setClusterHeadId(modifyItemObj?.id || "");

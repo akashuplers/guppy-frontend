@@ -51,7 +51,7 @@ const MasterWssPage = ({
   const [secondaryWheres, setSecondaryWhere] = useState([]);
   const [myNewData, setMyNewData] = useState([]);
   const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged} = useContext(StoryUploadApiContext);
-  const {token,story_id,storyWorld,fileName,storyWorldId,masterWs} = storyUploadApiResponse;
+  const {token,story_id,storyWorld,fileName,storyWorldId,masterws} = storyUploadApiResponse;
   const [filterData, setFilteredData] = useState([]);
 
   const formik = useFormik({
@@ -413,7 +413,7 @@ const MasterWssPage = ({
   ];
 
   const onReset = () => {
-    // setTableData(tableData);
+    setTableData(processData(masterws?.masterWs));
     message.success("Reset Successfully !");
     handleAnythingChanged(true);
   };

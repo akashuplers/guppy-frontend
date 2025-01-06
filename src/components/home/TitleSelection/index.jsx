@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import FooterButtons from "../FooterButtons";
 import { Button, Table, message, Input, Checkbox, Select } from "antd";
-import { SearchOutlined } from '@ant-design/icons';
 import DeleteConfirmationDialog from "../../../utils/modals/DeleteConfirmationDialog";
 import { StoryUploadApiContext } from "../../../contexts/ApiContext";
 import { API_BASE_PATH, API_ROUTES } from "../../../constants/api-endpoints";
@@ -18,7 +17,6 @@ const getCSVsFromList = (list_of_strings) => {
 };
 
 const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = () => {}}) => {
-
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [titleSelectionItems, setTitleSelectionItems] = useState([]);
