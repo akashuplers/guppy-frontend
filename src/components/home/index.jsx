@@ -37,6 +37,10 @@ const Home = () => {
   } = useContext(StoryUploadApiContext);
   const { storyWorld, storyWorldLead, titles, situations, actions } =
     storyUploadApiResponse;
+console.log("saveModalOpen", saveModalOpen);
+// console.log("handleAnythingChanged",handleAnythingChanged());
+console.log("isAnythingChanged",isAnythingChanged);
+
 
   useEffect(() => {
     if (storyId && tokenVal) {
@@ -186,7 +190,6 @@ const Home = () => {
           updatedActions: getUpdatedJson(actions),
           token: token,
         };
-
         setStoryUploadApiResponse(saveObj); // save fetched data in context
         if (prevStep == false) {
           if (respObj?.titles?.length === 0) {
