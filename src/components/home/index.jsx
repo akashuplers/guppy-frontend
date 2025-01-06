@@ -186,7 +186,6 @@ const Home = () => {
           updatedActions: getUpdatedJson(actions),
           token: token,
         };
-
         setStoryUploadApiResponse(saveObj); // save fetched data in context
         if (prevStep == false) {
           if (respObj?.titles?.length === 0) {
