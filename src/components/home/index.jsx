@@ -1,5 +1,4 @@
 import { useContext, useEffect, useState } from "react";
-import Footer from "../../utils/Footer";
 import SidebarWithHeader from "../sidebar-with-header";
 import Stepper from "./Stepper";
 import StoryUpload from "./StoryUpload";
@@ -67,31 +66,12 @@ const Home = () => {
       const updated = arr.map((item, index) => ({
         id: item.id,
         name: item.value,
-        // isRadioSelected: item.type?.toLowerCase()==='primary' ? true : false,
         isCheckboxSelected: item.selected ? true : false,
         ner: item.ner ?? false,
       }));
       return updated;
     }
     return [];
-  };
-
-  const getWsPayload = (list, type) => {
-    let names = [];
-    if (type === "prim") {
-      for (let i = 0; i < list.length; i++) {
-        if (list[i].type?.toLowerCase() === "primary") {
-          names.push(list[i].value);
-        }
-      }
-    } else if (type === "sec") {
-      for (let i = 0; i < list.length; i++) {
-        if (list[i].type?.toLowerCase() === "secondary") {
-          names.push(list[i].value);
-        }
-      }
-    }
-    return names;
   };
 
   const getUpdatedJsonTitles = (list) => {
@@ -156,6 +136,7 @@ const Home = () => {
           story_world_id,
           storyWorld,
           story_file_name,
+          masterws,
           titles,
           sitautions,
           actions,
@@ -179,6 +160,7 @@ const Home = () => {
           wheres: getUpdatedJsonWs(Where),
           updatedWheres: getUpdatedJsonWs(Where),
           titles: getUpdatedJsonTitles(titles),
+          masterws:masterws,
           updatedTitles: getUpdatedJsonTitles(titles),
           situations: getUpdatedJson(sitautions),
           updatedSituations: getUpdatedJson(sitautions),
@@ -265,8 +247,6 @@ const Home = () => {
 
   useEffect(() => {
       fetchMasterWsList();
-    // }
-    
   }, [responseData?.story_world_id]);
   useEffect(() => {
     const handleResize = () => {
@@ -412,8 +392,6 @@ const Home = () => {
             onClose={handleSaveModalClose}
           />
         )}
-        {/* footer */}
-        {/* <Footer className={"sm:ml-64 p-1 bg-yellow-100 border"} /> */}
       </div>
     </SidebarWithHeader>
   );
