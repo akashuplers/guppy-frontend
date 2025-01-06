@@ -37,10 +37,6 @@ const Home = () => {
   } = useContext(StoryUploadApiContext);
   const { storyWorld, storyWorldLead, titles, situations, actions } =
     storyUploadApiResponse;
-console.log("saveModalOpen", saveModalOpen);
-// console.log("handleAnythingChanged",handleAnythingChanged());
-console.log("isAnythingChanged",isAnythingChanged);
-
 
   useEffect(() => {
     if (storyId && tokenVal) {
