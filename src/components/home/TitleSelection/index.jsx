@@ -31,7 +31,6 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
   const navigate = useNavigate();
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, titles, updatedTitles } = storyUploadApiResponse;
-  console.log("storyUplossssssssssssssadApiResponse", storyUploadApiResponse);
   
   useEffect(() => {
     setTitleSelectionItems(updatedTitles);

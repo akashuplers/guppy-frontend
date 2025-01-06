@@ -1,18 +1,18 @@
 import React, { useEffect, useState, useRef, useContext, useMemo } from "react";
-import { useFormik, Field, Form, ErrorMessage } from "formik";
-import { Formik } from "formik";
-import { StoryUploadApiContext } from "../../../contexts/ApiContext";
-import { useNavigate } from "react-router-dom";
-import { Table, message, Modal, Select } from "antd";
-import { API_BASE_PATH, API_ROUTES } from "../../../constants/api-endpoints";
 import axios from "axios";
+import { Formik } from "formik";
 import ShareModal from "../ShareModal";
-import DownloadVersionSelectPopup from "../DownloadVersionSelectPopup";
-import DeleteConfirmationDialog from "../../../utils/modals/DeleteConfirmationDialog";
-import { MultiSelect } from "react-multi-select-component";
 import FooterButtons from "../FooterButtons";
-import ModifyMasterWsPopup from "../../ModifyMasterWsPopUp";
+import { useNavigate } from "react-router-dom";
 import DownloadCSVFile from "../../DownloadCsv";
+import { Table, message, Modal, Select } from "antd";
+import { MultiSelect } from "react-multi-select-component";
+import { useFormik, Field, Form, ErrorMessage } from "formik";
+import ModifyMasterWsPopup from "../../ModifyMasterWsPopUp";
+import { StoryUploadApiContext } from "../../../contexts/ApiContext";
+import DownloadVersionSelectPopup from "../DownloadVersionSelectPopup";
+import { API_BASE_PATH, API_ROUTES } from "../../../constants/api-endpoints";
+import DeleteConfirmationDialog from "../../../utils/modals/DeleteConfirmationDialog";
 
 const MasterWssPage = ({
   onDiscard = () => {},
@@ -21,12 +21,10 @@ const MasterWssPage = ({
 }) => {
   const navigate = useNavigate();
   const flow = true;
-  const [isLoading, setIsLoading] = useState(false);
-  const [showModifyPopup, setShowModifyPopup] = useState(false);
+  const [editIndex, setEditIndex] = useState(null);
   const [dialogPopup, setDialogPopup] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
   const [deleteIndex, setDeleteIndex] = useState(null);
-  const [editIndex, setEditIndex] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isShareModalOpen, setShareModalOpen] = useState(false);
   const [storyDetails, setStoryDetails] = useState(null);
@@ -51,20 +49,10 @@ const MasterWssPage = ({
   const [secondaryWhats, setSecondaryWhat] = useState([]);
   const [primaryWheres, setPrimaryWhere] = useState([]);
   const [secondaryWheres, setSecondaryWhere] = useState([]);
-  const {
-    storyUploadApiResponse,
-    setStoryUploadApiResponse,
-    handleAnythingChanged,
-  } = useContext(StoryUploadApiContext);
-  const {
-    token,
-    story_id,
-    storyWorld,
-    fileName,
-    storyWorldId,
-    masterWs,
-    filterDatas,
-  } = storyUploadApiResponse;
+  const [myNewData, setMyNewData] = useState([]);
+  const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged} = useContext(StoryUploadApiContext);
+  const {token,story_id,storyWorld,fileName,storyWorldId,masterWs} = storyUploadApiResponse;
+  const [filterData, setFilteredData] = useState([]);
 
   const formik = useFormik({
     initialValues: {
@@ -86,15 +74,13 @@ const MasterWssPage = ({
   const [isClusterLoading, setClusterLoading] = useState(false);
 
   const options = (filteredOptions || [])?.map((item) => ({
-    label: item.value,
-    value: item.id,
+    label: item?.value,
+    value: item?.id,
   }));
-
-  const [filterData, setFilteredData] = useState([]);
 
   const fetchMasterWsList = async () => {
     setClusterLoading(true);
-    let alertKey = null; // Initialize to prevent undefined errors
+    let alertKey = null; 
     try {
       const apiUrl = API_BASE_PATH + API_ROUTES.MASTER_WS_LIST + storyWorldId;
       const config = {
@@ -168,9 +154,6 @@ const MasterWssPage = ({
     if (!tokenVal) {
       navigate("/");
     } 
-    // else {
-    //   isStoryDeleted && fetchStories();
-    // }
   }, [isStoryDeleted]);
 
   useEffect(() => {
@@ -243,20 +226,16 @@ const MasterWssPage = ({
       return updatedData;
     };
   
-    // Check if both filterData and tableData exist
     if (filterData?.length > 0 && tableData?.length > 0) {
-      // Check if the value belongs to filterData or tableData
       let updatedFilterData = [...filterData];
       let updatedTableData = [...tableData];
       
-      // Attempt to find the value in filterData first
       const filterIndex = filterData.findIndex((item) => item.clusterValues.some((clusterItem) => clusterItem.id === value.id));
       if (filterIndex !== -1) {
         updatedFilterData = removeChipFromClusterValues(updatedFilterData, "id", true);
         setFilteredData(updatedFilterData);
       }
   
-      // Then, attempt to find the value in tableData
       const tableIndex = tableData.findIndex((item) => item.clusterValues.some((clusterItem) => clusterItem.value === value.value));
       if (tableIndex !== -1) {
         updatedTableData = removeChipFromClusterValues(updatedTableData, "value", false);
@@ -275,8 +254,6 @@ const MasterWssPage = ({
 
     }
   };
-  
-  
 
   const historyColumns = [
     {
@@ -374,7 +351,6 @@ const MasterWssPage = ({
             <button
               title="View/Modify"
               onClick={() => {
-                setShowModifyPopup(true);
                 setDialogPopup(true);
                 setSelectedRow(record);
                 setEditIndex(index);
@@ -437,22 +413,8 @@ const MasterWssPage = ({
   ];
 
   const onReset = () => {
+    // setTableData(tableData);
     message.success("Reset Successfully !");
-    handleAnythingChanged(true);
-  };
-
-  const handleAddRow = () => {
-    const newObj = {
-      id: filterData?.length + 1,
-      wsForm: [],
-      type: [],
-      masterHead: [],
-      clusterValues: [],
-      new: true,
-    };
-    const curData = [newObj, ...filterData];
-    setFilteredData(curData);
-    message.success("New Row Added Successfully !");
     handleAnythingChanged(true);
   };
 
@@ -540,7 +502,6 @@ const MasterWssPage = ({
       formik.setFieldValue("clusterValues", selectedValues);
     }
   };
-  const { values, setFieldValue } = formik;
 
   const getUpdatedJson = (list) => {
     const arr = list || [];
@@ -639,6 +600,7 @@ const MasterWssPage = ({
       };
 
       setFilteredData((prevArray = []) => [...prevArray, newRow]); 
+      handleAnythingChanged(true);
       formik.resetForm(formik.values);
       setWhats([]);
       setWhos([]);
@@ -695,7 +657,6 @@ const MasterWssPage = ({
               id: cluster?.id,
               value: cluster?.value,
             })),
-            // clusterValues: item?.clusterValues?.map((cv) => cv?.value)?.join(", "),
             status: item?.new ? "New" : item?.updated ? "Updated" : "Old",
           });
         });
@@ -709,7 +670,6 @@ const MasterWssPage = ({
     () => processData(manualData || []),
     [manualData]
   );
-  const [myNewData, setMyNewData] = useState([]);
 
   useEffect(() => {
     const combinedData = [...tableData, ...newManualData];
@@ -717,9 +677,7 @@ const MasterWssPage = ({
   const currentDataString = JSON.stringify(myNewData);
   if (combinedDataString !== currentDataString) {
     setMyNewData(combinedData);
-  }
-  handleAnythingChanged(true);
-  }, [tableData, newManualData]);
+  }}, [tableData, newManualData]);
 
   const flattenData = myNewData?.map((item) => {
     const normalizedClusterValues = (() => {
@@ -737,7 +695,7 @@ const MasterWssPage = ({
       ws: item?.ws ?? "",
       type: item?.type ?? "",
       ClusterHead: item?.masterHead ?? "",
-      clusterValues: normalizedClusterValues.join(", "),
+      clusterValues: normalizedClusterValues?.join(", "),
     };
   });
 
@@ -758,15 +716,15 @@ const MasterWssPage = ({
     };
     data?.forEach((item) => {
       const normalizedClusterValues = (() => {
-        if (Array.isArray(item.clusterValues)) {
-          return item.clusterValues.map((cluster) => ({
+        if (Array?.isArray(item.clusterValues)) {
+          return item.clusterValues?.map((cluster) => ({
             id: cluster.id ?? null,
             value: cluster.value ?? cluster,
           }));
         } else if (typeof item.clusterValues === "string") {
-          return item.clusterValues.split(",").map((value) => ({
+          return item.clusterValues?.split(",")?.map((value) => ({
             id: null,
-            value: value.trim(),
+            value: value?.trim(),
           }));
         }
         return [];
@@ -783,7 +741,6 @@ const MasterWssPage = ({
         updated: item.status === "Updated",
       };
 
-      // Add the newItem to the appropriate section
       if (item.ws === "who") {
         if (item.type.toLowerCase() === "primary") {
           result.who.primary.push(newItem);
@@ -826,9 +783,7 @@ const MasterWssPage = ({
   
   useEffect(() => {
     if (filterData?.length > 0 || tableData?.length > 0) {
-      let masterHeadValues = [];
-  
-      // Combine unique values from both filterData and tableData
+      let masterHeadValues = [];  
       if (filterData?.length > 0 && tableData?.length > 0) {
         masterHeadValues = [
           ...new Set([
@@ -843,37 +798,32 @@ const MasterWssPage = ({
       }
   
       if (masterHeadValues?.length > 0) {
-        // Update whos only if there is a real change
         setWhos((prevWhos) => {
           const updatedWhos = prevWhos.filter(
             (item) => !masterHeadValues.includes(item.value)
           );
           return JSON.stringify(updatedWhos) !== JSON.stringify(prevWhos)
             ? updatedWhos
-            : prevWhos; // Avoid redundant updates
+            : prevWhos;
         });
   
-        // Update wheres only if there is a real change
         setWheres((prevWheres) => {
           const updatedWheres = prevWheres.filter(
             (item) => !masterHeadValues.includes(item.value)
           );
           return JSON.stringify(updatedWheres) !== JSON.stringify(prevWheres)
             ? updatedWheres
-            : prevWheres; // Avoid redundant updates
+            : prevWheres; 
         });
-  
-        // Update whats only if there is a real change
         setWhats((prevWhats) => {
           const updatedWhats = prevWhats.filter(
             (item) => !masterHeadValues.includes(item.value)
           );
           return JSON.stringify(updatedWhats) !== JSON.stringify(prevWhats)
             ? updatedWhats
-            : prevWhats; // Avoid redundant updates
+            : prevWhats; 
         });
   
-        // Optionally handle filterData-specific filtering
         if (filterData?.length > 0) {
           setFilteredOption((prevFilteredOptions) =>
             prevFilteredOptions?.filter(
@@ -884,8 +834,6 @@ const MasterWssPage = ({
       }
     }
   }, [filterData, tableData, whos, whats, wheres]);
-  
-  
   
   const onModify = (updatedObj) => {
     if (filterData?.length > 0) {
@@ -943,13 +891,6 @@ const MasterWssPage = ({
               <div className="flex flex-col justify-between mt-5 mb-3 text-lg md:flex-row md:text-xl md:mb-4">
                 <p>Step-3 : Master W's</p>
                 <div className="flex space-x-4">
-                  {/* <button
-                    type="button"
-                    className="w-20 px-4 py-2 mt-4 text-sm font-medium text-center text-white bg-blue-600 rounded-lg md:w-24 lg:w-28 md:mt-0 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
-                    onClick={handleAddRow}
-                  >
-                    Add Row
-                  </button> */}
                   <button
                     type="submit"
                     className="w-20 px-4 py-2 mt-4 text-sm font-medium text-center text-white bg-blue-600 rounded-lg md:w-24 lg:w-28 md:mt-0 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
@@ -959,7 +900,6 @@ const MasterWssPage = ({
                       csvDat={flattenData}
                       fileName={fileName}
                       storyWorld={storyWorld}
-                      // header={headers}
                     />
                   </button>
                   <button
@@ -1046,7 +986,6 @@ const MasterWssPage = ({
                   />
                 </div>
 
-                {/* Select Type */}
                 <div className="flex-1 min-w-[200px]">
                   <labeltable
                     htmlFor="type"
