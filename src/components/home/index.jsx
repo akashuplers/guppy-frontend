@@ -109,8 +109,7 @@ const Home = () => {
     }
     return [];
   };
-  const [responseData, setResponseData] = useState();
-  const [tableData, setTableData] = useState([]);
+  
   const fetchStoryData = async (story_id, token) => {
     try {
       const apiUrl =
@@ -129,7 +128,6 @@ const Home = () => {
       }
       if (output) {
         const respObj = output?.data?.data;
-        setResponseData(respObj);
         const {
           story_text,
           story_id,
@@ -143,6 +141,20 @@ const Home = () => {
         } = respObj;
         const wsDataObj = respObj?.ws[0]?.ws_data;
         const { Who, What, Where } = wsDataObj;
+      const { who, what, where } = masterws?.masterWs;
+
+        const extractIdAndValue = (data = []) =>
+          data?.map(({ id, masterHead }) => ({
+            id,
+            value: masterHead || null,
+          }));
+        // Extract each category
+        const primaryWho = extractIdAndValue(who?.primary || []);
+        const secondaryWho = extractIdAndValue(who?.secondary || []);
+        const primaryWhat = extractIdAndValue(what?.primary || []);
+        const secondaryWhat = extractIdAndValue(what?.secondary || []);
+        const primaryWhere = extractIdAndValue(where?.primary || []);
+        const secondaryWhere = extractIdAndValue(where?.secondary || []);
         const contextObj = { ...storyUploadApiResponse };
         let saveObj = {
           ...contextObj,
@@ -153,6 +165,12 @@ const Home = () => {
           storyLeadWho: storyWorld.lead_who,
           fileName: story_file_name,
           storyText: story_text,
+          primaryWhos: primaryWho,
+          secondaryWhos: secondaryWho,
+          primaryWhats: primaryWhat,
+          secondaryWhats: secondaryWhat,
+          primaryWheres: primaryWhere,
+          secondaryWheres: secondaryWhere,
           whos: getUpdatedJsonWs(Who),
           updatedWhos: getUpdatedJsonWs(Who),
           whats: getUpdatedJsonWs(What),
@@ -200,54 +218,6 @@ const Home = () => {
     }
   };
 
-  const fetchMasterWsList = async () => {    
-    if (!responseData?.story_world_id) return;
-    try {
-      const apiUrl =
-        API_BASE_PATH +
-        API_ROUTES.MASTER_WS_LIST +
-        responseData?.story_world_id;
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tokenVal}`,
-        },
-      };
-      const output = await axios.get(apiUrl, config);
-      setTableData(output.data?.masterWs);
-      const contextObj = { ...storyUploadApiResponse };
-      const { who, what, where } = output.data?.masterWs;
-      const extractIdAndValue = (data = []) =>
-        data?.map(({ id, masterHead }) => ({
-          id,
-          value: masterHead || null,
-        }));
-      // Extract each category
-      const primaryWho = extractIdAndValue(who?.primary || []);
-      const secondaryWho = extractIdAndValue(who?.secondary || []);
-      const primaryWhat = extractIdAndValue(what?.primary || []);
-      const secondaryWhat = extractIdAndValue(what?.secondary || []);
-      const primaryWhere = extractIdAndValue(where?.primary || []);
-      const secondaryWhere = extractIdAndValue(where?.secondary || []);
-      let saveObj = {
-        ...contextObj,
-        primaryWhos: primaryWho,
-        secondaryWhos: secondaryWho,
-        primaryWhats: primaryWhat,
-        secondaryWhats: secondaryWhat,
-        primaryWheres: primaryWhere,
-        secondaryWheres: secondaryWhere,
-      };
-
-      setStoryUploadApiResponse(saveObj);
-    } catch (error) {
-      console.log("error: ", error);
-    }
-  };
-
-  useEffect(() => {
-      fetchMasterWsList();
-  }, [responseData?.story_world_id]);
   useEffect(() => {
     const handleResize = () => {
       const bodyHeight = document.body.clientHeight;
