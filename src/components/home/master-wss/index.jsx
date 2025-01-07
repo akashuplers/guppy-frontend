@@ -50,6 +50,10 @@ const MasterWssPage = ({
   const [primaryWheres, setPrimaryWhere] = useState([]);
   const [secondaryWheres, setSecondaryWhere] = useState([]);
   const [myNewData, setMyNewData] = useState([]);
+  const [tablePagination, setTablePagination] = useState({
+    current: 1,   // Default to page 1
+    pageSize: 10, // Default to 10 records per page
+  });
   const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged} = useContext(StoryUploadApiContext);
   const {token,story_id,storyWorld,fileName,storyWorldId,masterws} = storyUploadApiResponse;
   const [filterData, setFilteredData] = useState([]);
@@ -127,37 +131,40 @@ const MasterWssPage = ({
     fetchMasterWsList();
   }, [storyWorldId]);
 
-  const handleDelete = () => {
-    if (deleteIndex !== null) {
-      const combinedData = [...tableData, ...filterData];
-  
-      if (deleteIndex >= 0 && deleteIndex < combinedData.length) {
-        let updatedTableData = [...tableData];
-        let updatedFilterData = [...filterData];
-  
-        if (deleteIndex < tableData.length) {
-          updatedTableData = tableData.filter((_, index) => index !== deleteIndex);
-          setTableData(updatedTableData);
-        } else if (deleteIndex < tableData.length + filterData.length) {
-          const filterIndex = deleteIndex - tableData.length;
-          updatedFilterData = filterData.filter((_, index) => index !== filterIndex);
-          setFilteredData(updatedFilterData);
-        }
-  
-        const updatedCombinedData = [
-          ...updatedTableData,
-          ...updatedFilterData,
-        ];
-        setMyNewData(updatedCombinedData);
-  
-        setShowDeleteModal(false);
-        message.success("Deleted Successfully!");
-        handleAnythingChanged(true);
-      } else {
-        message.error("Invalid index for deletion.");
-      }
+
+
+
+const handleDelete = () => {
+  const deleteId= selectedRow?.id
+  if (deleteId !== null && deleteId !== undefined) {
+    const tableIndex = tableData.findIndex((item) => item.id === deleteId);
+    const filterIndex = filterData.findIndex((item) => item.id === deleteId);
+
+    let updatedTableData = [...tableData];
+    let updatedFilterData = [...filterData];
+
+    if (tableIndex !== -1) {
+      updatedTableData = tableData.filter((item) => item.id !== deleteId);
+      setTableData(updatedTableData);
+    } else if (filterIndex !== -1) {
+      updatedFilterData = filterData.filter((item) => item.id !== deleteId);
+      setFilteredData(updatedFilterData);
+    } else {
+      // If deleteId is not found in either dataset
+      return;
     }
-  };
+
+    const updatedCombinedData = [...updatedTableData, ...updatedFilterData];
+    setMyNewData(updatedCombinedData);
+    setShowDeleteModal(false);
+    message.success("Deleted Successfully!");
+    handleAnythingChanged(true);
+  } else {
+    message.error("Invalid ID for deletion.");
+  }
+};
+
+
   
   useEffect(() => {
     if (!tokenVal) {
@@ -273,6 +280,11 @@ const MasterWssPage = ({
       dataIndex: "id",
       title: "S.No",
       render: (text, record, index) => index + 1,
+      // render: (text, record, index) => {
+      //   const currentStartIndex =
+      //     (tablePagination.current - 1) * tablePagination.pageSize;
+      //   return currentStartIndex + index + 1;
+      // },
       width: 60,
     },
     {
@@ -597,12 +609,12 @@ const MasterWssPage = ({
     setIsSubmitting(false);
   };
 
-  const handleSaveCluster = (values, resetForm) => {    
+  const handleSaveCluster = (values, resetForm) => {   
     if (formik.values.ws && formik.values.type && formik.values.masterHead) {
       const newRow = {
-        id: (filterData?.length || 0) + 1, 
-        ws: formik.values.ws,
-        type: formik.values.type,
+        id: formik?.values?.masterHead?.id, 
+        ws: formik?.values?.ws,
+        type: formik?.values?.type,
         masterHead: formik.values.masterHead,
         clusterValues: formik.values.clusterValues?.map((val) => ({
           id: val.value,
@@ -643,8 +655,8 @@ const MasterWssPage = ({
           id: cluster?.id,
           value: cluster?.value,
         })),
-        new: item?.new,
-        updated: item?.updated,
+        new: (item?.new == true) ? true:false,
+        updated: (item?.updated == true) ? true:false,
       };
 
       result[wsKey][typeKey].push(formattedItem);
@@ -670,7 +682,9 @@ const MasterWssPage = ({
               id: cluster?.id,
               value: cluster?.value,
             })),
-            status: item?.new ? "New" : item?.updated ? "Updated" : "Old",
+            new: (item?.new == true) ? true:false,
+            updated: (item?.updated == true) ? true:false,
+            // status: item?.new ? "New" : item?.updated ? "Updated" : "Old",
           });
         });
       });
@@ -752,8 +766,8 @@ const MasterWssPage = ({
           id: cluster.id,
           value: cluster.value,
         })),
-        new: item.status === "New",
-        updated: item.status === "Updated",
+        new: item.new,
+        updated: item.updated,
       };
 
       if (item.ws === "who") {
@@ -888,6 +902,13 @@ const MasterWssPage = ({
       setSecondaryWhere(secondaryWhere);
     }
   }, [myNewData]); 
+
+  const handleTableChange = (pagination) => {
+    setTablePagination({
+      current: pagination.current,
+      pageSize: pagination.pageSize,
+    });
+  };
 
   return (
     <div>
@@ -1062,7 +1083,10 @@ const MasterWssPage = ({
 
         <div className="mt-8">
           {!isClusterLoading && (
-            <Table dataSource={myNewData} columns={historyColumns} bordered />
+            <Table dataSource={myNewData} columns={historyColumns}  
+            // pagination={{ pageSize: 10 }}   
+            // onChange={handleTableChange}
+            bordered />
           )}
         </div>
       </div>

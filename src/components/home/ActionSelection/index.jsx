@@ -61,6 +61,8 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
       id: item.isNewField ? '' : item.id,
       idea: item.idea,
       Classification: "Action",
+      updated:(item?.updated == true) ? true:false,
+      new:item?.new ?? true,
       Who_Primary: item.primaryWhos,
       Who_Secondary: item.secondaryWhos,
       What_Primary: item.primaryWhats,
