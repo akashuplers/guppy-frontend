@@ -60,6 +60,8 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSu
     const updated = situationSelectionItems?.map((item) => ({
       id: item.isNewField ? '' : item.id,
       idea: item.idea,
+      updated:(item?.updated == true) ? true:false,
+      new:item?.new ?? true,
       Classification: "Situation",
       Who_Primary: item.primaryWhos,
       Who_Secondary: item.secondaryWhos,
