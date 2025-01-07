@@ -57,7 +57,6 @@ const MasterWssPage = ({
   const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged} = useContext(StoryUploadApiContext);
   const {token,story_id,storyWorld,fileName,storyWorldId,masterws} = storyUploadApiResponse;
   const [filterData, setFilteredData] = useState([]);
-console.log("storyUploadApiResponse", storyUploadApiResponse);
 
   const formik = useFormik({
     initialValues: {
@@ -443,7 +442,6 @@ const handleDelete = () => {
     message.success("Reset Successfully !");
     handleAnythingChanged(true);
   };
-console.log("seeeeeeee", selectedRow);
 
   const apiUrl = API_BASE_PATH + API_ROUTES.SORT_WS + story_id;
   const config = {

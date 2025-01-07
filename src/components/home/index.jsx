@@ -109,7 +109,7 @@ const Home = () => {
     }
     return [];
   };
-  console.log("titlesMai",storyUploadApiResponse);
+  
   const fetchStoryData = async (story_id, token) => {
     try {
       const apiUrl =
