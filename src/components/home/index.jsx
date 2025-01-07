@@ -186,7 +186,7 @@ const Home = () => {
           token: token,
         };
         
-        setStoryUploadApiResponse(saveObj); // save fetched data in context
+        setStoryUploadApiResponse(saveObj); 
         if (prevStep == false) {
           if (respObj?.masterws == null) {
             setCurrentStep(1);
