@@ -16,7 +16,7 @@ import DeleteConfirmationDialog from "../../../utils/modals/DeleteConfirmationDi
 
 const MasterWssPage = ({
   onDiscard = () => {},
-  saveTitles,
+  saveMasterWs,
   handleSaveSuccess = () => {},
 }) => {
   const navigate = useNavigate();
@@ -126,30 +126,40 @@ const MasterWssPage = ({
   useEffect(() => {
     fetchMasterWsList();
   }, [storyWorldId]);
+  // const [newManualData, setNewManualData] = useState([]);
 
   const handleDelete = () => {
     if (deleteIndex !== null) {
-        if (tableData?.length > 0) {
-          const updatedData = tableData?.filter(
-            (_, index) => index !== deleteIndex
-          );
-          setTableData(updatedData);
+      const combinedData = [...tableData, ...filterData];
+  
+      if (deleteIndex >= 0 && deleteIndex < combinedData.length) {
+        let updatedTableData = [...tableData];
+        let updatedFilterData = [...filterData];
+  
+        if (deleteIndex < tableData.length) {
+          updatedTableData = tableData.filter((_, index) => index !== deleteIndex);
+          setTableData(updatedTableData);
+        } else if (deleteIndex < tableData.length + filterData.length) {
+          const filterIndex = deleteIndex - tableData.length;
+          updatedFilterData = filterData.filter((_, index) => index !== filterIndex);
+          setFilteredData(updatedFilterData);
         }
-       else {
-        if (filterData?.length > 0) {
-          const updatedData = filterData?.filter(
-            (_, index) => index !== deleteIndex
-          );
-          setFilteredData(updatedData);
-        }
+  
+        const updatedCombinedData = [
+          ...updatedTableData,
+          ...updatedFilterData,
+        ];
+        setMyNewData(updatedCombinedData);
+  
+        setShowDeleteModal(false);
+        message.success("Deleted Successfully!");
+        handleAnythingChanged(true);
+      } else {
+        message.error("Invalid index for deletion.");
       }
-
-      setShowDeleteModal(false);
-      message.success("Deleted Successfully!");
-      handleAnythingChanged(true);
     }
   };
-
+  
   useEffect(() => {
     if (!tokenVal) {
       navigate("/");
@@ -254,7 +264,11 @@ const MasterWssPage = ({
 
     }
   };
-
+  useEffect(() => {
+    if(saveMasterWs){
+      onSave();
+    }
+  }, [saveMasterWs]);
   const historyColumns = [
     {
       dataIndex: "id",
@@ -670,14 +684,30 @@ const MasterWssPage = ({
     () => processData(manualData || []),
     [manualData]
   );
+  // const [newManualData, setNewManualData] = useState([]);
+
+// When manualData changes, update the state.
+// useEffect(() => {
+//   setNewManualData(processData(manualData || []));
+// }, [manualData]);
 
   useEffect(() => {
     const combinedData = [...tableData, ...newManualData];
     const combinedDataString = JSON.stringify(combinedData);
-  const currentDataString = JSON.stringify(myNewData);
-  if (combinedDataString !== currentDataString) {
-    setMyNewData(combinedData);
-  }}, [tableData, newManualData]);
+    const currentDataString = JSON.stringify(myNewData);
+  
+    if (combinedDataString !== currentDataString) {
+      setMyNewData(combinedData);
+    }
+  }, [tableData, newManualData]);
+  
+  // useEffect(() => {
+  //   const combinedData = [...tableData, ...newManualData];
+  //   const combinedDataString = JSON.stringify(combinedData);
+  // const currentDataString = JSON.stringify(myNewData);
+  // if (combinedDataString !== currentDataString) {
+  //   setMyNewData(combinedData);
+  // }}, [tableData, newManualData]);
 
   const flattenData = myNewData?.map((item) => {
     const normalizedClusterValues = (() => {

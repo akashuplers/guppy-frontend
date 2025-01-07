@@ -7,7 +7,6 @@ import axios from 'axios';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import LoadingButtonPrimary from '../../utils/LoadingButtonPrimary';
 import * as Yup from "yup";
-import WsList from './WsList';
 import ModifyMasterWsPopup from '../ModifyMasterWsPopUp';
 import { StoryUploadApiContext } from '../../contexts/ApiContext';
 import DeleteConfirmationDialog from '../../utils/modals/DeleteConfirmationDialog';
@@ -40,6 +39,7 @@ const MasterWsPage = () => {
     const [editIndex, setEditIndex] = useState(null);
   
   const onModify = (updatedObj) => {
+    debugger
     if (filteredData?.length > 0) {
       const curData = [...filteredData];
       curData[editIndex] = { ...curData[editIndex], ...updatedObj };
@@ -233,10 +233,10 @@ const fetchStoryWorlds = async (tokenVal) => {
 
       const newItem = {
         id: item.id ?? null,
-        masterHead: item?.masterHead?.value ?? item.masterHead, 
+        masterHead: item?.masterHead?.value ?? item?.masterHead, 
         clusterValues: item.clusterValues?.map((cluster) => ({
-          id: cluster.id,
-          value: cluster.value,
+          id: cluster?.id,
+          value: cluster?.value,
         })),
         new: item.status === "New",
         updated: item.status === "Updated",
@@ -360,9 +360,10 @@ const fetchStoryWorlds = async (tokenVal) => {
       dataIndex: "masterHead",
       title: "Cluster Head",
       render: (text, record) => {
+        debugger
         return (
           <div>
-            <span>{record?.masterHead && record.masterHead.trim() !== "" ? record.masterHead : "NA"}</span>
+            <span>{record?.masterHead && record?.masterHead?.trim() !== "" ? record?.masterHead : "NA"}</span>
           </div>
         );
       },
