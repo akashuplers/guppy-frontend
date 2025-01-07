@@ -165,7 +165,7 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
     }
     setIsSubmitting(false);
   };
-
+  
   const onModify = (updatedObj) => {
     const curData = [...titleSelectionItems];
     const modified = curData.map((ele) =>

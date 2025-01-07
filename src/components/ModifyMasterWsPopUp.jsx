@@ -133,7 +133,7 @@ const onInputChange = (e) => {
 const onKeyDown = (e) => {
   if (e.key === 'Enter' || e.key === ',') {
     e.preventDefault(); 
-    if (tempClusterValue.trim()) {
+    if (tempClusterValue?.trim()) {
       onClusterValuesText(tempClusterValue); 
     }
     setTempClusterValue('');
@@ -142,10 +142,10 @@ const onKeyDown = (e) => {
   const onClusterValuesText = (selectedValue) => {
     const valuesArray = selectedValue
       .split(',') 
-      .map((value) => value.trim()) 
+      .map((value) => value?.trim()) 
       .filter((value) => value); 
 
-    const existingValuesMap = new Map(clusterData.map((item) => [item.value, item]));
+    const existingValuesMap = new Map(clusterData?.map((item) => [item.value, item]));
     const updatedClusterData = [];
     valuesArray.forEach((value) => {
       const existingItem = existingValuesMap.get(value);
@@ -158,16 +158,16 @@ const onKeyDown = (e) => {
 
     const combinedClusterData = [...clusterData, ...updatedClusterData];
     setClusterData(combinedClusterData);
-    const updatedClusterValues = combinedClusterData.map((item) => item.value);
+    const updatedClusterValues = combinedClusterData?.map((item) => item.value);
     setClusterValues(updatedClusterValues);
     setSaparate(true);
     setAnythingChanged(true);
   };
 
  const handleDeleteValue = (valueToDelete) => {
-  const updatedData = clusterData.filter((item) => item.value !== valueToDelete);
+  const updatedData = clusterData?.filter((item) => item.value !== valueToDelete);
   setClusterData(updatedData);
-  setClusterValues(updatedData.map((item) => item.value));
+  setClusterValues(updatedData?.map((item) => item.value));
   setAnythingChanged(true);
 };
 
@@ -212,8 +212,8 @@ const onKeyDown = (e) => {
       id: clusterHeadId ? clusterHeadId : modifyItemObj.id, 
       ws: wsForm, 
       type: typo || modifyItemObj.type, 
-      masterHead: saparate ? clusterHeadData ?? modifyItemObj?.masterHead:clusterHead ?? modifyItemObj?.masterHead, 
-      clusterValues: saparate ? (clusterData ??  modifyItemObj?.clusterValues):clusterValueSet ?? modifyItemObj?.clusterValues, 
+      masterHead: (modalType === "saparate") ? (clusterHeadData ?? modifyItemObj?.masterHead) : (clusterHead ?? modifyItemObj?.masterHead),
+      clusterValues: (modalType === "saparate") ? (clusterData ??  modifyItemObj?.clusterValues):clusterValueSet ?? modifyItemObj?.clusterValues, 
     };
     onModify(updatedObj);
     onClose();
@@ -291,7 +291,7 @@ const onKeyDown = (e) => {
         size="large"
         className="w-full"
         value={clusterHead}
-        onChange={(value) => onClusterHead(value, "clusterHead")} // Pass name 'wsForm' to handleChange
+        onChange={(value) => onClusterHead(value, "masterHead")} // Pass name 'wsForm' to handleChange
         placeholder="Select Cluster Head"
       >
         {clusterHeadVals?.map((item) => (
@@ -314,7 +314,7 @@ const onKeyDown = (e) => {
         mode="tags"
         className="w-full"
         value={clusterValue}
-        onChange={(value) => onClusterValues(value, "clusterValue")} // Pass name 'wsForm' to handleChange
+        onChange={(value) => onClusterValues(value, "clusterValues")} // Pass name 'wsForm' to handleChange
         placeholder={"Select Cluster Values"}
       >
         {clusterValuesVals?.map((option) => (
