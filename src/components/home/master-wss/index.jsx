@@ -126,7 +126,6 @@ const MasterWssPage = ({
   useEffect(() => {
     fetchMasterWsList();
   }, [storyWorldId]);
-  // const [newManualData, setNewManualData] = useState([]);
 
   const handleDelete = () => {
     if (deleteIndex !== null) {
@@ -684,12 +683,6 @@ const MasterWssPage = ({
     () => processData(manualData || []),
     [manualData]
   );
-  // const [newManualData, setNewManualData] = useState([]);
-
-// When manualData changes, update the state.
-// useEffect(() => {
-//   setNewManualData(processData(manualData || []));
-// }, [manualData]);
 
   useEffect(() => {
     const combinedData = [...tableData, ...newManualData];
@@ -700,14 +693,6 @@ const MasterWssPage = ({
       setMyNewData(combinedData);
     }
   }, [tableData, newManualData]);
-  
-  // useEffect(() => {
-  //   const combinedData = [...tableData, ...newManualData];
-  //   const combinedDataString = JSON.stringify(combinedData);
-  // const currentDataString = JSON.stringify(myNewData);
-  // if (combinedDataString !== currentDataString) {
-  //   setMyNewData(combinedData);
-  // }}, [tableData, newManualData]);
 
   const flattenData = myNewData?.map((item) => {
     const normalizedClusterValues = (() => {
