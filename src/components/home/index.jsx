@@ -141,7 +141,7 @@ const Home = () => {
         } = respObj;
         const wsDataObj = respObj?.ws[0]?.ws_data;
         const { Who, What, Where } = wsDataObj;
-      const { who, what, where } = masterws?.masterWs;
+      const { who, what, where } = masterws?.masterWs || {};
 
         const extractIdAndValue = (data = []) =>
           data?.map(({ id, masterHead }) => ({
@@ -304,7 +304,7 @@ const Home = () => {
           ) : currentStep === 2 ? (
             <MasterWssPage
               onDiscard={onDiscard}
-              saveTitles={isSaveChanges}
+              saveMasterWs={isSaveChanges}
               handleSaveSuccess={handleSaveSuccess}
             />
           ) : currentStep === 3 ? (
