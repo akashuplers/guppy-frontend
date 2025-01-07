@@ -142,7 +142,6 @@ const Home = () => {
         const wsDataObj = respObj?.ws[0]?.ws_data;
         const { Who, What, Where } = wsDataObj;
       const { who, what, where } = masterws?.masterWs || {};
-
         const extractIdAndValue = (data = []) =>
           data?.map(({ id, masterHead }) => ({
             id,
@@ -186,18 +185,19 @@ const Home = () => {
           updatedActions: getUpdatedJson(actions),
           token: token,
         };
+        
         setStoryUploadApiResponse(saveObj); // save fetched data in context
         if (prevStep == false) {
-          if (respObj?.titles?.length === 0) {
+          if (respObj?.masterws == null) {
             setCurrentStep(1);
           } else if (
-            respObj?.titles?.length > 0 &&
-            respObj?.sitautions?.length === 0
+            respObj?.masterws !== null && 
+            respObj?.titles?.length === 0
           ) {
             setCurrentStep(2);
           } else if (
-            respObj?.sitautions?.length > 0 &&
-            respObj?.actions?.length === 0
+            respObj?.titles?.length > 0 &&
+            respObj?.sitautions?.length === 0
           ) {
             setCurrentStep(3);
           } else if (
@@ -206,7 +206,7 @@ const Home = () => {
           ) {
             setCurrentStep(4);
           } else if (respObj?.actions?.length > 0) {
-            setCurrentStep(1);
+            setCurrentStep(5);
           } else {
             message.error(errorMsg);
           }

@@ -33,7 +33,7 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
   useEffect(() => {
     setTitleSelectionItems(updatedTitles);
   }, []);
-
+ 
   useEffect(() => {
     if(saveTitles){
       onSave();

@@ -214,6 +214,7 @@ const onKeyDown = (e) => {
       type: typo || modifyItemObj.type, 
       masterHead: (modalType === "saparate") ? (clusterHeadData ?? modifyItemObj?.masterHead) : (clusterHead ?? modifyItemObj?.masterHead),
       clusterValues: (modalType === "saparate") ? (clusterData ??  modifyItemObj?.clusterValues):clusterValueSet ?? modifyItemObj?.clusterValues, 
+      updated:true
     };
     onModify(updatedObj);
     onClose();
