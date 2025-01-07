@@ -39,7 +39,6 @@ const MasterWsPage = () => {
     const [editIndex, setEditIndex] = useState(null);
   
   const onModify = (updatedObj) => {
-    debugger
     if (filteredData?.length > 0) {
       const curData = [...filteredData];
       curData[editIndex] = { ...curData[editIndex], ...updatedObj };
@@ -360,7 +359,6 @@ const fetchStoryWorlds = async (tokenVal) => {
       dataIndex: "masterHead",
       title: "Cluster Head",
       render: (text, record) => {
-        debugger
         return (
           <div>
             <span>{record?.masterHead && record?.masterHead?.trim() !== "" ? record?.masterHead : "NA"}</span>
