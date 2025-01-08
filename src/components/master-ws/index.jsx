@@ -40,9 +40,11 @@ const MasterWsPage = () => {
   
   const onModify = (updatedObj) => {
     if (filteredData?.length > 0) {
-      const curData = [...filteredData];
-      curData[editIndex] = { ...curData[editIndex], ...updatedObj };
-      setFilteredData(curData);
+      const curFilterData = [...filteredData];
+      const modifiedFilterData = curFilterData.map((ele) =>
+        ele.id === selectedRow.id ? updatedObj : ele
+      );
+      setFilteredData(modifiedFilterData);
       message.success("Updated Successfully!");
       handleAnythingChanged(true);
     } 
@@ -472,25 +474,21 @@ const fetchStoryWorlds = async (tokenVal) => {
     },
   ];
 
-  const handleRemoveChip = (value, index) => {
-    const removeChipFromClusterValues = (data, key, isIdCheck) => {
-      const updatedData = [...data];
-      if (updatedData[index]) {
-        const updatedClusterValues = updatedData[index]?.clusterValues.filter(
-          (item) => (isIdCheck ? item?.id !== value?.id : item?.value !== value?.value)
-        );
-        updatedData[index] = {
-          ...updatedData[index],
-          clusterValues: updatedClusterValues,
-        };
-      }
-      return updatedData;
+  const handleRemoveChip = (value) => {  
+    const removeChipFromClusterValues = (data) => {
+      return data.map((item) => ({
+        ...item,
+        clusterValues: item.clusterValues.filter(
+          (clusterItem) => clusterItem?.id !== value?.id 
+        ),
+      }));
     };
-      const updatedFilterData = removeChipFromClusterValues(filteredData, "id", true);
-      setFilteredData(updatedFilterData);
-      handleAnythingChanged(true)
+  
+    const updatedFilterData = removeChipFromClusterValues(filteredData);
+    setFilteredData(updatedFilterData);
+    handleAnythingChanged(true);
   };
-
+  
   const handleDelete = () => {
       const curData = [...filteredData];
       const updated = curData.filter((ele) => ele.id !== selectedRow.id);
@@ -629,6 +627,7 @@ const handleAddRow = () => {
             types={type}
             clusterHead={whos ? whats : wheres}
             onModify={onModify}
+            filteredData={filteredData}
             modalType="saparate" // Modify this as per the field you want to edit
           />
         )}

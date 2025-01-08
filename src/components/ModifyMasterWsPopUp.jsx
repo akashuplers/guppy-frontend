@@ -15,7 +15,9 @@ const ModifyMasterWsPopup = ({
   storyWorldOptions,
   types,
   clusterList,
-  modalType
+  modalType,
+  myNewData,
+  filteredData
 }) => {
   const [currentValue, setCurrentValue] = useState("");
   const [popupTitle, setPopupTitle] = useState("");
@@ -35,6 +37,7 @@ const ModifyMasterWsPopup = ({
   const {storyUploadApiResponse} = useContext(StoryUploadApiContext);  
   const { story_id } = storyUploadApiResponse;
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
+  const [typeData, setTypeData] = useState(types)
 
   const handleClusterChange = () => {
     if (wsForm === "who") {
@@ -67,6 +70,44 @@ const ModifyMasterWsPopup = ({
         setClusterHeadData(modifyItemObj?.masterHead)
       }
       setTypo(modifyItemObj?.type || []);
+      if(modalType==="InBetweenFlow") {
+        const selectedWs = modifyItemObj?.ws;
+        const isPrimarySelected = myNewData?.some(
+          (comb) => comb.ws === "who" && comb.type === "primary"
+        );
+        if (selectedWs === "who" && isPrimarySelected) {
+          setTypeData((prevTypo) => prevTypo?.filter((item) => item.name !== "Primary"));
+        } 
+        if(selectedWs === "what"){
+          if (!typeData?.some((item) => item.name === "Primary")) {
+            setTypeData((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
+          }
+        }else if(selectedWs === "where") {
+          if (!typeData?.some((item) => item.name === "Primary")) {
+            setTypeData((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
+          }
+        }
+        
+      } else if(modalType === "saparate") {
+        const selectedWs = modifyItemObj?.ws;
+        const isPrimarySelected = filteredData?.some(
+          (comb) => comb.ws === "who" && comb.type === "primary"
+        );
+        if (selectedWs === "who" && isPrimarySelected) {
+          setTypeData((prevTypo) => prevTypo?.filter((item) => item.name !== "Primary"));
+        } 
+        if(selectedWs === "what"){
+          if (!typeData?.some((item) => item.name === "Primary")) {
+            setTypeData((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
+          }
+        }else if(selectedWs === "where") {
+          if (!typeData?.some((item) => item.name === "Primary")) {
+            setTypeData((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
+          }
+        }
+       
+      }
+    
       setWsForm(modifyItemObj?.ws || []);
       if(modalType === "InBetweenFlow"){
         setClusterValue(modifyItemObj?.clusterValues?.map(obj => obj.value) || [])
@@ -84,6 +125,43 @@ const ModifyMasterWsPopup = ({
   }, [modifyItemObj, type, clusterHead, clusterHeadVals]);
 
   const onWsChange = (value) => {
+    if(modalType === "InBetweenFlow") {
+      const selectedWs = value;
+
+      const isPrimarySelected = myNewData.some(
+        (comb) => comb.ws === "who" && comb.type === "primary"
+      );
+      if (selectedWs === "who" && isPrimarySelected) {
+        setTypeData((prevTypo) => prevTypo?.filter((item) => item.name !== "Primary"));
+      } else if(selectedWs === "what") {
+        if (!typeData.some((item) => item.name === "Primary")) {
+          setTypeData((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
+        }
+      } else if(selectedWs === "where") {
+        if (!typeData.some((item) => item.name === "Primary")) {
+          setTypeData((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
+        }
+      }
+    }
+    else if(modalType === "saparate") {
+      const selectedWs = value;
+
+      const isPrimarySelected = filteredData.some(
+        (comb) => comb.ws === "who" && comb.type === "primary"
+      );
+      if (selectedWs === "who" && isPrimarySelected) {
+        setTypeData((prevTypo) => prevTypo?.filter((item) => item.name !== "Primary"));
+      } else if(selectedWs === "what") {
+        if (!typeData.some((item) => item.name === "Primary")) {
+          setTypeData((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
+        }
+      } else if(selectedWs === "where") {
+        if (!typeData.some((item) => item.name === "Primary")) {
+          setTypeData((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
+        }
+      }
+    }
+   
     setWsForm(value);
     if(modalType == "saparate") {
       setSaparate(true);
@@ -275,7 +353,7 @@ const onKeyDown = (e) => {
             onChange={(value) => onTypeChange(value, "typo")} // Pass name 'wsForm' to handleChange
             placeholder={"Select Type"}
           >
-            {types?.map((item, index) => (
+            {typeData?.map((item, index) => (
               <Option key={item.name} value={item?.name}>
                 {item?.name}
               </Option>
