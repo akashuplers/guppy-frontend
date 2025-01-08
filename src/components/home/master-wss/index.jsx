@@ -163,8 +163,6 @@ const handleDelete = () => {
     message.error("Invalid ID for deletion.");
   }
 };
-
-
   
   useEffect(() => {
     if (!tokenVal) {
@@ -437,6 +435,8 @@ const handleDelete = () => {
     { id: 2, name: "Secondary" },
   ];
 
+  const [typo, setTypo] = useState(type);
+
   const onReset = () => {
     setTableData(processData(masterws?.masterWs));
     message.success("Reset Successfully !");
@@ -450,10 +450,18 @@ const handleDelete = () => {
       Authorization: `Bearer ${token}`,
     },
   };
-
-  const handleChange = async (e, name) => {
+  
+  const handleChange = async (e, name) => { 
     if (e?.target?.value === "who") {
       setWhos(clusterList?.Who);
+      const selectedWs = e?.target?.value;
+
+      const isPrimarySelected = myNewData.some(
+        (comb) => comb.ws === "who" && comb.type === "primary"
+      );
+      if (selectedWs === "who" && isPrimarySelected) {
+        setTypo((prevTypo) => prevTypo?.filter((item) => item.name !== "Primary"));
+      }
       setWhats([]);
       setWheres([]);
       setFilteredOption(clusterList?.Who);
@@ -462,11 +470,17 @@ const handleDelete = () => {
       setWhos([]);
       setWheres([]);
       setFilteredOption(clusterList?.What);
+      if (!typo.some((item) => item.name === "Primary")) {
+        setTypo((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
+      }
     } else if (e?.target?.value === "where") {
       setWheres(clusterList?.Where);
       setWhats([]);
       setWhos([]);
       setFilteredOption(clusterList?.Where);
+      if (!typo.some((item) => item.name === "Primary")) {
+        setTypo((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo, ]);
+      }
     }
 
     const selectedOption = [
@@ -517,7 +531,9 @@ const handleDelete = () => {
         console.error("Error calling the API:", error);
       }
     } else if (name === "type") {
+      
       formik.setFieldValue("type", e.target.value);
+    
     } else {
       const selectedValues = e?.map((option) => ({
         label: option.label,
@@ -527,7 +543,7 @@ const handleDelete = () => {
       formik.setFieldValue("clusterValues", selectedValues);
     }
   };
-
+  
   const getUpdatedJson = (list) => {
     const arr = list || [];
     if (arr && arr.length > 0) {
@@ -1040,7 +1056,7 @@ const handleDelete = () => {
                     value={formik.values.type}
                   >
                     <option value="">Please Select...</option>
-                    {type?.map((item, index) => (
+                    {typo?.map((item, index) => (
                       <option key={index} value={item?._id}>
                         {item?.name}
                       </option>
