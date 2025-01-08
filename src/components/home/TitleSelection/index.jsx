@@ -63,7 +63,9 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
       What_Secondary: item.secondaryWhats,
       Where_Primary: item.primaryWheres,
       Where_Secondary: item.secondaryWheres,
-      ...(item.isNewField ? {new: true, updated: false} : item.isEditField && {updated: true}),
+      updated: item?.isEditField === true ? true : item?.updated ?? false,
+      new: item?.isNewField === true ? true : item?.new ?? false,
+      // ...(item.isNewField ? {new: true, updated: false} : item.isEditField && {updated: true}),
       ...(item.comment && {comment: item.comment})
     }));
     const body = {
@@ -84,6 +86,8 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
         secondaryWhats: item.What_Secondary,
         primaryWheres: item.Where_Primary,
         secondaryWheres: item.Where_Secondary,
+        updated:item.updated,
+        new:item.new,
         comment: item.comment
       }));
       return updated;
@@ -102,6 +106,8 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
         secondaryWhos: title.Who_Secondary,
         secondaryWhats: title.What_Secondary,
         secondaryWheres: title.Where_Secondary,
+        updated:title.updated,
+        new:title.new,
         ...(title.comment && {comment: title.comment})
       }
       

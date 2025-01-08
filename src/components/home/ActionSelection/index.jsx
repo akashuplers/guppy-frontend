@@ -62,14 +62,16 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
       idea: item.idea,
       Classification: "Action",
       updated:(item?.updated == true) ? true:false,
-      new:item?.new ?? true,
+      new:(item?.new == true) ? true:false,
       Who_Primary: item.primaryWhos,
       Who_Secondary: item.secondaryWhos,
       What_Primary: item.primaryWhats,
       What_Secondary: item.secondaryWhats,
       Where_Primary: item.primaryWheres,
       Where_Secondary: item.secondaryWheres,
-      ...(item.isNewField ? {new: true, updated: false}: item.isEditField && {updated: true}),
+      updated: item?.isEditField === true ? true : item?.updated ?? false,
+      new: item?.isNewField === true ? true : item?.new ?? false,
+      // ...(item.isNewField ? {new: true, updated: false}: item.isEditField && {updated: true}),
       ...(item.comment && {comment: item.comment})
     }));
     const body = {
@@ -91,6 +93,8 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
         secondaryWhos: action.Who_Secondary,
         secondaryWhats: action.What_Secondary,
         secondaryWheres: action.Where_Secondary,
+        updated:action.updated,
+        new:action.new,
         ...(action.comment && {comment: action.comment})
       }
       
