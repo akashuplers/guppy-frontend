@@ -29,8 +29,6 @@ const ModifySelectionPopup = ({
   // story upload context
   const { storyUploadApiResponse } = useContext(StoryUploadApiContext);
   const { primaryWhos, secondaryWhos, primaryWhats, secondaryWhats, primaryWheres, secondaryWheres } = storyUploadApiResponse;
-console.log("secondaryWhatOptions",secondaryWhatOptions);
-console.log("modifyItemObj", modifyItemObj);
 
   useEffect(() => {
     if(type === "title") {
@@ -215,7 +213,10 @@ const [secondaryWhatSet, setSecondaryWhatSet] = useState()
         secondaryWhats: secondaryWhatSet ?? modifyItemObj?.secondaryWhats,
         primaryWheres: primaryWhereSet ?? modifyItemObj?.primaryWheres,
         secondaryWheres: secondaryWhereSet ?? modifyItemObj?.secondaryWheres,
-        ...(modifyItemObj.isNewField ? {isNewField: true} : {isEditField: true}),
+        isNewField: modifyItemObj?.isNewField === true ? true:false,
+        isEditField: modifyItemObj?.new === false ? true:modifyItemObj?.new ?? false,
+        // ...(modifyItemObj.isNewField  === true ? {isNewField: true} : {isNewField: false}),
+        // ...(modifyItemObj.new === false ? { isEditField: true } : { isNewField: false }),
         ...(modifyItemObj.comment && {comment: modifyItemObj.comment})
     }
     onModify(updatedObj);

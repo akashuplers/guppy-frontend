@@ -556,6 +556,8 @@ const handleDelete = () => {
         secondaryWhats: item.What_Secondary,
         primaryWheres: item.Where_Primary,
         secondaryWheres: item.Where_Secondary,
+        new: item.new,
+        updated: item.updated,
         comment: item.comment,
       }));
       return updated;
