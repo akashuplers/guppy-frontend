@@ -36,7 +36,7 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSu
   useEffect(() => {
     setSituationSelectionItems(updatedSituations);
   }, []);
-
+ 
   useEffect(() => {
     if(saveSituations){
       onSave();
@@ -61,7 +61,7 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSu
       id: item.isNewField ? '' : item.id,
       idea: item.idea,
       updated:(item?.updated == true) ? true:false,
-      new:item?.new ?? true,
+      new:(item?.new == true) ? true:false,
       Classification: "Situation",
       Who_Primary: item.primaryWhos,
       Who_Secondary: item.secondaryWhos,
@@ -69,7 +69,8 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSu
       What_Secondary: item.secondaryWhats,
       Where_Primary: item.primaryWheres,
       Where_Secondary: item.secondaryWheres,
-      ...(item.isNewField ? {new: true, updated: false}: item.isEditField && {updated: true}),
+      updated: item?.isEditField === true ? true : item?.updated ?? false,
+      new: item?.isNewField === true ? true : item?.new ?? false,
       ...(item.comment && {comment: item.comment})
     }));
     const body = {
@@ -91,6 +92,8 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSu
         secondaryWhats: item.What_Secondary,
         primaryWheres: item.Where_Primary,
         secondaryWheres: item.Where_Secondary,
+        updated:item.updated,
+        new:item.new,
         comment: item.comment
       }));
       return updated;
@@ -110,6 +113,8 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSu
         secondaryWhos: situation.Who_Secondary,
         secondaryWhats: situation.What_Secondary,
         secondaryWheres: situation.Where_Secondary,
+        updated:situation.updated,
+        new:situation.new,
         ...(situation.comment && {comment: situation.comment})
       }
       
@@ -125,6 +130,8 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSu
         secondaryWhos: situation.Who_Secondary,
         secondaryWhats: situation.What_Secondary,
         secondaryWheres: situation.Where_Secondary,
+        updated:situation.updated,
+        new:situation.new,
         ...(situation.comment && {comment: situation.comment})
       }
       
@@ -161,6 +168,7 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSu
           actions: getUpdatedJson(actions),
           updatedActions: getUpdatedJson(actions),
         };
+
         setStoryUploadApiResponse(updatedContextObj);
         message.destroy(alertKey);
         message.success("Situations Saved Successfully !");
