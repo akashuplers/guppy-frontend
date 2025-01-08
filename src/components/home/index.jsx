@@ -192,17 +192,19 @@ const Home = () => {
             setCurrentStep(1);
           } else if (
             respObj?.masterws !== null && 
-            respObj?.titles?.length === 0
+            respObj?.titles?.length > 0 &&
+            respObj?.sitautions?.length === 0
           ) {
             setCurrentStep(2);
           } else if (
-            respObj?.titles?.length > 0 &&
-            respObj?.sitautions?.length === 0
+            respObj?.titles?.length > 0 && 
+            respObj?.sitautions?.length > 0 &&
+            respObj?.actions?.length === 0
           ) {
             setCurrentStep(3);
           } else if (
             respObj?.sitautions?.length > 0 &&
-            respObj?.actions?.length === 0
+            respObj?.actions?.length > 0
           ) {
             setCurrentStep(4);
           } else if (respObj?.actions?.length > 0) {
