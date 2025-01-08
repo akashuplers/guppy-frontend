@@ -224,50 +224,43 @@ const handleDelete = () => {
     }
   };
 
-  const handleRemoveChip = (value, index) => {
-    const removeChipFromClusterValues = (data, key, isIdCheck) => {
-      const updatedData = [...data];
-      if (updatedData[index]) {
-        const updatedClusterValues = updatedData[index]?.clusterValues.filter(
-          (item) => (isIdCheck ? item?.id !== value?.id : item?.value !== value?.value)
-        );
-  
-        updatedData[index] = {
-          ...updatedData[index],
-          clusterValues: updatedClusterValues,
-        };
-      }
-      return updatedData;
+  const handleRemoveChip = (value) => {
+    const removeChipFromClusterValues = (data, isIdCheck) => {
+      return data.map((item) => ({
+        ...item,
+        clusterValues: item.clusterValues.filter(
+          (clusterItem) => (isIdCheck ? clusterItem?.id !== value?.id : clusterItem?.value !== value?.value)
+        ),
+      }));
     };
   
     if (filterData?.length > 0 && tableData?.length > 0) {
-      let updatedFilterData = [...filterData];
-      let updatedTableData = [...tableData];
-      
-      const filterIndex = filterData.findIndex((item) => item.clusterValues.some((clusterItem) => clusterItem.id === value.id));
-      if (filterIndex !== -1) {
-        updatedFilterData = removeChipFromClusterValues(updatedFilterData, "id", true);
-        setFilteredData(updatedFilterData);
-      }
-  
-      const tableIndex = tableData.findIndex((item) => item.clusterValues.some((clusterItem) => clusterItem.value === value.value));
-      if (tableIndex !== -1) {
-        updatedTableData = removeChipFromClusterValues(updatedTableData, "value", false);
-        setTableData(updatedTableData);
-      }
-    handleAnythingChanged(true);
-    } else if (filterData?.length > 0) {
-      const updatedFilterData = removeChipFromClusterValues(filterData, "id", true);
+      // Handle both filterData and tableData
+      const updatedFilterData = removeChipFromClusterValues(filterData, true); // Use `id` check
       setFilteredData(updatedFilterData);
-      handleAnythingChanged(true)
-
-    } else if (tableData?.length > 0) {
-      const updatedTableData = removeChipFromClusterValues(tableData, "value", false);
+  
+      const updatedTableData = removeChipFromClusterValues(tableData, true); // Use `id` check
       setTableData(updatedTableData);
-      handleAnythingChanged(true)
-
+  
+      message.success("Cluster Value removed successfully!");
+      handleAnythingChanged(true);
+    } else if (filterData?.length > 0) {
+      // Handle only filterData
+      const updatedFilterData = removeChipFromClusterValues(filterData, true); // Use `id` check
+      setFilteredData(updatedFilterData);
+  
+      message.success("Cluster Value removed successfully!");
+      handleAnythingChanged(true);
+    } else if (tableData?.length > 0) {
+      // Handle only tableData
+      const updatedTableData = removeChipFromClusterValues(tableData, true); // Use `id` check
+      setTableData(updatedTableData);
+  
+      message.success("Cluster Value removed successfully!");
+      handleAnythingChanged(true);
     }
   };
+  
   useEffect(() => {
     if(saveMasterWs){
       onSave();
@@ -883,20 +876,49 @@ const handleDelete = () => {
   }, [filterData, tableData, whos, whats, wheres]);
   
   const onModify = (updatedObj) => {
-    if (filterData?.length > 0) {
-      const curData = [...filterData];
-      curData[editIndex] = { ...curData[editIndex], ...updatedObj };
-      setFilteredData(curData);
+    let modifiedFilterData = [];
+    let modifiedTableData = [];
+  
+    if (filterData?.length > 0 && tableData?.length > 0) {
+      const curFilterData = [...filterData];
+      modifiedFilterData = curFilterData.map((ele) =>
+        ele.id === selectedRow.id ? updatedObj : ele
+      );
+      setFilteredData(modifiedFilterData);
+  
+      const curTableData = [...tableData];
+      modifiedTableData = curTableData.map((ele) =>
+        ele.id === selectedRow.id ? updatedObj : ele
+      );
+      setTableData(modifiedTableData);
+  
       message.success("Updated Successfully!");
-      handleAnythingChanged(true);
+    } else if (filterData?.length > 0) {
+      // Update only filterData
+      const curFilterData = [...filterData];
+      modifiedFilterData = curFilterData.map((ele) =>
+        ele.id === selectedRow.id ? updatedObj : ele
+      );
+      setFilteredData(modifiedFilterData);
+  
+      message.success("Updated Successfully!");
     } else if (tableData?.length > 0) {
-      const curData = [...tableData];
-      curData[editIndex] = { ...curData[editIndex], ...updatedObj };
-      setTableData(curData);
-      message.success("Updated Successfully!");
+      // Update only tableData
+      const curTableData = [...tableData];
+      modifiedTableData = curTableData.map((ele) =>
+        ele.id === selectedRow.id ? updatedObj : ele
+      );
+      setTableData(modifiedTableData);
+  
+      message.success("Table Data Updated Successfully!");
+    }
+  
+    // Trigger the change handler if any data was modified
+    if (modifiedFilterData.length > 0 || modifiedTableData.length > 0) {
       handleAnythingChanged(true);
     }
   };
+  
 
   useEffect(() => {
     if (myNewData) {
@@ -1144,6 +1166,7 @@ const handleDelete = () => {
           clusterHeads={whos ? whats : wheres}
           onModify={onModify}
           modalType="InBetweenFlow"
+          myNewData={myNewData}
         />
       )}
       <FooterButtons
