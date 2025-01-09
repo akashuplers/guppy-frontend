@@ -131,9 +131,6 @@ const MasterWssPage = ({
     fetchMasterWsList();
   }, [storyWorldId]);
 
-
-
-
 const handleDelete = () => {
   const deleteId= selectedRow?.id
   if (deleteId !== null && deleteId !== undefined) {
@@ -631,8 +628,7 @@ const handleDelete = () => {
           id: val.value,
           value: val.label,
         })),
-        new: true,
-        updated: false,
+        isNewField: true,
       };
 
       setFilteredData((prevArray = []) => [...prevArray, newRow]); 
@@ -666,8 +662,8 @@ const handleDelete = () => {
           id: cluster?.id,
           value: cluster?.value,
         })),
-        new: (item?.new == true) ? true:false,
-        updated: (item?.updated == true) ? true:false,
+        new: (item?.isNewField == true) ? true:item?.new ?? false,
+        updated: (item?.updated == true) ? true:item?.updated ?? false,
       };
 
       result[wsKey][typeKey].push(formattedItem);
@@ -693,8 +689,8 @@ const handleDelete = () => {
               id: cluster?.id,
               value: cluster?.value,
             })),
-            new: (item?.new == true) ? true:false,
-            updated: (item?.updated == true) ? true:false,
+            new: (item?.isNewField == true || item?.new == true) ? true:item?.new ?? false,
+            updated: (item?.updated == true) ? true: item?.updated ?? false,
             // status: item?.new ? "New" : item?.updated ? "Updated" : "Old",
           });
         });
@@ -740,6 +736,7 @@ const handleDelete = () => {
   });
 
   const transformData = (data) => {
+  
     const result = {
       who: {
         primary: [],
@@ -777,7 +774,7 @@ const handleDelete = () => {
           id: cluster.id,
           value: cluster.value,
         })),
-        new: item.new,
+        new: (item.new == true || item?.isNewField == true) ? true:false ,
         updated: item.updated,
       };
 
@@ -824,6 +821,7 @@ const handleDelete = () => {
   useEffect(() => {
     if (filterData?.length > 0 || tableData?.length > 0) {
       let masterHeadValues = [];  
+      let clusterValues = [];
       if (filterData?.length > 0 && tableData?.length > 0) {
         masterHeadValues = [
           ...new Set([
@@ -831,16 +829,33 @@ const handleDelete = () => {
             ...tableData.map((item) => item.masterHead),
           ]),
         ];
+        clusterValues = [
+          ...new Set([
+            ...filterData.flatMap((item) =>
+              item.clusterValues?.map((cluster) => cluster.value) || []
+            ),
+            ...tableData.flatMap((item) =>
+              item.clusterValues?.map((cluster) => cluster.value) || []
+            ),
+          ]),
+        ];
       } else if (filterData?.length > 0) {
         masterHeadValues = filterData.map((item) => item.masterHead?.value);
+        clusterValues = filterData.flatMap((item) =>
+          item.clusterValues?.map((cluster) => cluster.value) || []
+        );
       } else if (tableData?.length > 0) {
         masterHeadValues = tableData.map((item) => item.masterHead);
+        clusterValues = tableData.flatMap((item) =>
+          item.clusterValues?.map((cluster) => cluster.value) || []
+        );
       }
-  
-      if (masterHeadValues?.length > 0) {
-        setWhos((prevWhos) => {
+      const combinedValues = [...new Set([...masterHeadValues, ...clusterValues])];
+      
+      if (combinedValues?.length > 0) {
+          setWhos((prevWhos) => {
           const updatedWhos = prevWhos.filter(
-            (item) => !masterHeadValues.includes(item.value)
+            (item) => !combinedValues.includes(item.value)
           );
           return JSON.stringify(updatedWhos) !== JSON.stringify(prevWhos)
             ? updatedWhos
@@ -849,7 +864,7 @@ const handleDelete = () => {
   
         setWheres((prevWheres) => {
           const updatedWheres = prevWheres.filter(
-            (item) => !masterHeadValues.includes(item.value)
+            (item) => !combinedValues.includes(item.value)
           );
           return JSON.stringify(updatedWheres) !== JSON.stringify(prevWheres)
             ? updatedWheres
@@ -857,7 +872,7 @@ const handleDelete = () => {
         });
         setWhats((prevWhats) => {
           const updatedWhats = prevWhats.filter(
-            (item) => !masterHeadValues.includes(item.value)
+            (item) => !combinedValues.includes(item.value)
           );
           return JSON.stringify(updatedWhats) !== JSON.stringify(prevWhats)
             ? updatedWhats
@@ -867,14 +882,14 @@ const handleDelete = () => {
         if (filterData?.length > 0) {
           setFilteredOption((prevFilteredOptions) =>
             prevFilteredOptions?.filter(
-              (item) => !masterHeadValues.includes(item.value)
+              (item) => !combinedValues.includes(item.value)
             )
           );
         }
       }
     }
   }, [filterData, tableData, whos, whats, wheres]);
-  
+
   const onModify = (updatedObj) => {
     let modifiedFilterData = [];
     let modifiedTableData = [];
@@ -918,7 +933,6 @@ const handleDelete = () => {
       handleAnythingChanged(true);
     }
   };
-  
 
   useEffect(() => {
     if (myNewData) {
@@ -1159,6 +1173,11 @@ const handleDelete = () => {
           open={dialogPopup}
           modifyItemObj={selectedRow}
           clusterList={clusterList}
+          whos={whos}
+          whats={whats}
+          wheres={wheres}
+          tableData={tableData}
+          filterData={filterData}
           onClose={() => setDialogPopup(false)}
           storyWorldOptions={storyWorldOptions}
           filteredOptions={options}

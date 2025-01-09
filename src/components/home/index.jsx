@@ -115,7 +115,6 @@ const Home = () => {
   };
   
   const fetchStoryData = async (story_id, token) => {
-    debugger
     try {
       const apiUrl =
         API_BASE_PATH + API_ROUTES.FETCH_STORY_DATA + `/${story_id}`;
@@ -215,7 +214,7 @@ const Home = () => {
           } else if (respObj?.actions?.length > 0) {
             setCurrentStep(5);
           } else {
-            message.error(errorMsg);
+            setCurrentStep(1);
           }
         }
       }
