@@ -75,7 +75,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
     const name = item?.newName ?? item?.name;
     if (item.isCheckboxSelected) {
       const filteredArr = secondaryWhos.filter(
-        (ele) => ele.toLowerCase() !== name.toLowerCase()
+        (ele) => ele?.value?.toLowerCase() !== name?.toLowerCase()
       );
       setSecondaryWhos(filteredArr);
     } else {
@@ -96,7 +96,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
     const name = item?.newName ?? item?.name;
     if (item.isCheckboxSelected) {
       const filteredArr = secondaryWhats.filter(
-        (ele) => ele.toLowerCase() !== name.toLowerCase()
+        (ele) => ele?.value?.toLowerCase() !== name?.toLowerCase()
       );
       setSecondaryWhats(filteredArr);
     } else {
@@ -117,7 +117,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
     const name = item?.newName ?? item?.name;
     if (item.isCheckboxSelected) {
       const filteredArr = secondaryWheres.filter(
-        (ele) => ele.toLowerCase() !== name.toLowerCase()
+        (ele) => ele?.value?.toLowerCase() !== name?.toLowerCase()
       );
       setSecondaryWheres(filteredArr);
     } else {
@@ -310,6 +310,7 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
       }
     })
   }
+  
   const onSave = async () => {
     setIsSubmitting(true);
     let alertKey;
@@ -641,7 +642,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
                       
                       <input
                         checked={item.isCheckboxSelected}
-                        
                         onChange={() => handleWhoCheckboxChange(item)}
                         id={`default-checkbox-${index}`}
                         type="checkbox"

@@ -215,7 +215,7 @@ const Home = () => {
           } else if (respObj?.actions?.length > 0) {
             setCurrentStep(5);
           } else {
-            message.error(errorMsg);
+            setCurrentStep(1);
           }
         }
       }

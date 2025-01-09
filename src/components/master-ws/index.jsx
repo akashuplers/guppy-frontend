@@ -74,7 +74,6 @@ const clusterHeadWsList = async () => {
     setClusterList(output?.data?.ws?.ws_data);
   } catch (error) {
     console.log("error: ", error);
-    // message.error(errorMsg);
   }
 };
 
@@ -83,6 +82,7 @@ useEffect(() => {
     clusterHeadWsList();
   }
 }, []);
+
 
 const fetchStoryWorlds = async (tokenVal) => {
   try {
@@ -191,9 +191,9 @@ const fetchStoryWorlds = async (tokenVal) => {
               id: cluster?.id,
               value: cluster?.value,
             })),
-            // clusterValues: item?.clusterValues?.map((cv) => cv?.value)?.join(", "),
-            status: item?.new ? "New" : item?.updated ? "Updated" : "Old",
-          });
+            new: (item?.isNewField == true || item?.new == true) ? true:item?.new ?? false,
+            updated: (item?.updated == true) ? true: item?.updated ?? false,
+            });
         });
       });
     });
@@ -498,28 +498,23 @@ const fetchStoryWorlds = async (tokenVal) => {
   };
 
 const handleAddRow = () => {
-  // Create a new row object with default values
   const newRow = {
     id: uuidv4(),
     ws: "",
-    type: "", // Can be updated later in edit
+    type: "", 
     masterHead: "",
     clusterValues: [],
-    status: "New",
+    isNewField: true,
   };
 
-  // Initialize filteredData if it's empty
   let updatedFilteredData = Array.isArray(filteredData) ? [...filteredData] : [];
-
-  // Insert the new row at the beginning of the filteredData array
   updatedFilteredData = [newRow, ...updatedFilteredData];
-
-  // Update the filteredData state with the modified structure
   setFilteredData(updatedFilteredData);
 
   message.success("New row added successfully!");
   handleAnythingChanged(true);
 };
+
 
   return (
     <SidebarWithHeader>
