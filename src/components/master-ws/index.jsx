@@ -239,8 +239,8 @@ const fetchStoryWorlds = async (tokenVal) => {
           id: cluster?.id,
           value: cluster?.value,
         })),
-        new: item.status === "New",
-        updated: item.status === "Updated",
+        new: (item.isNewField == true || item?.new == true) ? true:item?.new ?? false,
+        updated: item.updated === true ? true:item.updated ?? false,
       };
 
       // Add the newItem to the appropriate section

@@ -38,6 +38,7 @@ const ModifyMasterWsPopup = ({
   const [whereCluster, setWhereCluster] = useState([]);
   const [clusterHeadVals, setclusterHeadVals] = useState([]);
   const [clusterValuesVals, setclusterValuesVals] = useState([]);
+  const [payloadClusterValues,setPayloadClusterValues] = useState([]);
   const [anythingChanged, setAnythingChanged] = useState(false);
   const { storyUploadApiResponse } = useContext(StoryUploadApiContext);
   const { story_id } = storyUploadApiResponse;
@@ -110,19 +111,19 @@ const ModifyMasterWsPopup = ({
             : prevWhats;
         });
 
-        if (filterData?.length > 0) {
-          setclusterValuesVals((prevFilteredOptions) =>
-            prevFilteredOptions?.filter(
-              (item) => !combinedValues.includes(item.value)
-            )
-          );
-        } else if (tableData?.length > 0) {
-          setclusterValuesVals((prevFilteredOptions) =>
-            prevFilteredOptions?.filter(
-              (item) => !combinedValues.includes(item.value)
-            )
-          );
-        }
+        // if (filterData?.length > 0) {
+        //   setclusterValuesVals((prevFilteredOptions) =>
+        //     prevFilteredOptions?.filter(
+        //       (item) => !combinedValues.includes(item.value)
+        //     )
+        //   );
+        // } else if (tableData?.length > 0) {
+        //   setclusterValuesVals((prevFilteredOptions) =>
+        //     prevFilteredOptions?.filter(
+        //       (item) => !combinedValues.includes(item.value)
+        //     )
+        //   );
+        // }
       }
     }
   }, [filterData, tableData, whoCluster, whatCluster, whereCluster]);
@@ -306,18 +307,33 @@ const ModifyMasterWsPopup = ({
 
   const onClusterValues = (selectedValue, fieldName) => {
     const valuesArray = Array?.isArray(selectedValue)
-      ? selectedValue
-      : [selectedValue];
-    const selectedClusterObjects = valuesArray
-      ?.map((value) => clusterValuesVals.find((item) => item?.value === value))
-      ?.filter(Boolean);
-    const updatedClusterValues = selectedClusterObjects?.map(
-      (item) => item.value
+    ? selectedValue
+    : [selectedValue];
+    const allClusterValues = valuesArray;
+    let updatedClusterValues = [];
+    if (valuesArray.includes(selectedValue)) {
+      // If "cat" is selected, add all four values
+      updatedClusterValues = allClusterValues;
+    } else {
+      updatedClusterValues = valuesArray.filter(value => allClusterValues.includes(value));
+    }
+    const selectedClusterObjects = updatedClusterValues
+    .map((value) => clusterValuesVals.find((item) => item?.value === value))
+    .filter(Boolean);
+    const oldClusterObjects =
+    (payloadClusterValues || []).filter((item) =>
+      valuesArray.includes(item.value)
     );
-    const mergedClusterObjects = selectedClusterObjects?.map((item) => ({
-      id: item?.id,
-      value: item?.value,
+    const mergedClusterObjects = [
+      ...oldClusterObjects,
+      ...selectedClusterObjects.filter(
+        (newItem) => !oldClusterObjects.some((oldItem) => oldItem.id === newItem.id)
+      ),
+    ].map((item) => ({
+      id: item.id,
+      value: item.value,
     }));
+  
     setClusterValue(updatedClusterValues);
     setClusterValueSet(mergedClusterObjects);
     setAnythingChanged(true);
@@ -384,11 +400,11 @@ const ModifyMasterWsPopup = ({
       console.error("clusterHeadVals is not yet available.");
       return;
     }
-
+    const clustHeadVal = clusterHeadVals?.filter((item) => item?.value !== value)
     const apiUrl = API_BASE_PATH + API_ROUTES.SORT_WS + story_id;
     const payload = {
       clusterHead: { value: value, id: clusterId },
-      ws: clusterHeadVals,
+      ws: clustHeadVal,
     };
     const config = {
       headers: {
@@ -402,11 +418,11 @@ const ModifyMasterWsPopup = ({
 
       if (bool) {
         const filteredArray = response?.data?.ws?.clusterValues;
-        const filteredNewArrays = filteredArray?.filter(
-          (item) => item?.value !== value
-        );
+        // const filteredNewArrays = filteredArray?.filter(
+        //   (item) => item?.value !== value
+        // );
 
-        const finalFilteredArray = filteredNewArrays?.filter(
+        const finalFilteredArray = filteredArray?.filter(
           (item) => !data.includes(item.value)
         );
 
@@ -417,6 +433,7 @@ const ModifyMasterWsPopup = ({
           (item) => !data.includes(item.value)
         );
         setclusterValuesVals(filteredArrays);
+        setPayloadClusterValues(filteredArray)
       }
     } catch (error) {
       console.error("Error calling the API:", error);
@@ -440,6 +457,11 @@ const ModifyMasterWsPopup = ({
         updated: modifyItemObj?.new === false ? true : false,
         isNewField:
           modifyItemObj?.new === true ? true : modifyItemObj?.new ?? false,
+      }),
+      ...(modalType == "saparate" && {
+        updated: modifyItemObj?.new === false ? true : false,
+        isNewField:
+          modifyItemObj?.isNewField === true ? true : modifyItemObj?.new ?? false,
       }),
       // updated:modifyItemObj?.new === false ? true: false,
       // isNewField: modifyItemObj?.new === true ? true:modifyItemObj?.new ?? false,
@@ -556,7 +578,7 @@ const ModifyMasterWsPopup = ({
                 mode="tags"
                 className="w-full"
                 value={clusterValue}
-                onChange={(value) => onClusterValues(value, "clusterValues")} // Pass name 'wsForm' to handleChange
+                onChange={(value) => onClusterValues(value, "clusterValues")} 
                 placeholder={"Select Cluster Values"}
               >
                 {clusterValuesVals?.map((option) => (

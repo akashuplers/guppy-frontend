@@ -483,13 +483,12 @@ const handleDelete = () => {
       formik.setFieldValue("ws", e.target.value);
     } else if (name === "masterHead" && selectedOption) {
       const { id, value } = selectedOption;
-
       formik.setFieldValue("masterHead", { id: id, value: value });
-
       const payload = {
         clusterHead: { value: value, id: id }, 
         ws: [], 
       };
+  
       if (e?.target?.value === "who") {
         payload.ws = clusterList?.Who || [];
       } else if (e?.target?.value === "what") {
@@ -498,13 +497,16 @@ const handleDelete = () => {
         payload.ws = clusterList?.Where || [];
       }
       if (whos?.length > 0) {
-        payload.ws = [...payload.ws, ...whos];
+        const clustWho = whos?.filter((item) => item?.value !== value)
+        payload.ws = [...payload.ws, ...clustWho];
       }
       if (whats?.length > 0) {
-        payload.ws = [...payload.ws, ...whats];
+        const clustWhat = whats?.filter((item) => item?.value !== value)
+        payload.ws = [...payload.ws, ...clustWhat];
       }
       if (wheres?.length > 0) {
-        payload.ws = [...payload.ws, ...wheres];
+        const clustWhere = wheres?.filter((item) => item?.value !== value)
+        payload.ws = [...payload.ws, ...clustWhere];
       }
 
       payload.ws = payload.ws.map((item) => ({
@@ -512,11 +514,14 @@ const handleDelete = () => {
         id: item.id,
       }));
       try {
-        const response = await axios.post(apiUrl, payload, config);
-        const filteredArray = response?.data?.ws?.clusterValues?.filter(
-          (item) => item?.value !== e?.target?.value
-        );
-        setFilteredOption(filteredArray);
+        if(payload?.ws?.length > 0) {
+          const response = await axios.post(apiUrl, payload, config);
+          const filteredArray = response?.data?.ws?.clusterValues
+          setFilteredOption(filteredArray);
+        } else {
+          setFilteredOption([])
+        }
+        
       } catch (error) {
         console.error("Error calling the API:", error);
       }
