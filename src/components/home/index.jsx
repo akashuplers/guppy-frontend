@@ -115,7 +115,6 @@ const Home = () => {
   };
   
   const fetchStoryData = async (story_id, token) => {
-    debugger
     try {
       const apiUrl =
         API_BASE_PATH + API_ROUTES.FETCH_STORY_DATA + `/${story_id}`;
