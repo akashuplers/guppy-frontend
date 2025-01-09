@@ -76,7 +76,6 @@ const MasterWssPage = ({
   const [filteredOptions, setFilteredOption] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [isClusterLoading, setClusterLoading] = useState(false);
-console.log("filteredOptions", filteredOptions);
 
   const options = (filteredOptions || [])?.map((item) => ({
     label: item?.value,
@@ -443,7 +442,6 @@ const handleDelete = () => {
   };
   
   const handleChange = async (e, name) => { 
-    debugger
     if (e?.target?.value === "who") {
       setWhos(clusterList?.Who);
       const selectedWs = e?.target?.value;
@@ -490,7 +488,7 @@ const handleDelete = () => {
         clusterHead: { value: value, id: id }, 
         ws: [], 
       };
-      console.log("payload", payload);
+  
       if (e?.target?.value === "who") {
         payload.ws = clusterList?.Who || [];
       } else if (e?.target?.value === "what") {
@@ -500,7 +498,6 @@ const handleDelete = () => {
       }
       if (whos?.length > 0) {
         const clustWho = whos?.filter((item) => item?.value !== value)
-        console.log("clustWho",clustWho);
         payload.ws = [...payload.ws, ...clustWho];
       }
       if (whats?.length > 0) {
