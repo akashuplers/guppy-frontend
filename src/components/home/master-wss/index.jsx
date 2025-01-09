@@ -413,6 +413,7 @@ const handleDelete = () => {
       },
     },
   ];
+console.log("myNEwww", myNewData);
 
   const storyWorldOptions = [
     { id: 1, name: "who" },
@@ -648,7 +649,7 @@ const handleDelete = () => {
 
   function convertData(inputData) {
     const result = {};
-    inputData.forEach((item) => {
+    inputData.forEach((item, index) => {
       const wsKey = item.ws.toLowerCase().replace(/'s$/, ""); 
       const typeKey = item.type.toLowerCase(); 
 
@@ -669,6 +670,7 @@ const handleDelete = () => {
         })),
         new: (item?.isNewField == true) ? true:item?.new ?? false,
         updated: (item?.updated == true) ? true:item?.updated ?? false,
+        index
       };
 
       result[wsKey][typeKey].push(formattedItem);
@@ -696,11 +698,15 @@ const handleDelete = () => {
             })),
             new: (item?.isNewField == true || item?.new == true) ? true:item?.new ?? false,
             updated: (item?.updated == true) ? true: item?.updated ?? false,
+            index: item.index
             // status: item?.new ? "New" : item?.updated ? "Updated" : "Old",
           });
         });
       });
     });
+
+      result.sort((a, b) => a.index - b.index);
+
 
     return result;
   };
