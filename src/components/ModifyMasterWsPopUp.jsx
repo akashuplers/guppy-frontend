@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Button, Modal, Select, Checkbox } from "antd";
 import axios from "axios";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 import { API_BASE_PATH, API_ROUTES } from "../constants/api-endpoints";
 import { StoryUploadApiContext } from "../contexts/ApiContext";
 
@@ -17,7 +17,12 @@ const ModifyMasterWsPopup = ({
   clusterList,
   modalType,
   myNewData,
-  filteredData
+  filteredData,
+  whos,
+  whats,
+  wheres,
+  tableData,
+  filterData,
 }) => {
   const [currentValue, setCurrentValue] = useState("");
   const [popupTitle, setPopupTitle] = useState("");
@@ -33,22 +38,105 @@ const ModifyMasterWsPopup = ({
   const [whereCluster, setWhereCluster] = useState([]);
   const [clusterHeadVals, setclusterHeadVals] = useState([]);
   const [clusterValuesVals, setclusterValuesVals] = useState([]);
-  const [anythingChanged, setAnythingChanged] = useState(false)
-  const {storyUploadApiResponse} = useContext(StoryUploadApiContext);  
+  const [anythingChanged, setAnythingChanged] = useState(false);
+  const { storyUploadApiResponse } = useContext(StoryUploadApiContext);
   const { story_id } = storyUploadApiResponse;
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
-  const [typeData, setTypeData] = useState(types)
+  const [typeData, setTypeData] = useState(types);
+  const [allData, setAllData] = useState([]);
+
+  useEffect(() => {
+    if (filterData?.length > 0 || tableData?.length > 0) {
+      let masterHeadValues = [];
+      let clusterValues = [];
+      if (filterData?.length > 0 && tableData?.length > 0) {
+        masterHeadValues = [
+          ...new Set([
+            ...filterData.map((item) => item.masterHead?.value),
+            ...tableData.map((item) => item.masterHead),
+          ]),
+        ];
+        clusterValues = [
+          ...new Set([
+            ...filterData.flatMap(
+              (item) =>
+                item.clusterValues?.map((cluster) => cluster.value) || []
+            ),
+            ...tableData.flatMap(
+              (item) =>
+                item.clusterValues?.map((cluster) => cluster.value) || []
+            ),
+          ]),
+        ];
+      } else if (filterData?.length > 0) {
+        masterHeadValues = filterData.map((item) => item.masterHead?.value);
+        clusterValues = filterData.flatMap(
+          (item) => item.clusterValues?.map((cluster) => cluster.value) || []
+        );
+      } else if (tableData?.length > 0) {
+        masterHeadValues = tableData.map((item) => item.masterHead);
+        clusterValues = tableData.flatMap(
+          (item) => item.clusterValues?.map((cluster) => cluster.value) || []
+        );
+      }
+      const combinedValues = [
+        ...new Set([...masterHeadValues, ...clusterValues]),
+      ];
+      setAllData(combinedValues);
+      if (combinedValues?.length > 0) {
+        setWhoCluster((prevWhos) => {
+          const updatedWhos = prevWhos?.filter(
+            (item) => !combinedValues?.includes(item.value)
+          );
+          return JSON.stringify(updatedWhos) !== JSON.stringify(prevWhos)
+            ? updatedWhos
+            : prevWhos;
+        });
+
+        setWhatCluster((prevWheres) => {
+          const updatedWheres = prevWheres?.filter(
+            (item) => !combinedValues?.includes(item.value)
+          );
+          return JSON.stringify(updatedWheres) !== JSON.stringify(prevWheres)
+            ? updatedWheres
+            : prevWheres;
+        });
+        setWhereCluster((prevWhats) => {
+          const updatedWhats = prevWhats?.filter(
+            (item) => !combinedValues?.includes(item.value)
+          );
+          return JSON.stringify(updatedWhats) !== JSON.stringify(prevWhats)
+            ? updatedWhats
+            : prevWhats;
+        });
+
+        if (filterData?.length > 0) {
+          setclusterValuesVals((prevFilteredOptions) =>
+            prevFilteredOptions?.filter(
+              (item) => !combinedValues.includes(item.value)
+            )
+          );
+        } else if (tableData?.length > 0) {
+          setclusterValuesVals((prevFilteredOptions) =>
+            prevFilteredOptions?.filter(
+              (item) => !combinedValues.includes(item.value)
+            )
+          );
+        }
+      }
+    }
+  }, [filterData, tableData, whoCluster, whatCluster, whereCluster]);
 
   const handleClusterChange = () => {
     if (wsForm === "who") {
-      setclusterHeadVals(clusterList.Who)
+      setclusterHeadVals(clusterList?.Who);
       setWhoCluster(clusterList?.Who);
     } else if (wsForm === "what") {
-      setclusterHeadVals(clusterList.What)
+      setclusterHeadVals(clusterList?.What);
       setWhatCluster(clusterList?.What);
     } else if (wsForm === "where") {
       setWhereCluster(clusterList?.Where);
-      setclusterHeadVals(clusterList.Where);
+      setclusterHeadVals(clusterList?.Where);
     } else {
       setWhoCluster(null);
       setWhatCluster(null);
@@ -57,173 +145,206 @@ const ModifyMasterWsPopup = ({
   };
 
   useEffect(() => {
-    handleClusterChange(); 
-  }, [wsForm, clusterList]); 
-  
+    handleClusterChange();
+  }, [wsForm, clusterList]);
+
   useEffect(() => {
-    if(!anythingChanged){
-      if(modalType === "InBetweenFlow") {
+    if (!anythingChanged) {
+      if (modalType === "InBetweenFlow") {
         setClusterHead(modifyItemObj?.masterHead);
         setClusterHeadId(modifyItemObj?.id || "");
       }
-      if(modalType === "saparate" ) {
-        setClusterHeadData(modifyItemObj?.masterHead)
+      if (modalType === "saparate") {
+        setClusterHeadData(modifyItemObj?.masterHead);
       }
       setTypo(modifyItemObj?.type || []);
-      if(modalType==="InBetweenFlow") {
+      if (modalType === "InBetweenFlow") {
         const selectedWs = modifyItemObj?.ws;
         const isPrimarySelected = myNewData?.some(
           (comb) => comb.ws === "who" && comb.type === "primary"
         );
         if (selectedWs === "who" && isPrimarySelected) {
-          setTypeData((prevTypo) => prevTypo?.filter((item) => item.name !== "Primary"));
-        } 
-        if(selectedWs === "what"){
+          setTypeData((prevTypo) =>
+            prevTypo?.filter((item) => item.name !== "Primary")
+          );
+        }
+        if (selectedWs === "what") {
           if (!typeData?.some((item) => item.name === "Primary")) {
-            setTypeData((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
+            setTypeData((prevTypo) => [
+              { id: 1, name: "Primary" },
+              ...prevTypo,
+            ]);
           }
-        }else if(selectedWs === "where") {
+        } else if (selectedWs === "where") {
           if (!typeData?.some((item) => item.name === "Primary")) {
-            setTypeData((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
+            setTypeData((prevTypo) => [
+              { id: 1, name: "Primary" },
+              ...prevTypo,
+            ]);
           }
         }
-        
-      } else if(modalType === "saparate") {
+      } else if (modalType === "saparate") {
         const selectedWs = modifyItemObj?.ws;
         const isPrimarySelected = filteredData?.some(
           (comb) => comb.ws === "who" && comb.type === "primary"
         );
         if (selectedWs === "who" && isPrimarySelected) {
-          setTypeData((prevTypo) => prevTypo?.filter((item) => item.name !== "Primary"));
-        } 
-        if(selectedWs === "what"){
+          setTypeData((prevTypo) =>
+            prevTypo?.filter((item) => item.name !== "Primary")
+          );
+        }
+        if (selectedWs === "what") {
           if (!typeData?.some((item) => item.name === "Primary")) {
-            setTypeData((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
+            setTypeData((prevTypo) => [
+              { id: 1, name: "Primary" },
+              ...prevTypo,
+            ]);
           }
-        }else if(selectedWs === "where") {
+        } else if (selectedWs === "where") {
           if (!typeData?.some((item) => item.name === "Primary")) {
-            setTypeData((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
+            setTypeData((prevTypo) => [
+              { id: 1, name: "Primary" },
+              ...prevTypo,
+            ]);
           }
         }
-       
       }
-    
+
       setWsForm(modifyItemObj?.ws || []);
-      if(modalType === "InBetweenFlow"){
-        setClusterValue(modifyItemObj?.clusterValues?.map(obj => obj.value) || [])
+      if (modalType === "InBetweenFlow") {
+        setClusterValue(
+          modifyItemObj?.clusterValues?.map((obj) => obj.value) || []
+        );
       }
-      if(modalType === "saparate") {
-        setClusterData(modifyItemObj?.clusterValues || [])
+      if (modalType === "saparate") {
+        setClusterData(modifyItemObj?.clusterValues || []);
       }
-      if(modalType === "InBetweenFlow") {
-        if(clusterValuesVals?.length === 0 && modifyItemObj?.masterHead?.id === clusterHead?.id){
-          getClusterValueData(modifyItemObj?.masterHead,modifyItemObj?.id ?? clusterHeadId)
+      if (modalType === "InBetweenFlow") {
+        if (
+          clusterValuesVals?.length === 0 &&
+          modifyItemObj?.masterHead?.id === clusterHead?.id
+        ) {
+          getClusterValueData(
+            modifyItemObj?.masterHead,
+            modifyItemObj?.id ?? clusterHeadId,
+            false
+          );
         }
       }
     }
-
   }, [modifyItemObj, type, clusterHead, clusterHeadVals]);
 
   const onWsChange = (value) => {
-    if(modalType === "InBetweenFlow") {
+    if (modalType === "InBetweenFlow") {
       const selectedWs = value;
 
       const isPrimarySelected = myNewData.some(
         (comb) => comb.ws === "who" && comb.type === "primary"
       );
       if (selectedWs === "who" && isPrimarySelected) {
-        setTypeData((prevTypo) => prevTypo?.filter((item) => item.name !== "Primary"));
-      } else if(selectedWs === "what") {
+        setTypeData((prevTypo) =>
+          prevTypo?.filter((item) => item.name !== "Primary")
+        );
+      } else if (selectedWs === "what") {
         if (!typeData.some((item) => item.name === "Primary")) {
-          setTypeData((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
+          setTypeData((prevTypo) => [{ id: 1, name: "Primary" }, ...prevTypo]);
         }
-      } else if(selectedWs === "where") {
+      } else if (selectedWs === "where") {
         if (!typeData.some((item) => item.name === "Primary")) {
-          setTypeData((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
+          setTypeData((prevTypo) => [{ id: 1, name: "Primary" }, ...prevTypo]);
         }
       }
-    }
-    else if(modalType === "saparate") {
+    } else if (modalType === "saparate") {
       const selectedWs = value;
 
       const isPrimarySelected = filteredData.some(
         (comb) => comb.ws === "who" && comb.type === "primary"
       );
       if (selectedWs === "who" && isPrimarySelected) {
-        setTypeData((prevTypo) => prevTypo?.filter((item) => item.name !== "Primary"));
-      } else if(selectedWs === "what") {
+        setTypeData((prevTypo) =>
+          prevTypo?.filter((item) => item.name !== "Primary")
+        );
+      } else if (selectedWs === "what") {
         if (!typeData.some((item) => item.name === "Primary")) {
-          setTypeData((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
+          setTypeData((prevTypo) => [{ id: 1, name: "Primary" }, ...prevTypo]);
         }
-      } else if(selectedWs === "where") {
+      } else if (selectedWs === "where") {
         if (!typeData.some((item) => item.name === "Primary")) {
-          setTypeData((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
+          setTypeData((prevTypo) => [{ id: 1, name: "Primary" }, ...prevTypo]);
         }
       }
     }
-   
+
     setWsForm(value);
-    if(modalType == "saparate") {
+    if (modalType == "saparate") {
       setSaparate(true);
     }
-    setAnythingChanged(true)
-  }
+    setAnythingChanged(true);
+  };
 
   const onTypeChange = (value) => {
     setTypo(value);
-    if(modalType == "saparate") {
+    if (modalType == "saparate") {
       setSaparate(true);
     }
-    setAnythingChanged(true)
-  }
+    setAnythingChanged(true);
+  };
   const [clusterHeadId, setClusterHeadId] = useState("");
   const [clusterValueSet, setClusterValueSet] = useState();
- 
+
   const onClusterHead = (selectedValue, fieldName) => {
-    const selectedCluster = clusterHeadVals.find(item => item?.value === selectedValue);
+    const selectedCluster = clusterHeadVals.find(
+      (item) => item?.value === selectedValue
+    );
     setClusterHead(selectedCluster?.value);
-    setClusterHeadId(selectedCluster?.id); 
-    if(modalType === "InBetweenFlow") {
-    getClusterValueData(selectedCluster?.value,selectedCluster?.id)
+    setClusterHeadId(selectedCluster?.id);
+    if (modalType === "InBetweenFlow") {
+      getClusterValueData(selectedCluster?.value, selectedCluster?.id, true);
     }
-    setAnythingChanged(true) 
+    setAnythingChanged(true);
   };
 
   const onClusterValues = (selectedValue, fieldName) => {
-    const valuesArray = Array?.isArray(selectedValue) ? selectedValue : [selectedValue];
+    const valuesArray = Array?.isArray(selectedValue)
+      ? selectedValue
+      : [selectedValue];
     const selectedClusterObjects = valuesArray
-    ?.map(value => clusterValuesVals.find(item => item?.value === value))
-    ?.filter(Boolean);
-    const updatedClusterValues = selectedClusterObjects?.map(item => item.value);
-    const mergedClusterObjects = selectedClusterObjects?.map(item => ({
+      ?.map((value) => clusterValuesVals.find((item) => item?.value === value))
+      ?.filter(Boolean);
+    const updatedClusterValues = selectedClusterObjects?.map(
+      (item) => item.value
+    );
+    const mergedClusterObjects = selectedClusterObjects?.map((item) => ({
       id: item?.id,
-      value: item?.value
+      value: item?.value,
     }));
     setClusterValue(updatedClusterValues);
     setClusterValueSet(mergedClusterObjects);
     setAnythingChanged(true);
   };
-const [clusterVals, setClusterValues] = useState([])
-const [tempClusterValue, setTempClusterValue] = useState('');
-const onInputChange = (e) => {
-  setTempClusterValue(e.target.value);
-};
-const onKeyDown = (e) => {
-  if (e.key === 'Enter' || e.key === ',') {
-    e.preventDefault(); 
-    if (tempClusterValue?.trim()) {
-      onClusterValuesText(tempClusterValue); 
+  const [clusterVals, setClusterValues] = useState([]);
+  const [tempClusterValue, setTempClusterValue] = useState("");
+  const onInputChange = (e) => {
+    setTempClusterValue(e.target.value);
+  };
+  const onKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      if (tempClusterValue?.trim()) {
+        onClusterValuesText(tempClusterValue);
+      }
+      setTempClusterValue("");
     }
-    setTempClusterValue('');
-  }
-};
+  };
   const onClusterValuesText = (selectedValue) => {
     const valuesArray = selectedValue
-      .split(',') 
-      .map((value) => value?.trim()) 
-      .filter((value) => value); 
+      .split(",")
+      .map((value) => value?.trim())
+      .filter((value) => value);
 
-    const existingValuesMap = new Map(clusterData?.map((item) => [item.value, item]));
+    const existingValuesMap = new Map(
+      clusterData?.map((item) => [item.value, item])
+    );
     const updatedClusterData = [];
     valuesArray.forEach((value) => {
       const existingItem = existingValuesMap.get(value);
@@ -242,25 +363,28 @@ const onKeyDown = (e) => {
     setAnythingChanged(true);
   };
 
- const handleDeleteValue = (valueToDelete) => {
-  const updatedData = clusterData?.filter((item) => item.value !== valueToDelete);
-  setClusterData(updatedData);
-  setClusterValues(updatedData?.map((item) => item.value));
-  setAnythingChanged(true);
-};
+  const handleDeleteValue = (valueToDelete) => {
+    const updatedData = clusterData?.filter(
+      (item) => item.value !== valueToDelete
+    );
+    setClusterData(updatedData);
+    setClusterValues(updatedData?.map((item) => item.value));
+    setAnythingChanged(true);
+  };
 
   const onClusterHeadText = (inputValue, fieldName) => {
-    setClusterHeadData(inputValue); 
+    setClusterHeadData(inputValue);
     setSaparate(true);
-    setAnythingChanged(true); 
+    setAnythingChanged(true);
   };
-  
-  const getClusterValueData = async (value, clusterId) => {
+
+  const getClusterValueData = async (value, clusterId, bool) => {
+    const data = allData;
     if (clusterHeadVals?.length === 0) {
       console.error("clusterHeadVals is not yet available.");
-      return; 
+      return;
     }
-  
+
     const apiUrl = API_BASE_PATH + API_ROUTES.SORT_WS + story_id;
     const payload = {
       clusterHead: { value: value, id: clusterId },
@@ -272,14 +396,28 @@ const onKeyDown = (e) => {
         Authorization: `Bearer ${tokenVal}`,
       },
     };
-  
+
     try {
       const response = await axios.post(apiUrl, payload, config);
-      const filteredArray = response?.data?.ws?.clusterValues;
-      const filteredArrays = filteredArray?.filter(
-        (item) => item?.value !== value
-      );
-      setclusterValuesVals(filteredArrays);
+
+      if (bool) {
+        const filteredArray = response?.data?.ws?.clusterValues;
+        const filteredNewArrays = filteredArray?.filter(
+          (item) => item?.value !== value
+        );
+
+        const finalFilteredArray = filteredNewArrays?.filter(
+          (item) => !data.includes(item.value)
+        );
+
+        setclusterValuesVals(finalFilteredArray);
+      } else {
+        const filteredArray = response?.data?.ws?.clusterValues;
+        const filteredArrays = filteredArray?.filter(
+          (item) => !data.includes(item.value)
+        );
+        setclusterValuesVals(filteredArrays);
+      }
     } catch (error) {
       console.error("Error calling the API:", error);
     }
@@ -287,17 +425,29 @@ const onKeyDown = (e) => {
 
   const handleUpdate = () => {
     const updatedObj = {
-      id: clusterHeadId ? clusterHeadId : modifyItemObj.id, 
-      ws: wsForm, 
-      type: typo || modifyItemObj.type, 
-      masterHead: (modalType === "saparate") ? (clusterHeadData ?? modifyItemObj?.masterHead) : (clusterHead ?? modifyItemObj?.masterHead),
-      clusterValues: (modalType === "saparate") ? (clusterData ??  modifyItemObj?.clusterValues):clusterValueSet ?? modifyItemObj?.clusterValues, 
-      updated:true
+      id: clusterHeadId ? clusterHeadId : modifyItemObj.id,
+      ws: wsForm,
+      type: typo || modifyItemObj.type,
+      masterHead:
+        modalType === "saparate"
+          ? clusterHeadData ?? modifyItemObj?.masterHead
+          : clusterHead ?? modifyItemObj?.masterHead,
+      clusterValues:
+        modalType === "saparate"
+          ? clusterData ?? modifyItemObj?.clusterValues
+          : clusterValueSet ?? modifyItemObj?.clusterValues,
+      ...(modalType == "InBetweenFlow" && {
+        updated: modifyItemObj?.new === false ? true : false,
+        isNewField:
+          modifyItemObj?.new === true ? true : modifyItemObj?.new ?? false,
+      }),
+      // updated:modifyItemObj?.new === false ? true: false,
+      // isNewField: modifyItemObj?.new === true ? true:modifyItemObj?.new ?? false,
     };
     onModify(updatedObj);
     onClose();
   };
-  
+
   return (
     <Modal
       open={open}
@@ -325,13 +475,13 @@ const onKeyDown = (e) => {
           {popupTitle}
         </label>
         <div className="mt-8 mb-6">
-        <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
+          <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
             Ws Form
           </label>
           <Select
             size="large"
             className="w-full"
-            value={wsForm} 
+            value={wsForm}
             onChange={(value) => onWsChange(value, "wsForm")}
             placeholder={"Select Ws Form"}
           >
@@ -343,14 +493,14 @@ const onKeyDown = (e) => {
           </Select>
         </div>
         <div className="mt-8 mb-6">
-        <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
+          <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
             Type
           </label>
           <Select
             size="large"
             className="w-full"
-            value={typo} // Bind value to the state variable
-            onChange={(value) => onTypeChange(value, "typo")} // Pass name 'wsForm' to handleChange
+            value={typo} 
+            onChange={(value) => onTypeChange(value, "typo")} 
             placeholder={"Select Type"}
           >
             {typeData?.map((item, index) => (
@@ -361,110 +511,123 @@ const onKeyDown = (e) => {
           </Select>
         </div>
         {modalType === "InBetweenFlow" && (
-  <div>
-    <div className="mt-8 mb-6">
-      <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
-        {"Cluster Head"}
-      </label>
-      <Select
-        size="large"
-        className="w-full"
-        value={clusterHead}
-        onChange={(value) => onClusterHead(value, "masterHead")} // Pass name 'wsForm' to handleChange
-        placeholder="Select Cluster Head"
-      >
-        {clusterHeadVals?.map((item) => (
-          <Option key={item?.id} value={item?.value}>
-            {item?.value}
-          </Option>
-        ))}
-      </Select>
-    </div>
+          <div>
+            <div className="mt-8 mb-6">
+              <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
+                {"Cluster Head"}
+              </label>
+              <Select
+                size="large"
+                className="w-full"
+                value={clusterHead}
+                onChange={(value) => onClusterHead(value, "masterHead")} 
+                placeholder="Select Cluster Head"
+              >
+                {whoCluster &&
+                  whoCluster?.map((item, index) => (
+                    <Option key={item?.id} value={item?.value}>
+                      {item?.value}
+                    </Option>
+                  ))}
+                {whatCluster &&
+                  whatCluster?.map((item, index) => (
+                    <Option key={item?.id} value={item?.value}>
+                      {item?.value}
+                    </Option>
+                  ))}
+                {whereCluster &&
+                  whereCluster?.map((item, index) => (
+                    <Option key={item?.id} value={item?.value}>
+                      {item?.value}
+                    </Option>
+                  ))}
+              </Select>
+            </div>
 
-    <div>
-      <label
-        htmlFor="secondaryWhos"
-        className="block mb-2 text-md md:text-lg font-medium text-gray-900"
-      >
-        {"Cluster Value"}
-      </label>
-      <Select
-        size="large"
-        mode="tags"
-        className="w-full"
-        value={clusterValue}
-        onChange={(value) => onClusterValues(value, "clusterValues")} // Pass name 'wsForm' to handleChange
-        placeholder={"Select Cluster Values"}
-      >
-        {clusterValuesVals?.map((option) => (
-          <Option key={option.id} value={option.value}>
-            {option?.value}
-          </Option>
-        ))}
-      </Select>
-    </div>
-  </div>
-        )}
-{modalType === "saparate" && (
-  <>
-    <div className="mt-8 mb-6">
-      <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
-        {"Cluster Head"}
-      </label>
-      <input
-        type="text"
-        className="w-full p-2 border border-gray-300 rounded-lg text-md"
-        value={clusterHeadData}
-        onChange={(e) => onClusterHeadText(e.target.value, "masterHead")} // Handle input change
-        placeholder="Enter Cluster Head"
-      />
-    </div>
-
-    <div className="space-y-4">
-      <label
-        htmlFor="clusterVal"
-        className="block text-md md:text-lg font-medium text-gray-900"
-      >
-        {"Cluster Value"}
-      </label>
-      <div
-        className="w-full p-2 border border-gray-300 rounded-lg text-md mb-4"
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          gap: '8px',
-        }}
-      >
-        {clusterData.map((item) => (
-          <div
-            key={item.id}
-            className="flex items-center gap-2 bg-gray-200 text-black-600 rounded-full px-3 py-1"
-          >
-            <span>{item.value}</span>
-            <button
-              onClick={() => handleDeleteValue(item.value)}
-              className="text-red-500 hover:text-red-700"
-            >
-              &#x2716; {/* Unicode for delete (X) */}
-            </button>
+            <div>
+              <label
+                htmlFor="secondaryWhos"
+                className="block mb-2 text-md md:text-lg font-medium text-gray-900"
+              >
+                {"Cluster Value"}
+              </label>
+              <Select
+                size="large"
+                mode="tags"
+                className="w-full"
+                value={clusterValue}
+                onChange={(value) => onClusterValues(value, "clusterValues")} // Pass name 'wsForm' to handleChange
+                placeholder={"Select Cluster Values"}
+              >
+                {clusterValuesVals?.map((option) => (
+                  <Option key={option.id} value={option.value}>
+                    {option?.value}
+                  </Option>
+                ))}
+              </Select>
+            </div>
           </div>
-        ))}
-        
-        {/* Text input field for adding values */}
-        <input
-          type="text"
-          className="w-full border-none outline-none bg-transparent focus:outline-none focus:ring-0"
-          value={tempClusterValue} // Use tempClusterValue for the input
-          onChange={onInputChange} // Update tempClusterValue
-          onKeyDown={onKeyDown} // Handle Enter, Comma key press
-          placeholder="Enter Cluster Values"
-        />
-      </div>
-    </div>
-  </>
-)}
+        )}
+        {modalType === "saparate" && (
+          <>
+            <div className="mt-8 mb-6">
+              <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
+                {"Cluster Head"}
+              </label>
+              <input
+                type="text"
+                className="w-full p-2 border border-gray-300 rounded-lg text-md"
+                value={clusterHeadData}
+                onChange={(e) =>
+                  onClusterHeadText(e.target.value, "masterHead")
+                } // Handle input change
+                placeholder="Enter Cluster Head"
+              />
+            </div>
 
+            <div className="space-y-4">
+              <label
+                htmlFor="clusterVal"
+                className="block text-md md:text-lg font-medium text-gray-900"
+              >
+                {"Cluster Value"}
+              </label>
+              <div
+                className="w-full p-2 border border-gray-300 rounded-lg text-md mb-4"
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                {clusterData.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-2 bg-gray-200 text-black-600 rounded-full px-3 py-1"
+                  >
+                    <span>{item.value}</span>
+                    <button
+                      onClick={() => handleDeleteValue(item.value)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      &#x2716;
+                    </button>
+                  </div>
+                ))}
+
+                <input
+                  type="text"
+                  className="w-full border-none outline-none bg-transparent focus:outline-none focus:ring-0"
+                  value={tempClusterValue} 
+                  onChange={onInputChange} 
+                  onKeyDown={onKeyDown} 
+                  placeholder="Enter Cluster Values"
+                />
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </Modal>
   );
