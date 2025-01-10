@@ -54,6 +54,7 @@ const MasterWssPage = ({
     current: 1,   // Default to page 1
     pageSize: 10, // Default to 10 records per page
   });
+  
   const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged} = useContext(StoryUploadApiContext);
   const {token,story_id,storyWorld,fileName,storyWorldId,masterws} = storyUploadApiResponse;
   const [filterData, setFilteredData] = useState([]);
@@ -413,7 +414,6 @@ const handleDelete = () => {
       },
     },
   ];
-console.log("myNEwww", myNewData);
 
   const storyWorldOptions = [
     { id: 1, name: "who" },
@@ -442,9 +442,19 @@ console.log("myNEwww", myNewData);
     },
   };
   
+  const [blankValue, setBlankValue] = useState();
+  const [fieldValue, setFieldValue] = useState();
+
   const handleChange = async (e, name) => { 
+    const blankValue = e?.target?.value;
+    const fieldName = name;
+    setFieldValue(fieldName)
+    setBlankValue(blankValue)
     if (e?.target?.value === "who") {
       setWhos(clusterList?.Who);
+      setWhoSelectedValue(e?.target?.value)
+      setWhatSelectedValue(false);
+      setWhereSelectedValue(false);
       const selectedWs = e?.target?.value;
 
       const isPrimarySelected = myNewData.some(
@@ -455,23 +465,30 @@ console.log("myNEwww", myNewData);
       }
       setWhats([]);
       setWheres([]);
-      setFilteredOption(clusterList?.Who);
     } else if (e?.target?.value === "what") {
       setWhats(clusterList?.What);
+      setWhatSelectedValue(e?.target?.value);
+      setWhereSelectedValue(false);
+      setWhoSelectedValue(false)
       setWhos([]);
       setWheres([]);
-      setFilteredOption(clusterList?.What);
       if (!typo.some((item) => item.name === "Primary")) {
         setTypo((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
       }
     } else if (e?.target?.value === "where") {
       setWheres(clusterList?.Where);
+      setWhereSelectedValue(e?.target?.value);
+      setWhatSelectedValue(false);
+      setWhoSelectedValue(false);
       setWhats([]);
       setWhos([]);
-      setFilteredOption(clusterList?.Where);
       if (!typo.some((item) => item.name === "Primary")) {
         setTypo((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo, ]);
       }
+    }  else if(blankValue=="" && name==="ws"){
+      setWhos([]);
+      setWhats([]);
+      setWheres([]);
     }
 
     const selectedOption = [
@@ -530,7 +547,7 @@ console.log("myNEwww", myNewData);
       
       formik.setFieldValue("type", e.target.value);
     
-    } else {
+    } else if(Array.isArray(e)) {
       const selectedValues = e?.map((option) => ({
         label: option.label,
         value: option.value,
@@ -828,11 +845,27 @@ console.log("myNEwww", myNewData);
   };
 
   const transformedData = transformData(myNewData);
-  
+  const [whoSelectedValues, setWhoSelectedValue] = useState(false);
+  const [whatSelectedValues, setWhatSelectedValue] = useState(false);
+  const [whereSelectedValues, setWhereSelectedValue] = useState(false);
+  const whosRef = useRef(whos);
+const whatsRef = useRef(whats);
+const wheresRef = useRef(wheres);
   useEffect(() => {
-    if (filterData?.length > 0 || tableData?.length > 0) {
-      let masterHeadValues = [];  
+  const whosChanged = whosRef.current !== whos;
+  const whatsChanged = whatsRef.current !== whats;
+  const wheresChanged = wheresRef.current !== wheres;
+  whosRef.current = whos;
+  whatsRef.current = whats;
+  wheresRef.current = wheres;
+    if (
+      (filterData?.length > 0 || tableData?.length > 0) &&
+      (whoSelectedValues || whatSelectedValues || whereSelectedValues || blankValue === "") &&
+      (whosChanged || whatsChanged || wheresChanged)
+    ) {
+      let masterHeadValues = [];
       let clusterValues = [];
+  
       if (filterData?.length > 0 && tableData?.length > 0) {
         masterHeadValues = [
           ...new Set([
@@ -861,34 +894,53 @@ console.log("myNEwww", myNewData);
           item.clusterValues?.map((cluster) => cluster.value) || []
         );
       }
+  
       const combinedValues = [...new Set([...masterHeadValues, ...clusterValues])];
-      
+  
       if (combinedValues?.length > 0) {
-          setWhos((prevWhos) => {
-          const updatedWhos = prevWhos.filter(
-            (item) => !combinedValues.includes(item.value)
-          );
-          return JSON.stringify(updatedWhos) !== JSON.stringify(prevWhos)
-            ? updatedWhos
-            : prevWhos;
+        setWhos((prevWhos) => {
+          if (whoSelectedValues) {
+            return (clusterList?.Who || []).filter(
+              (item) => !combinedValues.includes(item.value)
+            );
+          }
+          return prevWhos;
         });
   
         setWheres((prevWheres) => {
-          const updatedWheres = prevWheres.filter(
-            (item) => !combinedValues.includes(item.value)
-          );
-          return JSON.stringify(updatedWheres) !== JSON.stringify(prevWheres)
-            ? updatedWheres
-            : prevWheres; 
+          if (whereSelectedValues) {
+            return (clusterList?.Where || []).filter(
+              (item) => !combinedValues.includes(item.value)
+            );
+          }
+          return prevWheres;
         });
+  
         setWhats((prevWhats) => {
-          const updatedWhats = prevWhats.filter(
-            (item) => !combinedValues.includes(item.value)
-          );
-          return JSON.stringify(updatedWhats) !== JSON.stringify(prevWhats)
-            ? updatedWhats
-            : prevWhats; 
+          if (whatSelectedValues) {
+            return (clusterList?.What || []).filter(
+              (item) => !combinedValues.includes(item.value)
+            );
+          }
+          return prevWhats;
         });
+  
+        if (whoSelectedValues) {
+          setWhats([]);
+          setWheres([]);
+        } else if (whatSelectedValues) {
+          setWhos([]);
+          setWheres([]);
+        } else if (whereSelectedValues) {
+          setWhos([]);
+          setWhats([]);
+        }
+  
+        if (blankValue === "") {
+          setWhos([]);
+          setWhats([]);
+          setWheres([]);
+        }
   
         if (filterData?.length > 0) {
           setFilteredOption((prevFilteredOptions) =>
@@ -899,7 +951,14 @@ console.log("myNEwww", myNewData);
         }
       }
     }
-  }, [filterData, tableData, whos, whats, wheres]);
+  }, [
+    filterData,
+    tableData,
+    whoSelectedValues,
+    whatSelectedValues,
+    whereSelectedValues,
+    blankValue,
+  ]);
 
   const onModify = (updatedObj) => {
     let modifiedFilterData = [];
