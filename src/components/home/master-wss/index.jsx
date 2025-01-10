@@ -869,7 +869,7 @@ const wheresRef = useRef(wheres);
       if (filterData?.length > 0 && tableData?.length > 0) {
         masterHeadValues = [
           ...new Set([
-            ...filterData.map((item) => item.masterHead?.value),
+            ...filterData.map((item) => item.masterHead?.value || item?.masterHead),
             ...tableData.map((item) => item.masterHead),
           ]),
         ];
@@ -884,7 +884,7 @@ const wheresRef = useRef(wheres);
           ]),
         ];
       } else if (filterData?.length > 0) {
-        masterHeadValues = filterData.map((item) => item.masterHead?.value);
+        masterHeadValues = filterData.map((item) => item.masterHead?.value || item?.masterHead);
         clusterValues = filterData.flatMap((item) =>
           item.clusterValues?.map((cluster) => cluster.value) || []
         );
@@ -958,7 +958,7 @@ const wheresRef = useRef(wheres);
     whatSelectedValues,
     whereSelectedValues,
     blankValue,
-  ]);
+  ]);  
 
   const onModify = (updatedObj) => {
     let modifiedFilterData = [];
