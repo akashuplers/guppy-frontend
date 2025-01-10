@@ -38,12 +38,12 @@ const DownloadStory = ({ onDiscard = () => {} }) => {
     if (selectedJsonVersion.key !== "json version") {
       url += `&versionId=${selectedJsonVersion.key}`;
     }
-    if (selectedType !== "all") {
-      url += `?type=${selectedType}`;
-    }
+    // if (selectedType !== "all") {
+      // url += `&type=${"all"}`;
+    // }
 
     setApiUrl(url);
-  }, [storyWorldId, story_id, userId, selectedVersion, selectedJsonVersion, selectedType]);
+  }, [storyWorldId, story_id, userId, selectedVersion, selectedJsonVersion]);
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
@@ -165,7 +165,7 @@ const fetchVersionByStory = async (story_id) => {
         </div>
       }
         
-        <div className="flex flex-col items-center gap-2">
+        {/* <div className="flex flex-col items-center gap-2">
           <p className="text-sm text-gray-600 font-medium">
             Select Type <span className="text-red-500">*</span>
           </p>
@@ -205,7 +205,7 @@ const fetchVersionByStory = async (story_id) => {
               <span className="ml-2">Updated</span>
             </label>
           </div>
-        </div>
+        </div> */}
 
 
       <div className="flex justify-center mt-3">
