@@ -22,6 +22,7 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState({});
   const [actionSelectionItems, setActionSelectionItems] = useState([]);
+  const [storyText, setStoryText] = useState();
   const storyId = JSON.parse(localStorage.getItem("storyId"));
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -137,6 +138,7 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
       }
       if (output) {
         const respObj = output?.data?.data;
+        setStoryText(respObj?.story_text);
         setActionSelectionItems(getUpdatedJsons(respObj?.actions))
         message.destroy(alertKey);
         message.success("Actions Fetched Successfully !");
@@ -536,6 +538,7 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
       },
     },
   ];
+console.log("storyText", storyText);
 
   return (
     <div className="px-5 pb-5 rounded-md border">
@@ -595,6 +598,7 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
       {/* story text */}
       {showStoryModal && (
         <StoryTextPopup
+          storyTexts={storyText}
           open={showStoryModal}
           onClose={() => setShowStoryModal(false)}
         />
