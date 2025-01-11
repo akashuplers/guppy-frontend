@@ -111,39 +111,6 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
       
     })
   }
-  console.log("titles", bodyForSaveTitlesApi());
-  const getUpdatedJsonWs = (arr) => {
-    if (arr && arr.length > 0) {
-      const updated = arr.map((item, index) => ({
-        id: item.id,
-        name: item.value,
-        isCheckboxSelected: item.selected ? true : false,
-        ner: item.ner ?? false,
-      }));
-      return updated;
-    }
-    return [];
-  };
-
-  const getUpdatedJsonTitles = (list) => {
-    const arr = list[0]?.titles || [];
-    if (arr && arr.length > 0) {
-      const updated = arr.map((item, index) => ({
-        id: item.id,
-        title: item.Title,
-        primaryWhos: item.Who_Primary,
-        secondaryWhos: item.Who_Secondary,
-        primaryWhats: item.What_Primary,
-        secondaryWhats: item.What_Secondary,
-        primaryWheres: item.Where_Primary,
-        secondaryWheres: item.Where_Secondary,
-        new: item.new,
-        updated: item.updated
-      }));
-      return updated;
-    }
-    return [];
-  };
 
   const getUpdatedJsonsTitles = (list) => {
     const arr = list[0]?.titles || [];
@@ -165,25 +132,6 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
     return [];
   };
 
-  // const getUpdatedJson = (list) => {
-  //   const arr = list[0]?.ideas || [];
-  //   if (arr && arr.length > 0) {
-  //     const updated = arr.map((item, index) => ({
-  //       id: item.id,
-  //       idea: item.idea,
-  //       primaryWhos: item.Who_Primary,
-  //       secondaryWhos: item.Who_Secondary,
-  //       primaryWhats: item.What_Primary,
-  //       secondaryWhats: item.What_Secondary,
-  //       primaryWheres: item.Where_Primary,
-  //       secondaryWheres: item.Where_Secondary,
-  //       new: item.new,
-  //       updated: item.updated
-  //     }));
-  //     return updated;
-  //   }
-  //   return [];
-  // };
   const fetchStoryData = async (story_id, token) => {
     let alertKey;
     try {
@@ -217,9 +165,6 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
       fetchStoryData(story_id, token);
 
   }, []);
-
-  console.log("titles", titleSelectionItems);
-  console.log("bodyForSaveTitlesApi", bodyForSaveTitlesApi());
 
   const onSave = async () => {
     setIsSubmitting(true);
