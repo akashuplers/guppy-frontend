@@ -53,7 +53,7 @@ const ModifyMasterWsPopup = ({
       if (filterData?.length > 0 && tableData?.length > 0) {
         masterHeadValues = [
           ...new Set([
-            ...filterData.map((item) => item.masterHead?.value),
+            ...filterData.map((item) => item.masterHead?.value || item?.masterHead),
             ...tableData.map((item) => item.masterHead),
           ]),
         ];
@@ -70,7 +70,7 @@ const ModifyMasterWsPopup = ({
           ]),
         ];
       } else if (filterData?.length > 0) {
-        masterHeadValues = filterData.map((item) => item.masterHead?.value);
+        masterHeadValues = filterData.map((item) => item.masterHead?.value || item?.masterHead);
         clusterValues = filterData.flatMap(
           (item) => item.clusterValues?.map((cluster) => cluster.value) || []
         );
@@ -110,20 +110,6 @@ const ModifyMasterWsPopup = ({
             ? updatedWhats
             : prevWhats;
         });
-
-        // if (filterData?.length > 0) {
-        //   setclusterValuesVals((prevFilteredOptions) =>
-        //     prevFilteredOptions?.filter(
-        //       (item) => !combinedValues.includes(item.value)
-        //     )
-        //   );
-        // } else if (tableData?.length > 0) {
-        //   setclusterValuesVals((prevFilteredOptions) =>
-        //     prevFilteredOptions?.filter(
-        //       (item) => !combinedValues.includes(item.value)
-        //     )
-        //   );
-        // }
       }
     }
   }, [filterData, tableData, whoCluster, whatCluster, whereCluster]);

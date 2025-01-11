@@ -590,7 +590,7 @@ const handleDelete = () => {
           Authorization: `Bearer ${token}`,
         },
       };
-      alertKey = message.loading("Saving Ws...", 0).key;
+      alertKey = message.loading("Saving Clusters...", 0).key;
       const response = await axios.post(apiUrl, payload, config);
       const output = response?.data;
       if (output) {

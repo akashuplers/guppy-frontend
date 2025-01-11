@@ -22,20 +22,16 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState({});
   const [actionSelectionItems, setActionSelectionItems] = useState([]);
+  const storyId = JSON.parse(localStorage.getItem("storyId"));
+  const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showStoryModal, setShowStoryModal] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [comment, setComment] = useState('');
   const [modalType, setModalType] = useState('');
   const navigate = useNavigate();
-
-  // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, actions, updatedActions, primaryWhos } = storyUploadApiResponse;
-
-  useEffect(() => {
-    setActionSelectionItems(updatedActions);
-  }, []);
 
   useEffect(() => {
     if(saveActions){
@@ -71,7 +67,6 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
       Where_Secondary: item.secondaryWheres,
       updated: item?.isEditField === true ? true : item?.updated ?? false,
       new: item?.isNewField === true ? true : item?.new ?? false,
-      // ...(item.isNewField ? {new: true, updated: false}: item.isEditField && {updated: true}),
       ...(item.comment && {comment: item.comment})
     }));
     const body = {
@@ -101,6 +96,60 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
     })
   }
 
+  const getUpdatedJsons = (list) => {
+    const arr = list[0]?.ideas || [];
+    if (arr && arr.length > 0) {
+      const updated = arr.map((item, index) => ({
+        id: item.id,
+        idea: item.idea,
+        primaryWhos: item.Who_Primary,
+        secondaryWhos: item.Who_Secondary,
+        primaryWhats: item.What_Primary,
+        secondaryWhats: item.What_Secondary,
+        primaryWheres: item.Where_Primary,
+        secondaryWheres: item.Where_Secondary,
+        new: item.new,
+        updated: item.updated
+      }));
+      return updated;
+    }
+    return [];
+  };
+
+  const fetchStoryData = async (story_id, token) => {
+  let alertKey;
+
+    try {
+      alertKey = message.loading("Fetching Actions...", 0).key;
+      const apiUrl =
+        API_BASE_PATH + API_ROUTES.FETCH_STORY_DATA + `/${story_id}`;
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const output = await axios.get(apiUrl, config);
+      const respObj = output?.data?.data;
+      if (!respObj) {
+        message.error("Invalid response from server. Please try again.");
+        return;
+      }
+      if (output) {
+        const respObj = output?.data?.data;
+        setActionSelectionItems(getUpdatedJsons(respObj?.actions))
+        message.destroy(alertKey);
+        message.success("Actions Fetched Successfully !");
+      }
+    } catch (error) {
+      console.log("error: ", error);
+    }
+  };
+
+  useEffect(() => {
+      fetchStoryData(story_id, token);
+  }, []);
+
   const onSave = async () => {
     setIsSubmitting(true);
     let alertKey;
@@ -108,7 +157,6 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
       // api call
       const apiUrl = API_BASE_PATH + API_ROUTES.SAVE_ACTIONS;
       const payload = bodyForSaveActionsApi();
-
       const config = {
         headers: {
           "Content-Type": "application/json",
@@ -116,7 +164,7 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
         },
       };
       alertKey = message.loading("Saving Actions...", 0).key;
-      const response = await axios.post(apiUrl, payload, config); // post api request
+      const response = await axios.post(apiUrl, payload, config); 
       const output = response?.data;
       if(output) {
         setActionSelectionItems(getUpdatedActions(output?.updatedActions?.ideas));
@@ -158,7 +206,7 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
   const onModify = (updatedObj) => {
     const curData = [...actionSelectionItems];
     const modified = curData.map((ele) =>
-      ele.id === selectedRow.id ? updatedObj : ele
+      ele?.id === selectedRow?.id ? updatedObj : ele
     );
     setActionSelectionItems(modified);
     message.success("Updated Successfully !");
@@ -191,7 +239,7 @@ const ActionSelection = ({ onDiscard = () => {}, saveActions, handleSaveSuccess 
 
   const handleDelete = () => {
     const curData = [...actionSelectionItems];
-    const updated = curData.filter((ele) => ele.id !== selectedRow.id);
+    const updated = curData.filter((ele) => ele?.id !== selectedRow?.id);
     setActionSelectionItems(updated);
     message.success("Deleted Successfully !");
     handleAnythingChanged(true);

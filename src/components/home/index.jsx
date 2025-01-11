@@ -114,10 +114,11 @@ const Home = () => {
     return [];
   };
   
-  const fetchStoryData = async (story_id, token) => {
+  const fetchStoryData = async (storyId, token) => {
+
     try {
       const apiUrl =
-        API_BASE_PATH + API_ROUTES.FETCH_STORY_DATA + `/${story_id}`;
+        API_BASE_PATH + API_ROUTES.FETCH_STORY_DATA + `/${storyId}`;
       const config = {
         headers: {
           "Content-Type": "application/json",
@@ -303,30 +304,40 @@ const Home = () => {
             <StoryUpload onSuccess={handleNextStep} />
           ) : currentStep === 1 ? (
             <ThreeWsSelection
+              storyId={storyId}
+              tokenVal={tokenVal}
               onDiscard={onDiscard}
               saveWs={isSaveChanges}
               handleSaveSuccess={handleSaveSuccess}
             />
           ) : currentStep === 2 ? (
             <MasterWssPage
+              storyId={storyId}
+              tokenVal={tokenVal}
               onDiscard={onDiscard}
               saveMasterWs={isSaveChanges}
               handleSaveSuccess={handleSaveSuccess}
             />
           ) : currentStep === 3 ? (
             <TitleSelection
+              storyId={storyId}
+              tokenVal={tokenVal}
               onDiscard={onDiscard}
               saveTitles={isSaveChanges}
               handleSaveSuccess={handleSaveSuccess}
             />
           ) : currentStep === 4 ? (
             <SituationSelection
+              storyId={storyId}
+              tokenVal={tokenVal}
               onDiscard={onDiscard}
               saveSituations={isSaveChanges}
               handleSaveSuccess={handleSaveSuccess}
             />
           ) : currentStep === 5 ? (
             <ActionSelection
+              storyId={storyId}
+              tokenVal={tokenVal}
               onDiscard={onDiscard}
               saveActions={isSaveChanges}
               handleSaveSuccess={handleSaveSuccess}
