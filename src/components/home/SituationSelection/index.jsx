@@ -29,6 +29,7 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations,handleSaveSuc
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [comment, setComment] = useState('');
   const [modalType, setModalType] = useState('');
+  const [storyText, setStoryText] = useState();
   const navigate = useNavigate();
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, situations, updatedSituations, primaryWhos } = storyUploadApiResponse;
@@ -172,6 +173,7 @@ const fetchStoryData = async (story_id, token) => {
     }
     if (output) {
       const respObj = output?.data?.data;
+      setStoryText(respObj?.story_text)
       setSituationSelectionItems(getUpdatedJsons(respObj?.sitautions))
       message.destroy(alertKey);
       message.success("Situations Fetched Successfully !");
@@ -665,6 +667,7 @@ useEffect(() => {
       {/* story text */}
       {showStoryModal && (
         <StoryTextPopup
+          storyTexts={storyText}
           open={showStoryModal}
           onClose={() => setShowStoryModal(false)}
         />

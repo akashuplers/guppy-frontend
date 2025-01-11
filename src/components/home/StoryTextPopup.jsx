@@ -4,7 +4,7 @@ import { StoryUploadApiContext } from '../../contexts/ApiContext'
 import { API_BASE_PATH, API_ROUTES } from '../../constants/api-endpoints';
 import axios from 'axios';
 
-const StoryTextPopup = ({ open, onClose = () => {} }) => {
+const StoryTextPopup = ({ open, onClose = () => {}, storyTexts }) => {  
   const { storyUploadApiResponse } = useContext(StoryUploadApiContext);
   const { fileName } = storyUploadApiResponse;
   const [storyText, setStoryText] = useState("");
@@ -28,7 +28,9 @@ const StoryTextPopup = ({ open, onClose = () => {} }) => {
           Authorization: `Bearer ${token}`,
         },
       };
-      alertKey = message.loading('Fetching Story Text...', 0).key;
+      if(!storyTexts){
+        alertKey = message.loading('Fetching Story Text...', 0).key;
+      }
       
       const output = await axios.get(apiUrl, config);
       if(output) {
@@ -56,7 +58,7 @@ const StoryTextPopup = ({ open, onClose = () => {} }) => {
       className='p-3 max-h-[600px] md:max-h-[800px] overflow-auto'
     >
         <div className='rounded-md text-justify'>
-          {storyText}
+          {storyText || storyTexts}
         </div>
     </Modal>
   )

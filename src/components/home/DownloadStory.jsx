@@ -234,7 +234,7 @@ const fetchVersionByStory = async (story_id) => {
         <a href={apiUrl} target="_blank" rel="noopener noreferrer">
             <Button
               className="bg-blue-500 border-blue-600 text-white h-9 me-4"
-              onClick={() => localStorage.removeItem("storyId")}
+              // onClick={() => localStorage.removeItem("storyId")}
               disabled={isExportDisabled}
             >
               Export

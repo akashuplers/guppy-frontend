@@ -24,7 +24,6 @@ const Home = () => {
   const storyId = JSON.parse(localStorage.getItem("storyId"));
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const [prevStep, setPrevStep] = useState(false);
-
   // story upload context
   const {
     storyUploadApiResponse,

@@ -20,6 +20,7 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [titleSelectionItems, setTitleSelectionItems] = useState([]);
+  const [storyText, setStoryText] = useState();
   const [selectedRow, setSelectedRow] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showStoryModal, setShowStoryModal] = useState(false);
@@ -152,6 +153,7 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
       }
       if (output) {
         const respObj = output?.data?.data;
+        setStoryText(respObj?.story_text)
         setTitleSelectionItems(getUpdatedJsonsTitles(respObj?.titles));
         message.destroy(alertKey);
         message.success("Titles Fetched Successfully !");
@@ -644,6 +646,7 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
       {/* story text */}
       {showStoryModal && (
         <StoryTextPopup
+          storyTexts={storyText}
           open={showStoryModal}
           onClose={() => setShowStoryModal(false)}
         />
