@@ -380,14 +380,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
     setIsSubmitting(false);
   };
 
-  // const bodyForSaveWsApi = () => {
-  //   const Who = createWsArray(primaryWhos, secondaryWhos);
-  //   const What = createWsArray(primaryWhats, secondaryWhats);
-  //   const Where = createWsArray(primaryWheres, secondaryWheres);
-  //   const body = { Who, What, Where, story_id };
-  //   return body;
-  // };
-
   const bodyForSaveWsApi = () => {
     const Who = createWsArray(whoItems);
     const What = createWsArray(whatItems);

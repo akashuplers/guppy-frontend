@@ -27,12 +27,10 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
   const [comment, setComment] = useState('');
   const [modalType, setModalType] = useState('');
   const navigate = useNavigate();
+  const storyId = JSON.parse(localStorage.getItem("storyId"));
+  const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, titles, updatedTitles } = storyUploadApiResponse;
-  
-  useEffect(() => {
-    setTitleSelectionItems(updatedTitles);
-  }, []);
  
   useEffect(() => {
     if(saveTitles){
@@ -113,6 +111,115 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
       
     })
   }
+  console.log("titles", bodyForSaveTitlesApi());
+  const getUpdatedJsonWs = (arr) => {
+    if (arr && arr.length > 0) {
+      const updated = arr.map((item, index) => ({
+        id: item.id,
+        name: item.value,
+        isCheckboxSelected: item.selected ? true : false,
+        ner: item.ner ?? false,
+      }));
+      return updated;
+    }
+    return [];
+  };
+
+  const getUpdatedJsonTitles = (list) => {
+    const arr = list[0]?.titles || [];
+    if (arr && arr.length > 0) {
+      const updated = arr.map((item, index) => ({
+        id: item.id,
+        title: item.Title,
+        primaryWhos: item.Who_Primary,
+        secondaryWhos: item.Who_Secondary,
+        primaryWhats: item.What_Primary,
+        secondaryWhats: item.What_Secondary,
+        primaryWheres: item.Where_Primary,
+        secondaryWheres: item.Where_Secondary,
+        new: item.new,
+        updated: item.updated
+      }));
+      return updated;
+    }
+    return [];
+  };
+
+  const getUpdatedJsonsTitles = (list) => {
+    const arr = list[0]?.titles || [];
+    if (arr && arr.length > 0) {
+      const updated = arr.map((item, index) => ({
+        id: item.id,
+        title: item.Title,
+        primaryWhos: item.Who_Primary,
+        secondaryWhos: item.Who_Secondary,
+        primaryWhats: item.What_Primary,
+        secondaryWhats: item.What_Secondary,
+        primaryWheres: item.Where_Primary,
+        secondaryWheres: item.Where_Secondary,
+        new: item.new,
+        updated: item.updated
+      }));
+      return updated;
+    }
+    return [];
+  };
+
+  // const getUpdatedJson = (list) => {
+  //   const arr = list[0]?.ideas || [];
+  //   if (arr && arr.length > 0) {
+  //     const updated = arr.map((item, index) => ({
+  //       id: item.id,
+  //       idea: item.idea,
+  //       primaryWhos: item.Who_Primary,
+  //       secondaryWhos: item.Who_Secondary,
+  //       primaryWhats: item.What_Primary,
+  //       secondaryWhats: item.What_Secondary,
+  //       primaryWheres: item.Where_Primary,
+  //       secondaryWheres: item.Where_Secondary,
+  //       new: item.new,
+  //       updated: item.updated
+  //     }));
+  //     return updated;
+  //   }
+  //   return [];
+  // };
+  const fetchStoryData = async (story_id, token) => {
+    let alertKey;
+    try {
+      alertKey = message.loading("Fetching Titles...", 0).key;
+      const apiUrl =
+        API_BASE_PATH + API_ROUTES.FETCH_STORY_DATA + `/${story_id}`;
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const output = await axios.get(apiUrl, config);
+      const respObj = output?.data?.data;
+      if (!respObj) {
+        message.error("Invalid response from server. Please try again.");
+        return;
+      }
+      if (output) {
+        const respObj = output?.data?.data;
+        setTitleSelectionItems(getUpdatedJsonsTitles(respObj?.titles));
+        message.destroy(alertKey);
+        message.success("Titles Fetched Successfully !");
+      }
+    } catch (error) {
+      console.log("error: ", error);
+    }
+  };
+
+  useEffect(() => {
+      fetchStoryData(story_id, token);
+
+  }, []);
+
+  console.log("titles", titleSelectionItems);
+  console.log("bodyForSaveTitlesApi", bodyForSaveTitlesApi());
 
   const onSave = async () => {
     setIsSubmitting(true);
@@ -526,6 +633,9 @@ const TitleSelection = ({ onDiscard = () => {}, saveTitles, handleSaveSuccess = 
       },
     },
   ];
+
+
+
 
   return (
     <div className="px-5 pb-5 rounded-md border">

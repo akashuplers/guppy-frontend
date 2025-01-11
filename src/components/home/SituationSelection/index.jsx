@@ -17,26 +17,22 @@ const getCSVsFromList = (list_of_strings) => {
   return list_of_strings.join(", ");
 };
 
-const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSuccess = () => {}}) => {
+const SituationSelection = ({ onDiscard = () => {}, saveSituations,handleSaveSuccess = () => {}}) => {
   const [showModifyPopup, setShowModifyPopup] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState({});
   const [situationSelectionItems, setSituationSelectionItems] = useState([]);
+  const storyId = JSON.parse(localStorage.getItem("storyId"));
+  const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showStoryModal, setShowStoryModal] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [comment, setComment] = useState('');
   const [modalType, setModalType] = useState('');
   const navigate = useNavigate();
-
-  // story upload context
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, situations, updatedSituations, primaryWhos } = storyUploadApiResponse;
 
-  useEffect(() => {
-    setSituationSelectionItems(updatedSituations);
-  }, []);
- 
   useEffect(() => {
     if(saveSituations){
       onSave();
@@ -80,7 +76,25 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSu
     console.log('save',body);
     return body;
   };
-
+  const getUpdatedJsons = (list) => {
+    const arr = list[0]?.ideas || [];
+    if (arr && arr.length > 0) {
+      const updated = arr.map((item, index) => ({
+        id: item.id,
+        idea: item.idea,
+        primaryWhos: item.Who_Primary,
+        secondaryWhos: item.Who_Secondary,
+        primaryWhats: item.What_Primary,
+        secondaryWhats: item.What_Secondary,
+        primaryWheres: item.Where_Primary,
+        secondaryWheres: item.Where_Secondary,
+        new: item.new,
+        updated: item.updated
+      }));
+      return updated;
+    }
+    return [];
+  };
   const getUpdatedJson = (arr) => {
     if(arr && arr.length>0) {
       const updated = arr.map((item, index) => ({
@@ -137,6 +151,95 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations, handleSaveSu
       
     })
   }
+
+const getUpdatedJsonWs = (arr) => {
+  if (arr && arr.length > 0) {
+    const updated = arr.map((item, index) => ({
+      id: item.id,
+      name: item.value,
+      isCheckboxSelected: item.selected ? true : false,
+      ner: item.ner ?? false,
+    }));
+    return updated;
+  }
+  return [];
+};
+
+const getUpdatedJsonTitles = (list) => {
+  const arr = list[0]?.titles || [];
+  if (arr && arr.length > 0) {
+    const updated = arr.map((item, index) => ({
+      id: item.id,
+      title: item.Title,
+      primaryWhos: item.Who_Primary,
+      secondaryWhos: item.Who_Secondary,
+      primaryWhats: item.What_Primary,
+      secondaryWhats: item.What_Secondary,
+      primaryWheres: item.Where_Primary,
+      secondaryWheres: item.Where_Secondary,
+      new: item.new,
+      updated: item.updated
+    }));
+    return updated;
+  }
+  return [];
+};
+
+// const getUpdatedJson = (list) => {
+//   const arr = list[0]?.ideas || [];
+//   if (arr && arr.length > 0) {
+//     const updated = arr.map((item, index) => ({
+//       id: item.id,
+//       idea: item.idea,
+//       primaryWhos: item.Who_Primary,
+//       secondaryWhos: item.Who_Secondary,
+//       primaryWhats: item.What_Primary,
+//       secondaryWhats: item.What_Secondary,
+//       primaryWheres: item.Where_Primary,
+//       secondaryWheres: item.Where_Secondary,
+//       new: item.new,
+//       updated: item.updated
+//     }));
+//     return updated;
+//   }
+//   return [];
+// };
+const fetchStoryData = async (story_id, token) => {
+  let alertKey;
+  try {
+    alertKey = message.loading("Fetching Situations...", 0).key;
+    const apiUrl =
+      API_BASE_PATH + API_ROUTES.FETCH_STORY_DATA + `/${story_id}`;
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    const output = await axios.get(apiUrl, config);
+    const respObj = output?.data?.data;
+    if (!respObj) {
+      message.error("Invalid response from server. Please try again.");
+      return;
+    }
+    if (output) {
+      const respObj = output?.data?.data;
+      setSituationSelectionItems(getUpdatedJsons(respObj?.sitautions))
+      message.destroy(alertKey);
+      message.success("Situations Fetched Successfully !");
+    }
+  } catch (error) {
+    console.log("error: ", error);
+  }
+};
+
+useEffect(() => {
+  // if (storyId && tokenVal) {
+    fetchStoryData(story_id, token);
+  // }
+}, []);
+console.log("situations", situationSelectionItems);
+console.log("bodyForSaveSituationsApi", bodyForSaveSituationsApi());
 
   const onSave = async () => {
     setIsSubmitting(true);
