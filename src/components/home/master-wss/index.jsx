@@ -19,6 +19,8 @@ const MasterWssPage = ({
   saveMasterWs,
   handleSaveSuccess = () => {},
 }) => {
+  const { Option } = Select;
+
   const navigate = useNavigate();
   const flow = true;
   const [editIndex, setEditIndex] = useState(null);
@@ -77,6 +79,12 @@ const MasterWssPage = ({
   const [filteredOptions, setFilteredOption] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [isClusterLoading, setClusterLoading] = useState(false);
+
+  const allOptions = [...whos, ...whats, ...wheres];
+
+console.log("allOptions", allOptions);
+console.log("whats", whats);
+
 
   const options = (filteredOptions || [])?.map((item) => ({
     label: item?.value,
@@ -446,6 +454,7 @@ const handleDelete = () => {
   const [fieldValue, setFieldValue] = useState();
 
   const handleChange = async (e, name) => { 
+    debugger
     const blankValue = e?.target?.value;
     const fieldName = name;
     setFieldValue(fieldName)
@@ -495,7 +504,7 @@ const handleDelete = () => {
       ...clusterList?.Who,
       ...clusterList?.What,
       ...clusterList?.Where,
-    ]?.find((option) => option?.value === e?.target?.value);
+    ]?.find((option) => option?.id === e);
 
     if (name === "ws") {
       formik.setFieldValue("ws", e.target.value);
@@ -641,6 +650,7 @@ const handleDelete = () => {
   };
 
   const handleSaveCluster = (values, resetForm) => {   
+    debugger
     if (formik.values.ws && formik.values.type && formik.values.masterHead) {
       const newRow = {
         id: formik?.values?.masterHead?.id, 
@@ -1105,21 +1115,40 @@ const wheresRef = useRef(wheres);
                 <div className="flex-1 min-w-[200px]">
                   <label
                     htmlFor="masterHead"
-                    className="block mb-2 text-sm font-medium text-gray-900 md:text-sm"
+                    className="block mb-3 text-sm font-medium text-gray-900 md:text-sm"
                   >
                     Select Cluster Head
                   </label>
-                  <Field
-                    as="select"
+                  
+                  <Select
+                    // as="select"
                     name="masterHead"
                     id="masterHead"
-                    className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 sm:text-md focus:ring-primary-600 focus:border-primary-600"
-                    onChange={(e) => {
-                      handleChange(e, "masterHead");
-                    }}
+                    className="block w-full p-2 text-gray-900 border rounded-lg cursor-pointer sm:text-md focus:ring-primary-600 focus:border-primary-600"
+                    onChange={(value) => handleChange(value, "masterHead")}
                     value={formik.values.masterHead?.value}
-                  >
-                    <option value="">Please Select...</option>
+                    showSearch
+                    optionFilterProp="children"
+                    allowClear
+                    placeholder="Please Select..."
+                  >                    
+                  {/* <option value="">Please Select...</option> */}
+                    {whos && whos.map((item, index) => (
+          <Select.Option key={item?.id} value={item?.id}>
+            {item?.value}
+          </Select.Option>
+        ))}
+         {whats && whats.map((item, index) => (
+          <Select.Option key={item?.id} value={item?.id}>
+            {item?.value}
+          </Select.Option>
+        ))}
+         {wheres && wheres.map((item, index) => (
+          <Select.Option key={item?.id} value={item?.id}>
+            {item?.value}
+          </Select.Option>
+        ))}
+                    {/* <option value="">Please Select...</option>
                     {whos &&
                       whos?.map((item, index) => (
                         <option key={index} value={item?._id}>
@@ -1137,8 +1166,8 @@ const wheresRef = useRef(wheres);
                         <option key={index} value={item?._id}>
                           {item?.value}
                         </option>
-                      ))}
-                  </Field>
+                      ))} */}
+                  </Select>
                   <ErrorMessage
                     name="masterHead"
                     component="div"

@@ -529,6 +529,9 @@ const ModifyMasterWsPopup = ({
                 className="w-full"
                 value={clusterHead}
                 onChange={(value) => onClusterHead(value, "masterHead")} 
+                showSearch
+                optionFilterProp="children" // Enables search by dropdown text
+                allowClear
                 placeholder="Select Cluster Head"
               >
                 {whoCluster &&

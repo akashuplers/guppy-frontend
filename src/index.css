@@ -12,6 +12,15 @@ code {
     monospace;
 }
 
+.ant-select-selector {
+  border: none !important; /* Override the border */
+  background: transparent !important; /* Override the background */
+}
+
+.ant-select-selection-placeholder{
+  color:none !important
+}
+
 ::-webkit-scrollbar {
   width: 5px;
   height: 6px;

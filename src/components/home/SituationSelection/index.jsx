@@ -33,6 +33,11 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations,handleSaveSuc
   const navigate = useNavigate();
   const { storyUploadApiResponse, setStoryUploadApiResponse, handleAnythingChanged } = useContext(StoryUploadApiContext);
   const { token, story_id, storyWorld, fileName, situations, updatedSituations, primaryWhos } = storyUploadApiResponse;
+console.log("situations",);
+
+  useEffect(()=>{
+    setSituationSelectionItems(updatedSituations)
+  }, [])
 
   useEffect(() => {
     if(saveSituations){
@@ -174,7 +179,7 @@ const fetchStoryData = async (story_id, token) => {
     if (output) {
       const respObj = output?.data?.data;
       setStoryText(respObj?.story_text)
-      setSituationSelectionItems(getUpdatedJsons(respObj?.sitautions))
+      // setSituationSelectionItems(getUpdatedJsons(respObj?.sitautions))
       message.destroy(alertKey);
       message.success("Situations Fetched Successfully !");
     }
@@ -188,6 +193,8 @@ useEffect(() => {
     fetchStoryData(story_id, token);
   // }
 }, []);
+
+console.log("bodyForSaveSituationsApi()", bodyForSaveSituationsApi());
 
   const onSave = async () => {
     setIsSubmitting(true);
