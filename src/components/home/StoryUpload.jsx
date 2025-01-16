@@ -28,6 +28,8 @@ const validationSchema = Yup.object().shape({
 });
 
 const StoryUpload = ({ onSuccess = () => {} }) => {
+  // console.log("onSuccess",onSuccess());
+  
   const { storyUploadApiResponse, setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
   const [token, setToken] = useState('');
   const [storyWorldOptions, setStoryWorldOptions] = useState([]);
@@ -158,8 +160,8 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
         };
         setStoryUploadApiResponse(respObj);
         localStorage.setItem("storyId", JSON.stringify(story_id));
-        onSuccess();
-
+        // onSuccess();
+        navigate('/history')
         // alert
         message.destroy(alertKey); // stop infinite loader alert
         message.success("Story Uploaded Successfully !"); // success alert

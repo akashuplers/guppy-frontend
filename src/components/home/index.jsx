@@ -304,12 +304,9 @@ const Home = () => {
           {currentStep === 0 ? (
             <StoryUpload onSuccess={handleNextStep} />
           ) : currentStep === 1 ? (
-            <UserHistory 
-            step={currentStep}
-            />
-
-          ):
-           currentStep === 2 ? (
+            // <UserHistory 
+            // step={currentStep}
+            // />
             <ThreeWsSelection
               storyId={storyId}
               tokenVal={tokenVal}
@@ -317,15 +314,17 @@ const Home = () => {
               saveWs={isSaveChanges}
               handleSaveSuccess={handleSaveSuccess}
             />
-          ) : currentStep === 3 ? (
+
+          ):
+           currentStep === 2 ? (
             <MasterWssPage
-              storyId={storyId}
-              tokenVal={tokenVal}
-              onDiscard={onDiscard}
-              saveMasterWs={isSaveChanges}
-              handleSaveSuccess={handleSaveSuccess}
-            />
-          ) : currentStep === 4 ? (
+            storyId={storyId}
+            tokenVal={tokenVal}
+            onDiscard={onDiscard}
+            saveMasterWs={isSaveChanges}
+            handleSaveSuccess={handleSaveSuccess}
+          />
+          ) : currentStep === 3 ? (
             <TitleSelection
               storyId={storyId}
               tokenVal={tokenVal}
@@ -333,15 +332,15 @@ const Home = () => {
               saveTitles={isSaveChanges}
               handleSaveSuccess={handleSaveSuccess}
             />
-          ) : currentStep === 5 ? (
+          ) : currentStep === 4 ? (
             <SituationSelection
-              storyId={storyId}
-              tokenVal={tokenVal}
-              onDiscard={onDiscard}
-              saveSituations={isSaveChanges}
-              handleSaveSuccess={handleSaveSuccess}
-            />
-          ) : currentStep === 6 ? (
+            storyId={storyId}
+            tokenVal={tokenVal}
+            onDiscard={onDiscard}
+            saveSituations={isSaveChanges}
+            handleSaveSuccess={handleSaveSuccess}
+          />
+          ) : currentStep === 5 ? (
             <ActionSelection
               storyId={storyId}
               tokenVal={tokenVal}
@@ -349,7 +348,7 @@ const Home = () => {
               saveActions={isSaveChanges}
               handleSaveSuccess={handleSaveSuccess}
             />
-          ) : (
+          )  : (
             <DownloadStory onDiscard={onDiscard} />
           )}
         </div>

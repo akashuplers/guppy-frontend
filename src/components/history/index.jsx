@@ -192,6 +192,7 @@ const UserHistory = (step) => {
 
     return { date: formattedDate, time: formattedTime };
   };
+console.log("steps");
 
   const historyColumns = [
     {
@@ -321,48 +322,7 @@ const UserHistory = (step) => {
   return (
     // <SidebarWithHeader>
     <>
-    {step?.step === 1 ? (
-      <div>
-        {/* head */}
-        <p className="text-xl md:text-3xl mt-1 mb-2 md:mb-0 font-medium">User History</p>
-    
-        {/* body */}
-        <div className="mt-8">
-          {!isLoading && (
-            <Table
-              dataSource={filteredStories}
-              columns={historyColumns}
-              bordered
-            />
-          )}
-        </div>
-        <a ref={downloadLinkRef} style={{ display: 'none' }} download></a>
-        <ShareModal
-          open={isShareModalOpen}
-          storyDetails={storyDetails}
-          users={tempUsers}
-          onClose={() => setShareModalOpen(false)}
-          updateUsers={(ids) => setUpdatedShareIds(ids)}
-        />
-        {showVersionModal && (
-          <DownloadVersionSelectPopup
-            open={showVersionModal}
-            story_id={selectedStoryId}
-            handleVersionSelect={handleVersionSelect}
-            handleDownload={handleVersionDownload}
-            onClose={() => setShowVersionModal(false)}
-          />
-        )}
-        {showDeleteStoryModal && (
-          <DeleteConfirmationDialog
-            open={showDeleteStoryModal}
-            onClose={() => setShowDeleteStoryModal(false)}
-            onConfirm={() => deleteStoryById()}
-          />
-        )}
-      </div>
-    ):
-    (
+   
       <SidebarWithHeader>
       <div>
       {/* head */}
@@ -404,7 +364,7 @@ const UserHistory = (step) => {
       )}
     </div>
     </SidebarWithHeader>
-    )}
+   
     
     </>
        
