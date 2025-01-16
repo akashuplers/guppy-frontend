@@ -304,9 +304,6 @@ const Home = () => {
           {currentStep === 0 ? (
             <StoryUpload onSuccess={handleNextStep} />
           ) : currentStep === 1 ? (
-            // <UserHistory 
-            // step={currentStep}
-            // />
             <ThreeWsSelection
               storyId={storyId}
               tokenVal={tokenVal}

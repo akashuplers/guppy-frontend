@@ -10,7 +10,7 @@ import { FilterOutlined } from '@ant-design/icons';
 import DownloadVersionSelectPopup from '../home/DownloadVersionSelectPopup';
 import DeleteConfirmationDialog from '../../utils/modals/DeleteConfirmationDialog';
 
-const UserHistory = (step) => {
+const UserHistory = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [stories, setStories] = useState([]);
@@ -29,8 +29,6 @@ const UserHistory = (step) => {
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const errorMsg = "Error In Fetching Saved Response";
   const downloadLinkRef = useRef(null);
-  const status = "failed";
-  const deleteStatus = "Error";
 
   useEffect(() => {
     if(!tokenVal) {
@@ -192,7 +190,6 @@ const UserHistory = (step) => {
 
     return { date: formattedDate, time: formattedTime };
   };
-console.log("steps");
 
   const historyColumns = [
     {
