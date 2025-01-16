@@ -13,6 +13,8 @@ import { API_BASE_PATH, API_ROUTES } from "../../constants/api-endpoints";
 import axios from "axios";
 import SaveConfirmationDialog from "../../utils/modals/SaveConfirmationModal";
 import MasterWssPage from "./master-wss";
+import { UserGroupIcon } from "@heroicons/react/20/solid";
+import UserHistory from "../history";
 
 const Home = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -302,6 +304,12 @@ const Home = () => {
           {currentStep === 0 ? (
             <StoryUpload onSuccess={handleNextStep} />
           ) : currentStep === 1 ? (
+            <UserHistory 
+            step={currentStep}
+            />
+
+          ):
+           currentStep === 2 ? (
             <ThreeWsSelection
               storyId={storyId}
               tokenVal={tokenVal}
@@ -309,7 +317,7 @@ const Home = () => {
               saveWs={isSaveChanges}
               handleSaveSuccess={handleSaveSuccess}
             />
-          ) : currentStep === 2 ? (
+          ) : currentStep === 3 ? (
             <MasterWssPage
               storyId={storyId}
               tokenVal={tokenVal}
@@ -317,7 +325,7 @@ const Home = () => {
               saveMasterWs={isSaveChanges}
               handleSaveSuccess={handleSaveSuccess}
             />
-          ) : currentStep === 3 ? (
+          ) : currentStep === 4 ? (
             <TitleSelection
               storyId={storyId}
               tokenVal={tokenVal}
@@ -325,7 +333,7 @@ const Home = () => {
               saveTitles={isSaveChanges}
               handleSaveSuccess={handleSaveSuccess}
             />
-          ) : currentStep === 4 ? (
+          ) : currentStep === 5 ? (
             <SituationSelection
               storyId={storyId}
               tokenVal={tokenVal}
@@ -333,7 +341,7 @@ const Home = () => {
               saveSituations={isSaveChanges}
               handleSaveSuccess={handleSaveSuccess}
             />
-          ) : currentStep === 5 ? (
+          ) : currentStep === 6 ? (
             <ActionSelection
               storyId={storyId}
               tokenVal={tokenVal}

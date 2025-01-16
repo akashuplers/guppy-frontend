@@ -8,6 +8,9 @@ const Stepper = ({ currentStep }) => (
                 title: "Story Upload",
             },
             {
+                title: "User History",
+            },
+            {
                 title: "3 W's Selection",
             },
             {

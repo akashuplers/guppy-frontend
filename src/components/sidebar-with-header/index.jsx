@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { StoryUploadApiContext } from "../../contexts/ApiContext";
 
 const SidebarWithHeader = ({children}) => {
+  console.log("children",);
+  
   const { isAnythingChanged, handleSaveModalOpen, saveModalOpen } = useContext(StoryUploadApiContext);
 
   const [email, setEmail] = useState('');
