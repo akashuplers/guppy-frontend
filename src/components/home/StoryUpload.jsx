@@ -27,7 +27,7 @@ const validationSchema = Yup.object().shape({
     }),
 });
 
-const StoryUpload = ({ onSuccess = () => {} }) => {
+const StoryUpload = ({ onSuccess = () => {} }) => {  
   const { storyUploadApiResponse, setStoryUploadApiResponse } = useContext(StoryUploadApiContext);
   const [token, setToken] = useState('');
   const [storyWorldOptions, setStoryWorldOptions] = useState([]);
@@ -134,32 +134,33 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
 
       if(output) {
         const { story_text, story_id, story_world_id } = output;
-        const wsDataObj = output?.wsData?.ws_data;
-        const { Who, What, Where } = wsDataObj;
+        const storyId = output?.story_id
+        // const wsDataObj = output?.wsData?.ws_data;
+        // const { Who, What, Where } = wsDataObj;
         const contextObj = { ...storyUploadApiResponse };
 
         const respObj = {
           ...contextObj,
-          story_id: story_id,
-          storyWorld: storyWorldName,
-          storyWorldId: story_world_id,
-          storyWorldLead: storyWorldLead,
-          storyLeadWho: storyLeadWho,
-          fileName: formattedFileName(fileInput?.name),
-          storyText: story_text,
-          whos: getWhosUpdatedJson(Who, storyWorldLead),
-          updatedWhos: getWhosUpdatedJson(Who, storyWorldLead),
-          whats: getUpdatedJson(What),
-          updatedWhats: getUpdatedJson(What),
-          wheres: getUpdatedJson(Where),
-          updatedWheres: getUpdatedJson(Where),
-          primaryWhos: [storyWorldLead?.toLowerCase()],
+          story_id: storyId,
+          // storyWorld: storyWorldName,
+          // storyWorldId: story_world_id,
+          // storyWorldLead: storyWorldLead,
+          // storyLeadWho: storyLeadWho,
+          // fileName: formattedFileName(fileInput?.name),
+          // storyText: story_text,
+          // whos: getWhosUpdatedJson(Who, storyWorldLead),
+          // updatedWhos: getWhosUpdatedJson(Who, storyWorldLead),
+          // whats: getUpdatedJson(What),
+          // updatedWhats: getUpdatedJson(What),
+          // wheres: getUpdatedJson(Where),
+          // updatedWheres: getUpdatedJson(Where),
+          // primaryWhos: [storyWorldLead?.toLowerCase()],
           token: token,
         };
         setStoryUploadApiResponse(respObj);
         localStorage.setItem("storyId", JSON.stringify(story_id));
-        onSuccess();
-
+        // onSuccess();
+        navigate('/history')
         // alert
         message.destroy(alertKey); // stop infinite loader alert
         message.success("Story Uploaded Successfully !"); // success alert

@@ -13,6 +13,8 @@ import { API_BASE_PATH, API_ROUTES } from "../../constants/api-endpoints";
 import axios from "axios";
 import SaveConfirmationDialog from "../../utils/modals/SaveConfirmationModal";
 import MasterWssPage from "./master-wss";
+import { UserGroupIcon } from "@heroicons/react/20/solid";
+import UserHistory from "../history";
 
 const Home = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -309,14 +311,16 @@ const Home = () => {
               saveWs={isSaveChanges}
               handleSaveSuccess={handleSaveSuccess}
             />
-          ) : currentStep === 2 ? (
+
+          ):
+           currentStep === 2 ? (
             <MasterWssPage
-              storyId={storyId}
-              tokenVal={tokenVal}
-              onDiscard={onDiscard}
-              saveMasterWs={isSaveChanges}
-              handleSaveSuccess={handleSaveSuccess}
-            />
+            storyId={storyId}
+            tokenVal={tokenVal}
+            onDiscard={onDiscard}
+            saveMasterWs={isSaveChanges}
+            handleSaveSuccess={handleSaveSuccess}
+          />
           ) : currentStep === 3 ? (
             <TitleSelection
               storyId={storyId}
@@ -327,12 +331,12 @@ const Home = () => {
             />
           ) : currentStep === 4 ? (
             <SituationSelection
-              storyId={storyId}
-              tokenVal={tokenVal}
-              onDiscard={onDiscard}
-              saveSituations={isSaveChanges}
-              handleSaveSuccess={handleSaveSuccess}
-            />
+            storyId={storyId}
+            tokenVal={tokenVal}
+            onDiscard={onDiscard}
+            saveSituations={isSaveChanges}
+            handleSaveSuccess={handleSaveSuccess}
+          />
           ) : currentStep === 5 ? (
             <ActionSelection
               storyId={storyId}
@@ -341,7 +345,7 @@ const Home = () => {
               saveActions={isSaveChanges}
               handleSaveSuccess={handleSaveSuccess}
             />
-          ) : (
+          )  : (
             <DownloadStory onDiscard={onDiscard} />
           )}
         </div>
