@@ -11,14 +11,39 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
-
-.ant-select-selector {
-  border: none !important; /* Override the border */
-  background: transparent !important; /* Override the background */
+.wss-custom {
+  /* Utility styles */
+  display: block; /* Makes the element block-level */
+  width: 100%; /* Full width */
+  padding: 0.5rem; /* Equivalent to p-2 in Tailwind (8px) */
+  color: #1f2937; /* Text color equivalent to text-gray-900 */
+  background-color: #f9fafb !important; /* Equivalent to bg-gray-50 */
+  cursor: pointer; /* Pointer cursor on hover */
+  font-size: 16px; /* Equivalent to sm:text-md */
+  border-radius: 0.5rem; /* Rounded corners equivalent to rounded-lg */
+  /* Overriding Ant Design styles */
+  border: none !important; /* Remove border */
+  background: transparent !important; /* Transparent background for select */
+  height: 57px !important; /* Custom height */
+  
+  /* Placeholder styles */
+  color: black !important; /* Placeholder text color */
 }
 
-.ant-select-selection-placeholder{
-  color:none !important
+.wss-custom .ant-select-selection-placeholder {
+  color: black !important; /* Placeholder-specific color */
+  
+}
+
+.wss-custom .ant-select-focused .ant-select-selector,
+.wss-custom .ant-select-selection-search-input:focus {
+  outline: none !important; /* Remove focus outline */
+  box-shadow: none !important; /* Remove focus shadow */
+  border-color: transparent !important; /* Transparent border on focus */
+  
+}
+.wss-custom .ant-select-selector{
+  background: #f9fafb !important;
 }
 
 ::-webkit-scrollbar {

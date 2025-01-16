@@ -605,7 +605,7 @@ const handleAddRow = () => {
 
         {/* master Ws Tabs */}
 
-        <div className="mt-10 px-5">
+        <div className="overflow-auto">
           {/* <Tabs defaultActiveKey="1" items={items} /> */}
           <Table dataSource={filteredData} columns={historyColumns} bordered />
         </div>

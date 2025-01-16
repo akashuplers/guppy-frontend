@@ -650,7 +650,7 @@ const handleDelete = () => {
   };
 
   const handleSaveCluster = (values, resetForm) => {   
-    debugger
+    // debugger
     if (formik.values.ws && formik.values.type && formik.values.masterHead) {
       const newRow = {
         id: formik?.values?.masterHead?.id, 
@@ -1045,7 +1045,7 @@ const wheresRef = useRef(wheres);
   };
 
   return (
-    <div>
+      <>
       <div className="px-5 pb-5 border rounded-md">
         <Formik
           initialValues={{
@@ -1058,12 +1058,12 @@ const wheresRef = useRef(wheres);
         >
           {({ values, resetForm }) => (
             <Form>
-              <div className="flex flex-col justify-between mt-5 mb-3 text-lg md:flex-row md:text-xl md:mb-4">
-                <p>Step-3 : Master W's</p>
-                <div className="flex space-x-4">
-                  <button
+        <div className="flex flex-col justify-between mt-5 mb-3 text-lg md:flex-row md:items-center md:text-xl md:mb-4">
+        <p className="text-center md:text-left">Step-3 : Master W's</p>
+        <div className="flex flex-col items-center space-y-4 mt-4 md:mt-0 md:space-y-0 md:flex-row md:space-x-4">
+        <button
                     type="submit"
-                    className="w-20 px-4 py-2 mt-4 text-sm font-medium text-center text-white bg-blue-600 rounded-lg md:w-24 lg:w-28 md:mt-0 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
+                    className="w-full max-w-[120px] px-4 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 md:w-24 lg:w-28"
                     onClick={() => handleSaveCluster(values, resetForm)}
                   >
                     <DownloadCSVFile
@@ -1074,19 +1074,19 @@ const wheresRef = useRef(wheres);
                   </button>
                   <button
                     type="button"
-                    className="w-20 px-4 py-2 mt-4 text-sm font-medium text-center text-white bg-blue-600 rounded-lg md:w-24 lg:w-28 md:mt-0 hover:bg-blue-400 focus:ring-4 focus:outline-none ring-primary-300 bg-primary-600 hover:bg-primary-700 focus:ring-primary-800"
+                    className="w-full max-w-[120px] px-4 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 md:w-24 lg:w-28"
                     onClick={() => handleSaveCluster(values, resetForm)}
                   >
                     Save Ws
                   </button>
                 </div>
               </div>
-              <div className="flex flex-wrap mt-4 space-x-4">
-                <div className="flex-1 min-w-[200px]">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 mt-4">
+              <div>
                   <label
-                    htmlFor="storyWorld"
-                    className="block mb-2 text-sm font-medium text-gray-900 md:text-sm"
-                  >
+                    htmlFor="ws"
+                    className="block mb-2 text-sm font-medium text-gray-900"
+                    >
                     Select Ws
                   </label>
                   <Field
@@ -1115,8 +1115,8 @@ const wheresRef = useRef(wheres);
                 <div className="flex-1 min-w-[200px]">
                   <label
                     htmlFor="masterHead"
-                    className="block mb-3 text-sm font-medium text-gray-900 md:text-sm"
-                  >
+                    className="block text-sm font-medium text-gray-900"
+                    >
                     Select Cluster Head
                   </label>
                   
@@ -1124,15 +1124,18 @@ const wheresRef = useRef(wheres);
                     // as="select"
                     name="masterHead"
                     id="masterHead"
-                    className="block w-full p-2 text-gray-900 border rounded-lg cursor-pointer sm:text-md focus:ring-primary-600 focus:border-primary-600"
+                    className="wss-custom"
+                    // className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 sm:text-md"
+
+                    // className="block w-full p-2 text-gray-900 border rounded-lg cursor-pointer sm:text-md bg-gray-50"
                     onChange={(value) => handleChange(value, "masterHead")}
                     value={formik.values.masterHead?.value}
                     showSearch
                     optionFilterProp="children"
-                    allowClear
+                    // allowClear
                     placeholder="Please Select..."
                   >                    
-                  {/* <option value="">Please Select...</option> */}
+                  <option value="">Please Select...</option>
                     {whos && whos.map((item, index) => (
           <Select.Option key={item?.id} value={item?.id}>
             {item?.value}
@@ -1178,8 +1181,8 @@ const wheresRef = useRef(wheres);
                 <div className="flex-1 min-w-[200px]">
                   <labeltable
                     htmlFor="type"
-                    className="block mb-2 text-sm font-medium text-gray-900 md:text-sm"
-                  >
+                    className="block mb-2 text-sm font-medium text-gray-900"
+                    >
                     Select Type
                   </labeltable>
                   <Field
@@ -1208,8 +1211,8 @@ const wheresRef = useRef(wheres);
                 <div className="flex-1 min-w-[200px]">
                   <label
                     htmlFor="clusterValues"
-                    className="block mb-2 text-sm font-medium text-gray-900 md:text-sm"
-                  >
+                    className="block mb-2 text-sm font-medium text-gray-900"
+                    >
                     Select Cluster Values
                   </label>
                   <Field name="clusterValues">
@@ -1234,9 +1237,10 @@ const wheresRef = useRef(wheres);
           )}
         </Formik>
 
-        <div className="mt-8">
+        <div className="mt-6 overflow-auto">
           {!isClusterLoading && (
             <Table dataSource={myNewData} columns={historyColumns}  
+            className="custom-table"
             // pagination={{ pageSize: 10 }}   
             // onChange={handleTableChange}
             bordered />
@@ -1294,7 +1298,7 @@ const wheresRef = useRef(wheres);
         saveType="Clusters"
         isSubmitting={isSubmitting}
       />
-    </div>
+    </>
   );
 };
 
