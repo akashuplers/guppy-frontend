@@ -464,6 +464,8 @@ const handleDelete = () => {
       setWhoSelectedValue(e?.target?.value)
       setWhatSelectedValue(false);
       setWhereSelectedValue(false);
+      formik.setFieldValue("masterHead", { id: "", value: "" }); 
+
       const selectedWs = e?.target?.value;
 
       const isPrimarySelected = myNewData.some(
@@ -478,7 +480,8 @@ const handleDelete = () => {
       setWhats(clusterList?.What);
       setWhatSelectedValue(e?.target?.value);
       setWhereSelectedValue(false);
-      setWhoSelectedValue(false)
+      setWhoSelectedValue(false);
+      formik.setFieldValue("masterHead", { id: "", value: "" }); 
       setWhos([]);
       setWheres([]);
       if (!typo.some((item) => item.name === "Primary")) {
@@ -489,6 +492,7 @@ const handleDelete = () => {
       setWhereSelectedValue(e?.target?.value);
       setWhatSelectedValue(false);
       setWhoSelectedValue(false);
+      formik.setFieldValue("masterHead", { id: "", value: "" }); 
       setWhats([]);
       setWhos([]);
       if (!typo.some((item) => item.name === "Primary")) {
@@ -498,6 +502,8 @@ const handleDelete = () => {
       setWhos([]);
       setWhats([]);
       setWheres([]);
+      formik.setFieldValue("masterHead", { id: "", value: "" }); 
+
     }
 
     const selectedOption = [
