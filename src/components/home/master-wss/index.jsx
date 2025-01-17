@@ -1053,7 +1053,8 @@ const wheresRef = useRef(wheres);
         <div className="flex flex-col items-center space-y-4 mt-4 md:mt-0 md:space-y-0 md:flex-row md:space-x-4">
                   <button
                     type="submit"
-                    className="w-full max-w-[120px] px-4 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 md:w-24 lg:w-28"                    onClick={() => handleSaveCluster(values, resetForm)}
+                    className="w-full max-w-[120px] px-4 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 md:w-24 lg:w-28"                   
+                    // onClick={() => handleSaveCluster(values, resetForm)}
                   >
                     <DownloadCSVFile
                       csvDat={flattenData}
@@ -1063,7 +1064,10 @@ const wheresRef = useRef(wheres);
                   </button>
                   <button
                     type="button"
-                    className="w-full max-w-[120px] px-4 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 md:w-24 lg:w-28"                  >
+                    className="w-full max-w-[120px] px-4 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 md:w-24 lg:w-28"
+                    onClick={() => handleSaveCluster(values, resetForm)}
+>
+                      
                     Save Ws
                   </button>
                 </div>
