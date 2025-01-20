@@ -594,6 +594,7 @@ const handleDelete = () => {
   };
 
   const onSave = async () => {
+    debugger
     setIsSubmitting(true);
     let alertKey;
     try {
@@ -847,18 +848,22 @@ const handleDelete = () => {
   };
 
   const cleanEmptySections = (data) => {
-    for (const key in data) {
-      if (data.hasOwnProperty(key)) {
-        const sections = data[key];
-        for (const section in sections) {
-          if (sections[section].length === 0) {
-            delete sections[section];
-          }
-        }
+    const cleanedData = {};
+  
+    for (const [key, value] of Object.entries(data)) {
+      const hasPrimary = value.primary.length > 0;
+      const hasSecondary = value.secondary.length > 0;
+  
+      if (hasPrimary || hasSecondary) {
+        cleanedData[key] = {
+          ...(hasPrimary && { primary: value.primary }),
+          ...(hasSecondary && { secondary: value.secondary }),
+        };
       }
     }
-    return data;
+    return cleanedData;
   };
+  
 
   const transformedData = transformData(myNewData);
   const [whoSelectedValues, setWhoSelectedValue] = useState(false);
@@ -1161,8 +1166,8 @@ const wheresRef = useRef(wheres);
                     {/* <option value="">Please Select...</option>
                     {whos &&
                       whos?.map((item, index) => (
-                        <option key={index} value={item?._id}>
-                          {item?.value}
+                        <option key={index} valuPe={item?._id}>
+                          {item?.value}PusePUser
                         </option>
                       ))}
                     {whats &&
