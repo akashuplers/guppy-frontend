@@ -199,7 +199,7 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
       <section className="mt-6">
         <div className="flex flex-col px-6 py-8 mx-auto lg:py-0">
           <div className="w-full bg-white rounded-lg md:mt-0 sm:max-w-md xl:p-0">
-            <p className="text-lg md:text-xl font-medium">Step 1 - (a). Create a new Story world</p>
+            <p className="text-lg md:text-xl font-medium">Step 1 - (a). Story Upload</p>
 
             {/* add story world form */}
             <p className="text-lg text-gray-600 font-medium mt-3 md:mt-6 pl-8">Add Story World (Optional)</p>
@@ -250,7 +250,7 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
                         className="text-red-500 text-sm"
                       />
                     </div>
-                    <p className="text-lg md:text-xl font-medium py-4">(b). Upload a Story</p>
+                    <p className="text-lg md:text-xl font-medium py-4">(b). Upload Story</p>
                     <div>
                       <label
                         htmlFor="storyWorldLead"

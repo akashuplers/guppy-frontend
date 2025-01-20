@@ -80,12 +80,6 @@ const MasterWssPage = ({
   const [tableData, setTableData] = useState([]);
   const [isClusterLoading, setClusterLoading] = useState(false);
 
-  const allOptions = [...whos, ...whats, ...wheres];
-
-console.log("allOptions", allOptions);
-console.log("whats", whats);
-
-
   const options = (filteredOptions || [])?.map((item) => ({
     label: item?.value,
     value: item?.id,
@@ -454,7 +448,6 @@ const handleDelete = () => {
   const [fieldValue, setFieldValue] = useState();
 
   const handleChange = async (e, name) => { 
-    debugger
     const blankValue = e?.target?.value;
     const fieldName = name;
     setFieldValue(fieldName)
@@ -594,7 +587,6 @@ const handleDelete = () => {
   };
 
   const onSave = async () => {
-    debugger
     setIsSubmitting(true);
     let alertKey;
     try {
@@ -733,14 +725,12 @@ const handleDelete = () => {
             new: (item?.isNewField == true || item?.new == true) ? true:item?.new ?? false,
             updated: (item?.updated == true) ? true: item?.updated ?? false,
             index: item.index
-            // status: item?.new ? "New" : item?.updated ? "Updated" : "Old",
           });
         });
       });
     });
 
       result.sort((a, b) => a.index - b.index);
-
 
     return result;
   };
@@ -870,8 +860,8 @@ const handleDelete = () => {
   const [whatSelectedValues, setWhatSelectedValue] = useState(false);
   const [whereSelectedValues, setWhereSelectedValue] = useState(false);
   const whosRef = useRef(whos);
-const whatsRef = useRef(whats);
-const wheresRef = useRef(wheres);
+  const whatsRef = useRef(whats);
+  const wheresRef = useRef(wheres);
   useEffect(() => {
   const whosChanged = whosRef.current !== whos;
   const whatsChanged = whatsRef.current !== whats;
@@ -1000,7 +990,6 @@ const wheresRef = useRef(wheres);
   
       message.success("Updated Successfully!");
     } else if (filterData?.length > 0) {
-      // Update only filterData
       const curFilterData = [...filterData];
       modifiedFilterData = curFilterData.map((ele) =>
         ele.id === selectedRow.id ? updatedObj : ele
@@ -1009,7 +998,6 @@ const wheresRef = useRef(wheres);
   
       message.success("Updated Successfully!");
     } else if (tableData?.length > 0) {
-      // Update only tableData
       const curTableData = [...tableData];
       modifiedTableData = curTableData.map((ele) =>
         ele.id === selectedRow.id ? updatedObj : ele
@@ -1019,7 +1007,6 @@ const wheresRef = useRef(wheres);
       message.success("Table Data Updated Successfully!");
     }
   
-    // Trigger the change handler if any data was modified
     if (modifiedFilterData.length > 0 || modifiedTableData.length > 0) {
       handleAnythingChanged(true);
     }
@@ -1069,13 +1056,12 @@ const wheresRef = useRef(wheres);
         >
           {({ values, resetForm }) => (
             <Form>
-        <div className="flex flex-col justify-between mt-5 mb-3 text-lg md:flex-row md:items-center md:text-xl md:mb-4">
-        <p className="text-center md:text-left">Step-3 : Master W's</p>
-        <div className="flex flex-col items-center space-y-4 mt-4 md:mt-0 md:space-y-0 md:flex-row md:space-x-4">
+              <div className="flex flex-col justify-between mt-5 mb-3 text-lg md:flex-row md:items-center md:text-xl md:mb-4">
+                <p className="text-center md:text-left">Step-3 : Master W's</p>
+                <div className="flex flex-col items-center space-y-4 mt-4 md:mt-0 md:space-y-0 md:flex-row md:space-x-4">
                   <button
                     type="submit"
-                    className="w-full max-w-[120px] px-4 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 md:w-24 lg:w-28"                   
-                    // onClick={() => handleSaveCluster(values, resetForm)}
+                    className="w-full max-w-[120px] px-4 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 md:w-24 lg:w-28"
                   >
                     <DownloadCSVFile
                       csvDat={flattenData}
@@ -1087,18 +1073,17 @@ const wheresRef = useRef(wheres);
                     type="button"
                     className="w-full max-w-[120px] px-4 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 md:w-24 lg:w-28"
                     onClick={() => handleSaveCluster(values, resetForm)}
->
-                      
+                  >
                     Save Ws
                   </button>
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 mt-4">
-              <div>
+                <div>
                   <label
                     htmlFor="ws"
                     className="block mb-2 text-sm font-medium text-gray-900"
-                    >
+                  >
                     Select Ws
                   </label>
                   <Field
@@ -1128,60 +1113,39 @@ const wheresRef = useRef(wheres);
                   <label
                     htmlFor="masterHead"
                     className="block text-sm font-medium text-gray-900"
-                    >
+                  >
                     Select Cluster Head
                   </label>
-                  
+
                   <Select
-                    // as="select"
                     name="masterHead"
                     id="masterHead"
                     className="wss-custom"
-                    // className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 sm:text-md"
-
-                    // className="block w-full p-2 text-gray-900 border rounded-lg cursor-pointer sm:text-md bg-gray-50"
                     onChange={(value) => handleChange(value, "masterHead")}
                     value={formik.values.masterHead?.value}
                     showSearch
                     optionFilterProp="children"
-                    // allowClear
                     placeholder="Please Select..."
-                  >                    
-                  <option value="">Please Select...</option>
-                    {whos && whos.map((item, index) => (
-          <Select.Option key={item?.id} value={item?.id}>
-            {item?.value}
-          </Select.Option>
-        ))}
-         {whats && whats.map((item, index) => (
-          <Select.Option key={item?.id} value={item?.id}>
-            {item?.value}
-          </Select.Option>
-        ))}
-         {wheres && wheres.map((item, index) => (
-          <Select.Option key={item?.id} value={item?.id}>
-            {item?.value}
-          </Select.Option>
-        ))}
-                    {/* <option value="">Please Select...</option>
+                  >
+                    <option value="">Please Select...</option>
                     {whos &&
-                      whos?.map((item, index) => (
-                        <option key={index} valuPe={item?._id}>
-                          {item?.value}PusePUser
-                        </option>
+                      whos.map((item, index) => (
+                        <Select.Option key={item?.id} value={item?.id}>
+                          {item?.value}
+                        </Select.Option>
                       ))}
                     {whats &&
-                      whats?.map((item, index) => (
-                        <option key={index} value={item?._id}>
+                      whats.map((item, index) => (
+                        <Select.Option key={item?.id} value={item?.id}>
                           {item?.value}
-                        </option>
+                        </Select.Option>
                       ))}
                     {wheres &&
-                      wheres?.map((item, index) => (
-                        <option key={index} value={item?._id}>
+                      wheres.map((item, index) => (
+                        <Select.Option key={item?.id} value={item?.id}>
                           {item?.value}
-                        </option>
-                      ))} */}
+                        </Select.Option>
+                      ))}
                   </Select>
                   <ErrorMessage
                     name="masterHead"
@@ -1189,12 +1153,11 @@ const wheresRef = useRef(wheres);
                     className="text-sm text-red-500"
                   />
                 </div>
-
                 <div className="flex-1 min-w-[200px]">
                   <labeltable
                     htmlFor="type"
                     className="block mb-2 text-sm font-medium text-gray-900"
-                    >
+                  >
                     Select Type
                   </labeltable>
                   <Field
@@ -1224,7 +1187,7 @@ const wheresRef = useRef(wheres);
                   <label
                     htmlFor="clusterValues"
                     className="block mb-2 text-sm font-medium text-gray-900"
-                    >
+                  >
                     Select Cluster Values
                   </label>
                   <Field name="clusterValues">
@@ -1251,11 +1214,14 @@ const wheresRef = useRef(wheres);
 
         <div className="overflow-auto mt-8">
           {!isClusterLoading && (
-            <Table dataSource={myNewData} columns={historyColumns}  
-            className="custom-table"
-            // pagination={{ pageSize: 10 }}   
-            // onChange={handleTableChange}
-            bordered />
+            <Table
+              dataSource={myNewData}
+              columns={historyColumns}
+              className="custom-table"
+              // pagination={{ pageSize: 10 }}
+              // onChange={handleTableChange}
+              bordered
+            />
           )}
         </div>
       </div>
