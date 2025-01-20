@@ -7,6 +7,7 @@ const Stepper = ({ currentStep }) => (
             {
                 title: "Story Upload",
             },
+            
             {
                 title: "3 W's Selection",
             },

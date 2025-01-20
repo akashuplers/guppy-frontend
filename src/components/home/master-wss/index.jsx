@@ -1051,7 +1051,7 @@ const wheresRef = useRef(wheres);
   };
 
   return (
-      <>
+    <>
       <div className="px-5 pb-5 border rounded-md">
         <Formik
           initialValues={{
@@ -1067,10 +1067,10 @@ const wheresRef = useRef(wheres);
         <div className="flex flex-col justify-between mt-5 mb-3 text-lg md:flex-row md:items-center md:text-xl md:mb-4">
         <p className="text-center md:text-left">Step-3 : Master W's</p>
         <div className="flex flex-col items-center space-y-4 mt-4 md:mt-0 md:space-y-0 md:flex-row md:space-x-4">
-        <button
+                  <button
                     type="submit"
-                    className="w-full max-w-[120px] px-4 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 md:w-24 lg:w-28"
-                    onClick={() => handleSaveCluster(values, resetForm)}
+                    className="w-full max-w-[120px] px-4 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 md:w-24 lg:w-28"                   
+                    // onClick={() => handleSaveCluster(values, resetForm)}
                   >
                     <DownloadCSVFile
                       csvDat={flattenData}
@@ -1082,7 +1082,8 @@ const wheresRef = useRef(wheres);
                     type="button"
                     className="w-full max-w-[120px] px-4 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 md:w-24 lg:w-28"
                     onClick={() => handleSaveCluster(values, resetForm)}
-                  >
+>
+                      
                     Save Ws
                   </button>
                 </div>
@@ -1243,7 +1244,7 @@ const wheresRef = useRef(wheres);
           )}
         </Formik>
 
-        <div className="mt-6 overflow-auto">
+        <div className="overflow-auto mt-8">
           {!isClusterLoading && (
             <Table dataSource={myNewData} columns={historyColumns}  
             className="custom-table"
