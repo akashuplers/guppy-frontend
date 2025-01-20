@@ -19,6 +19,8 @@ const MasterWssPage = ({
   saveMasterWs,
   handleSaveSuccess = () => {},
 }) => {
+  const { Option } = Select;
+
   const navigate = useNavigate();
   const flow = true;
   const [editIndex, setEditIndex] = useState(null);
@@ -455,6 +457,8 @@ const handleDelete = () => {
       setWhoSelectedValue(e?.target?.value)
       setWhatSelectedValue(false);
       setWhereSelectedValue(false);
+      formik.setFieldValue("masterHead", { id: "", value: "" }); 
+
       const selectedWs = e?.target?.value;
 
       const isPrimarySelected = myNewData.some(
@@ -469,7 +473,8 @@ const handleDelete = () => {
       setWhats(clusterList?.What);
       setWhatSelectedValue(e?.target?.value);
       setWhereSelectedValue(false);
-      setWhoSelectedValue(false)
+      setWhoSelectedValue(false);
+      formik.setFieldValue("masterHead", { id: "", value: "" }); 
       setWhos([]);
       setWheres([]);
       if (!typo.some((item) => item.name === "Primary")) {
@@ -480,6 +485,7 @@ const handleDelete = () => {
       setWhereSelectedValue(e?.target?.value);
       setWhatSelectedValue(false);
       setWhoSelectedValue(false);
+      formik.setFieldValue("masterHead", { id: "", value: "" }); 
       setWhats([]);
       setWhos([]);
       if (!typo.some((item) => item.name === "Primary")) {
@@ -489,13 +495,15 @@ const handleDelete = () => {
       setWhos([]);
       setWhats([]);
       setWheres([]);
+      formik.setFieldValue("masterHead", { id: "", value: "" }); 
+
     }
 
     const selectedOption = [
       ...clusterList?.Who,
       ...clusterList?.What,
       ...clusterList?.Where,
-    ]?.find((option) => option?.value === e?.target?.value);
+    ]?.find((option) => option?.id === e);
 
     if (name === "ws") {
       formik.setFieldValue("ws", e.target.value);
@@ -716,14 +724,12 @@ const handleDelete = () => {
             new: (item?.isNewField == true || item?.new == true) ? true:item?.new ?? false,
             updated: (item?.updated == true) ? true: item?.updated ?? false,
             index: item.index
-            // status: item?.new ? "New" : item?.updated ? "Updated" : "Old",
           });
         });
       });
     });
 
       result.sort((a, b) => a.index - b.index);
-
 
     return result;
   };
@@ -831,26 +837,30 @@ const handleDelete = () => {
   };
 
   const cleanEmptySections = (data) => {
-    for (const key in data) {
-      if (data.hasOwnProperty(key)) {
-        const sections = data[key];
-        for (const section in sections) {
-          if (sections[section].length === 0) {
-            delete sections[section];
-          }
-        }
+    const cleanedData = {};
+  
+    for (const [key, value] of Object.entries(data)) {
+      const hasPrimary = value.primary.length > 0;
+      const hasSecondary = value.secondary.length > 0;
+  
+      if (hasPrimary || hasSecondary) {
+        cleanedData[key] = {
+          ...(hasPrimary && { primary: value.primary }),
+          ...(hasSecondary && { secondary: value.secondary }),
+        };
       }
     }
-    return data;
+    return cleanedData;
   };
+  
 
   const transformedData = transformData(myNewData);
   const [whoSelectedValues, setWhoSelectedValue] = useState(false);
   const [whatSelectedValues, setWhatSelectedValue] = useState(false);
   const [whereSelectedValues, setWhereSelectedValue] = useState(false);
   const whosRef = useRef(whos);
-const whatsRef = useRef(whats);
-const wheresRef = useRef(wheres);
+  const whatsRef = useRef(whats);
+  const wheresRef = useRef(wheres);
   useEffect(() => {
   const whosChanged = whosRef.current !== whos;
   const whatsChanged = whatsRef.current !== whats;
@@ -979,7 +989,6 @@ const wheresRef = useRef(wheres);
   
       message.success("Updated Successfully!");
     } else if (filterData?.length > 0) {
-      // Update only filterData
       const curFilterData = [...filterData];
       modifiedFilterData = curFilterData.map((ele) =>
         ele.id === selectedRow.id ? updatedObj : ele
@@ -988,7 +997,6 @@ const wheresRef = useRef(wheres);
   
       message.success("Updated Successfully!");
     } else if (tableData?.length > 0) {
-      // Update only tableData
       const curTableData = [...tableData];
       modifiedTableData = curTableData.map((ele) =>
         ele.id === selectedRow.id ? updatedObj : ele
@@ -998,7 +1006,6 @@ const wheresRef = useRef(wheres);
       message.success("Table Data Updated Successfully!");
     }
   
-    // Trigger the change handler if any data was modified
     if (modifiedFilterData.length > 0 || modifiedTableData.length > 0) {
       handleAnythingChanged(true);
     }
@@ -1048,13 +1055,12 @@ const wheresRef = useRef(wheres);
         >
           {({ values, resetForm }) => (
             <Form>
-        <div className="flex flex-col justify-between mt-5 mb-3 text-lg md:flex-row md:items-center md:text-xl md:mb-4">
-        <p className="text-center md:text-left">Step-3 : Master W's</p>
-        <div className="flex flex-col items-center space-y-4 mt-4 md:mt-0 md:space-y-0 md:flex-row md:space-x-4">
+              <div className="flex flex-col justify-between mt-5 mb-3 text-lg md:flex-row md:items-center md:text-xl md:mb-4">
+                <p className="text-center md:text-left">Step-3 : Master W's</p>
+                <div className="flex flex-col items-center space-y-4 mt-4 md:mt-0 md:space-y-0 md:flex-row md:space-x-4">
                   <button
                     type="submit"
-                    className="w-full max-w-[120px] px-4 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 md:w-24 lg:w-28"                   
-                    // onClick={() => handleSaveCluster(values, resetForm)}
+                    className="w-full max-w-[120px] px-4 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 md:w-24 lg:w-28"
                   >
                     <DownloadCSVFile
                       csvDat={flattenData}
@@ -1066,17 +1072,16 @@ const wheresRef = useRef(wheres);
                     type="button"
                     className="w-full max-w-[120px] px-4 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 md:w-24 lg:w-28"
                     onClick={() => handleSaveCluster(values, resetForm)}
->
-                      
+                  >
                     Save Ws
                   </button>
                 </div>
               </div>
-              <div className="flex flex-wrap mt-4 space-x-4">
-                <div className="flex-1 min-w-[200px]">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 mt-4">
+                <div>
                   <label
-                    htmlFor="storyWorld"
-                    className="block mb-2 text-sm font-medium text-gray-900 md:text-sm"
+                    htmlFor="ws"
+                    className="block mb-2 text-sm font-medium text-gray-900"
                   >
                     Select Ws
                   </label>
@@ -1106,51 +1111,51 @@ const wheresRef = useRef(wheres);
                 <div className="flex-1 min-w-[200px]">
                   <label
                     htmlFor="masterHead"
-                    className="block mb-2 text-sm font-medium text-gray-900 md:text-sm"
+                    className="block text-sm font-medium text-gray-900"
                   >
                     Select Cluster Head
                   </label>
-                  <Field
-                    as="select"
+
+                  <Select
                     name="masterHead"
                     id="masterHead"
-                    className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 sm:text-md focus:ring-primary-600 focus:border-primary-600"
-                    onChange={(e) => {
-                      handleChange(e, "masterHead");
-                    }}
+                    className="wss-custom"
+                    onChange={(value) => handleChange(value, "masterHead")}
                     value={formik.values.masterHead?.value}
+                    showSearch
+                    optionFilterProp="children"
+                    placeholder="Please Select..."
                   >
                     <option value="">Please Select...</option>
                     {whos &&
-                      whos?.map((item, index) => (
-                        <option key={index} value={item?._id}>
+                      whos.map((item, index) => (
+                        <Select.Option key={item?.id} value={item?.id}>
                           {item?.value}
-                        </option>
+                        </Select.Option>
                       ))}
                     {whats &&
-                      whats?.map((item, index) => (
-                        <option key={index} value={item?._id}>
+                      whats.map((item, index) => (
+                        <Select.Option key={item?.id} value={item?.id}>
                           {item?.value}
-                        </option>
+                        </Select.Option>
                       ))}
                     {wheres &&
-                      wheres?.map((item, index) => (
-                        <option key={index} value={item?._id}>
+                      wheres.map((item, index) => (
+                        <Select.Option key={item?.id} value={item?.id}>
                           {item?.value}
-                        </option>
+                        </Select.Option>
                       ))}
-                  </Field>
+                  </Select>
                   <ErrorMessage
                     name="masterHead"
                     component="div"
                     className="text-sm text-red-500"
                   />
                 </div>
-
                 <div className="flex-1 min-w-[200px]">
                   <labeltable
                     htmlFor="type"
-                    className="block mb-2 text-sm font-medium text-gray-900 md:text-sm"
+                    className="block mb-2 text-sm font-medium text-gray-900"
                   >
                     Select Type
                   </labeltable>
@@ -1180,7 +1185,7 @@ const wheresRef = useRef(wheres);
                 <div className="flex-1 min-w-[200px]">
                   <label
                     htmlFor="clusterValues"
-                    className="block mb-2 text-sm font-medium text-gray-900 md:text-sm"
+                    className="block mb-2 text-sm font-medium text-gray-900"
                   >
                     Select Cluster Values
                   </label>
@@ -1208,10 +1213,14 @@ const wheresRef = useRef(wheres);
 
         <div className="overflow-auto mt-8">
           {!isClusterLoading && (
-            <Table dataSource={myNewData} columns={historyColumns}  
-            // pagination={{ pageSize: 10 }}   
-            // onChange={handleTableChange}
-            bordered />
+            <Table
+              dataSource={myNewData}
+              columns={historyColumns}
+              className="custom-table"
+              // pagination={{ pageSize: 10 }}
+              // onChange={handleTableChange}
+              bordered
+            />
           )}
         </div>
       </div>
