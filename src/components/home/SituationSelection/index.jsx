@@ -184,9 +184,7 @@ const fetchStoryData = async (story_id, token) => {
 };
 
 useEffect(() => {
-  // if (storyId && tokenVal) {
     fetchStoryData(story_id, token);
-  // }
 }, []);
 
   const onSave = async () => {
