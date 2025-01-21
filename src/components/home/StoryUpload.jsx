@@ -219,6 +219,7 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
               >
                 {({ isSubmitting, setFieldValue }) => (
                   <Form className="space-y-4">
+                    <p className="text-lg md:text-xl font-medium py-4">(b). Upload a Story</p>
                     <div>
                       <label
                         htmlFor="storyWorld"
@@ -250,7 +251,6 @@ const StoryUpload = ({ onSuccess = () => {} }) => {
                         className="text-red-500 text-sm"
                       />
                     </div>
-                    <p className="text-lg md:text-xl font-medium py-4">(b). Upload a Story</p>
                     <div>
                       <label
                         htmlFor="storyWorldLead"
