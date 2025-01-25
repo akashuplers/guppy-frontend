@@ -60,6 +60,25 @@ const MasterWssPage = ({
   const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged} = useContext(StoryUploadApiContext);
   const {token,story_id,storyWorld,fileName,storyWorldId,masterws} = storyUploadApiResponse;
   const [filterData, setFilteredData] = useState([]);
+console.log("myNewData",myNewData);
+function removeDuplicates(data) {
+  const seenIds = new Set(); // Use a Set to track unique IDs
+  const uniqueData = [];
+
+  for (const item of data) {
+    if (!seenIds.has(item.id)) {
+      seenIds.add(item.id); // Add the ID to the Set
+      uniqueData.push(item); // Add the object to the result array
+    }
+  }
+
+  return uniqueData;
+}
+
+const uniqueData = removeDuplicates(myNewData);
+
+console.log("uniqueData", uniqueData);
+
 
   const formik = useFormik({
     initialValues: {
@@ -85,6 +104,8 @@ const MasterWssPage = ({
     value: item?.id,
   }));
 
+  console.log("whos",whos);
+  
   const fetchMasterWsList = async () => {
     setClusterLoading(true);
     let alertKey = null; 
@@ -101,7 +122,7 @@ const MasterWssPage = ({
       const output = response?.data?.masterWs;
 
       if(output) {
-      setTableData(processData(output));
+      setTableData(groupDataByTypeAndWs(output));
       message.destroy(alertKey);
       message.success("Clusters Fetched Successfully !");
       } else {
@@ -266,6 +287,34 @@ const handleDelete = () => {
       onSave();
     }
   }, [saveMasterWs]);
+
+  const type = [
+    { id: 1, name: "Primary" },
+    { id: 2, name: "Secondary" },
+  ];
+
+  const [typo, setTypo] = useState(type);
+
+  // const dataSource = whos.map((item, index) => ({
+  //   id: item.id, // Corresponds to the S.No column
+  //   ws: item.value, // Corresponds to the W's Form column
+  //   type: typo,  // Example logic for Type column
+  //   masterHead: item.value, // Example logic for Cluster Head column
+  //   clusterValues: [], // Cluster Value column
+  // }));
+  // console.log("dataSource",dataSource);
+  const [selectedTypeByRow, setSelectedTypeByRow] = useState({});
+console.log("selectedTypeByRow",selectedTypeByRow);
+
+  const handleRadioChange = (recordId, selectedType) => {
+    setSelectedTypeByRow((prev) => ({
+      ...prev,
+      [recordId]: selectedType,
+    }));
+  };
+
+  
+  
   const historyColumns = [
     {
       dataIndex: "id",
@@ -290,13 +339,69 @@ const handleDelete = () => {
       },
     },
     {
-      dataIndex: "type",
-      title: "Type",
+      dataIndex: 'type',
+      title: 'Type',
       render: (text, record) => {
+        // debugger
+        // Check if type is an array, and use apiType as fallback
+        console.log("recorrrrrrr", record);
+        
+        const typoArray = record?.apiType ?? record?.type ?? [];
+        const typApi =  record?.type || [];
+        const isTypeObject = !Array.isArray(record?.type) && typeof record?.type === 'object' ; // Check if `record?.type` is an object
+        const preSelectedType = isTypeObject ? record?.type?.name : null; // Extract preselected type for the object case;
+        debugger
+        const isApplicableForWs = record.ws === "who";
+        const isAnySelectedForWs = isApplicableForWs && Object.entries(selectedTypeByRow).some(([key, value]) => {
+          const currentRecord = uniqueData.find(item => item.id === key); // Find the record by ID
+          const currentTypeName = Array.isArray(currentRecord?.type)
+            ? value // Current selection for array type
+            : currentRecord?.type?.name; // Preselected type for object case
+    
+          return currentRecord?.ws === (record.ws) && currentTypeName === 'Primary'; // Check for "Primary" selection
+        });
+        console.log("isAnySelectedForWs",isAnySelectedForWs);
+        
         return (
-          <div>
-            <span>{record?.type}</span>{" "}
-          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {/* Render for array of types */}
+          {typoArray.length > 0 &&
+            typoArray.map((typeItem) => {
+              const isDisabled =
+              isAnySelectedForWs && typeItem.name === 'Primary' && selectedTypeByRow[record.id] !== 'Primary';              return(
+                <label key={typeItem.id} 
+                style={{ 
+                  marginBottom: '5px',
+                  color: isDisabled ? '#b0b0b0' : 'black', // Greyed-out text for disabled
+                  cursor: isDisabled ? 'not-allowed' : 'pointer', // Disable p
+                  opacity: isDisabled ? 0.6 : 1, // Reduced opacity for a greyed-out effect
+  
+                   }}>
+                  <input
+                    type="radio"
+                    name={`type-${record.id}`} // Group radio buttons by record ID
+                    value={typeItem.name}
+                    onChange={() => handleRadioChange(record.id, typeItem.name)} // Handle user selection
+                    style={{
+                      marginRight: '10px',
+                      width: '20px',
+                      height: '20px',
+                      border: '0.5px solid',
+                      borderRadius: '50%', // Make it circular
+                      backgroundColor: selectedTypeByRow[record.id] === typeItem.name || preSelectedType === typeItem.name ? 'green' : 'white', // Green for selected
+                      cursor: 'pointer', // Pointer cursor for better UX
+                    }}
+                    checked={selectedTypeByRow[record.id] === typeItem.name || preSelectedType === typeItem.name} // Checked based on selected state
+                    // disabled={isAnySelectedForWs && typeItem.name === 'Primary' && selectedTypeByRow[record.id] !== 'Primary'} // Disable logic
+                    disabled={isDisabled}
+                  />
+                  {typeItem.name}
+                </label>
+              )
+            }
+            )}
+        </div>
+        
         );
       },
     },
@@ -423,15 +528,10 @@ const handleDelete = () => {
     { id: 3, name: "where" },
   ];
 
-  const type = [
-    { id: 1, name: "Primary" },
-    { id: 2, name: "Secondary" },
-  ];
 
-  const [typo, setTypo] = useState(type);
 
   const onReset = () => {
-    setTableData(processData(masterws?.masterWs));
+    // setTableData(processData(masterws?.masterWs));
     message.success("Reset Successfully !");
     handleAnythingChanged(true);
   };
@@ -446,14 +546,22 @@ const handleDelete = () => {
   
   const [blankValue, setBlankValue] = useState();
   const [fieldValue, setFieldValue] = useState();
-
   const handleChange = async (e, name) => { 
+    // debugger
     const blankValue = e?.target?.value;
     const fieldName = name;
     setFieldValue(fieldName)
     setBlankValue(blankValue)
     if (e?.target?.value === "who") {
       setWhos(clusterList?.Who);
+      const dataSource = clusterList?.Who?.map((item, index) => ({
+        id: item.id, // Corresponds to the S.No column
+        ws: e?.target?.value, // Corresponds to the W's Form column
+        type: typo,  // Example logic for Type column
+        masterHead: item.value, // Example logic for Cluster Head column
+        clusterValues: [], // Cluster Value column
+      }));
+      setFilteredData(dataSource)
       setWhoSelectedValue(e?.target?.value)
       setWhatSelectedValue(false);
       setWhereSelectedValue(false);
@@ -471,6 +579,14 @@ const handleDelete = () => {
       setWheres([]);
     } else if (e?.target?.value === "what") {
       setWhats(clusterList?.What);
+      const dataSource = clusterList?.What?.map((item, index) => ({
+        id: item.id, // Corresponds to the S.No column
+        ws: e?.target?.value, // Corresponds to the W's Form column
+        type: typo,  // Example logic for Type column
+        masterHead: item.value, // Example logic for Cluster Head column
+        clusterValues: [], // Cluster Value column
+      }));
+      setFilteredData(dataSource)
       setWhatSelectedValue(e?.target?.value);
       setWhereSelectedValue(false);
       setWhoSelectedValue(false);
@@ -482,6 +598,14 @@ const handleDelete = () => {
       }
     } else if (e?.target?.value === "where") {
       setWheres(clusterList?.Where);
+      const dataSource = clusterList?.Where?.map((item, index) => ({
+        id: item.id, // Corresponds to the S.No column
+        ws: e?.target?.value, // Corresponds to the W's Form column
+        type: typo,  // Example logic for Type column
+        masterHead: item.value, // Example logic for Cluster Head column
+        clusterValues: [], // Cluster Value column
+      }));
+      setFilteredData(dataSource)
       setWhereSelectedValue(e?.target?.value);
       setWhatSelectedValue(false);
       setWhoSelectedValue(false);
@@ -564,6 +688,132 @@ const handleDelete = () => {
       formik.setFieldValue("clusterValues", selectedValues);
     }
   };
+
+  // const handleChange = async (e, name) => { 
+  //   const blankValue = e?.target?.value;
+  //   const fieldName = name;
+  //   setFieldValue(fieldName)
+  //   setBlankValue(blankValue)
+  //   if (e?.target?.value === "who") {
+  //     setWhos(clusterList?.Who);
+  //     const dataSource = whos.map((item, index) => ({
+  //       id: item.id, // Corresponds to the S.No column
+  //       ws: e?.target?.value, // Corresponds to the W's Form column
+  //       type: typo,  // Example logic for Type column
+  //       masterHead: item.value, // Example logic for Cluster Head column
+  //       clusterValues: [], // Cluster Value column
+  //     }));
+  //     setFilteredData(dataSource)
+  //     setWhoSelectedValue(e?.target?.value)
+  //     setWhatSelectedValue(false);
+  //     setWhereSelectedValue(false);
+  //     formik.setFieldValue("masterHead", { id: "", value: "" }); 
+
+  //     const selectedWs = e?.target?.value;
+
+  //     const isPrimarySelected = myNewData.some(
+  //       (comb) => comb.ws === "who" && comb.type === "primary"
+  //     );
+  //     if (selectedWs === "who" && isPrimarySelected) {
+  //       setTypo((prevTypo) => prevTypo?.filter((item) => item.name !== "Primary"));
+  //     }
+  //     setWhats([]);
+  //     setWheres([]);
+  //   } else if (e?.target?.value === "what") {
+  //     setWhats(clusterList?.What);
+  //     setWhatSelectedValue(e?.target?.value);
+  //     setWhereSelectedValue(false);
+  //     setWhoSelectedValue(false);
+  //     formik.setFieldValue("masterHead", { id: "", value: "" }); 
+  //     setWhos([]);
+  //     setWheres([]);
+  //     if (!typo.some((item) => item.name === "Primary")) {
+  //       setTypo((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
+  //     }
+  //   } else if (e?.target?.value === "where") {
+  //     setWheres(clusterList?.Where);
+  //     setWhereSelectedValue(e?.target?.value);
+  //     setWhatSelectedValue(false);
+  //     setWhoSelectedValue(false);
+  //     formik.setFieldValue("masterHead", { id: "", value: "" }); 
+  //     setWhats([]);
+  //     setWhos([]);
+  //     if (!typo.some((item) => item.name === "Primary")) {
+  //       setTypo((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo, ]);
+  //     }
+  //   }  else if(blankValue=="" && name==="ws"){
+  //     setWhos([]);
+  //     setWhats([]);
+  //     setWheres([]);
+  //     formik.setFieldValue("masterHead", { id: "", value: "" }); 
+
+  //   }
+
+  //   const selectedOption = [
+  //     ...clusterList?.Who,
+  //     ...clusterList?.What,
+  //     ...clusterList?.Where,
+  //   ]?.find((option) => option?.id === e);
+
+  //   if (name === "ws") {
+  //     formik.setFieldValue("ws", e.target.value);
+  //   } else if (name === "masterHead" && selectedOption) {
+  //     const { id, value } = selectedOption;
+  //     formik.setFieldValue("masterHead", { id: id, value: value });
+  //     const payload = {
+  //       clusterHead: { value: value, id: id }, 
+  //       ws: [], 
+  //     };
+  
+  //     if (e?.target?.value === "who") {
+  //       payload.ws = clusterList?.Who || [];
+  //     } else if (e?.target?.value === "what") {
+  //       payload.ws = clusterList?.What || [];
+  //     } else if (e?.target?.value === "where") {
+  //       payload.ws = clusterList?.Where || [];
+  //     }
+  //     if (whos?.length > 0) {
+  //       const clustWho = whos?.filter((item) => item?.value !== value)
+  //       payload.ws = [...payload.ws, ...clustWho];
+  //     }
+  //     if (whats?.length > 0) {
+  //       const clustWhat = whats?.filter((item) => item?.value !== value)
+  //       payload.ws = [...payload.ws, ...clustWhat];
+  //     }
+  //     if (wheres?.length > 0) {
+  //       const clustWhere = wheres?.filter((item) => item?.value !== value)
+  //       payload.ws = [...payload.ws, ...clustWhere];
+  //     }
+
+  //     payload.ws = payload.ws.map((item) => ({
+  //       value: item.value,
+  //       id: item.id,
+  //     }));
+  //     try {
+  //       if(payload?.ws?.length > 0) {
+  //         const response = await axios.post(apiUrl, payload, config);
+  //         const filteredArray = response?.data?.ws?.clusterValues
+  //         setFilteredOption(filteredArray);
+  //       } else {
+  //         setFilteredOption([])
+  //       }
+        
+  //     } catch (error) {
+  //       console.error("Error calling the API:", error);
+  //     }
+  //   } else if (name === "type") {
+      
+  //     formik.setFieldValue("type", e.target.value);
+    
+  //   } else if(Array.isArray(e)) {
+  //     const selectedValues = e?.map((option) => ({
+  //       label: option.label,
+  //       value: option.value,
+  //     }));
+  //     setSelected(selectedValues);
+  //     formik.setFieldValue("clusterValues", selectedValues);
+  //   }
+  // };
   
   const getUpdatedJson = (list) => {
     const arr = list || [];
@@ -587,6 +837,7 @@ const handleDelete = () => {
   };
 
   const onSave = async () => {
+    debugger
     setIsSubmitting(true);
     let alertKey;
     try {
@@ -672,67 +923,225 @@ const handleDelete = () => {
     }
   };
 
+  // function convertData(inputData) {
+  //   const result = {};
+  //   inputData.forEach((item, index) => {
+  //     const wsKey = item?.ws?.toLowerCase()?.replace(/'s$/, ""); // Normalize the `ws` key
+
+  //     if (!result[wsKey]) {
+  //       result[wsKey] = {};
+  //     }
+
+  //     if (!result[wsKey][typeKey]) {
+  //       result[wsKey][typeKey] = [];
+  //     }
+
+  //     const formattedItem = {
+  //       id: item.masterHead?.id ?? item.id, 
+  //       masterHead: item?.masterHead?.value || item?.masterHead, 
+  //       clusterValues: item?.clusterValues?.map((cluster) => ({
+  //         id: cluster?.id,
+  //         value: cluster?.value,
+  //       })),
+  //       new: (item?.isNewField == true) ? true:item?.new ?? false,
+  //       updated: (item?.updated == true) ? true:item?.updated ?? false,
+  //       index
+  //     };
+
+  //     result[wsKey][typeKey].push(formattedItem);
+  //   });
+
+  //   return result;
+  // }
   function convertData(inputData) {
+    // debugger;
     const result = {};
+  
     inputData.forEach((item, index) => {
-      const wsKey = item.ws.toLowerCase().replace(/'s$/, ""); 
-      const typeKey = item.type.toLowerCase(); 
-
+      const wsKey = item.ws.toLowerCase().replace(/'s$/, ""); // Normalize the `ws` key
+  
+      // Initialize the `wsKey` as an array if it doesn't exist
       if (!result[wsKey]) {
-        result[wsKey] = {};
+        result[wsKey] = [];
       }
-
-      if (!result[wsKey][typeKey]) {
-        result[wsKey][typeKey] = [];
-      }
-
+  
       const formattedItem = {
-        id: item.masterHead?.id ?? item.id, 
-        masterHead: item?.masterHead?.value || item?.masterHead, 
+        id: item.masterHead?.id ?? item.id, // Use `id` or fallback to `item.id`
+        masterHead: item?.masterHead?.value || item?.masterHead, // Normalize `masterHead`
         clusterValues: item?.clusterValues?.map((cluster) => ({
           id: cluster?.id,
           value: cluster?.value,
-        })),
-        new: (item?.isNewField == true) ? true:item?.new ?? false,
-        updated: (item?.updated == true) ? true:item?.updated ?? false,
-        index
+        })) || [], // Format `clusterValues` or use an empty array
+        type: item?.type || [], // Assign the predefined type array
+        new: item?.isNewField === true ? true : item?.new ?? false, // Determine `new` status
+        updated: item?.updated === true ? true : item?.updated ?? false, // Determine `updated` status
+        // index, // Include the index of the item
       };
-
-      result[wsKey][typeKey].push(formattedItem);
+  
+      result[wsKey].push(formattedItem); // Add the formatted item to the array
     });
-
+  
     return result;
   }
 
-  const manualData = convertData(filterData);
-
-  const processData = (data) => {
-    const result = [];
-
-    Object?.keys(data)?.forEach((ws) => {
-      Object?.keys(data[ws])?.forEach((type) => {
-        data[ws][type]?.forEach((item) => {
-          result?.push({
-            ws,
-            id: item?.id,
-            type,
-            masterHead: item?.masterHead,
-            clusterValues: item?.clusterValues?.map((cluster) => ({
-              id: cluster?.id,
-              value: cluster?.value,
-            })),
-            new: (item?.isNewField == true || item?.new == true) ? true:item?.new ?? false,
-            updated: (item?.updated == true) ? true: item?.updated ?? false,
-            index: item.index
+  
+  
+  console.log("filterData",filterData);
+  function convertApiData(apiData) {
+    const typeArray = [
+      { id: 1, name: "Primary" },
+      { id: 2, name: "Secondary" },
+    ];
+    let result = [];
+  
+    // Iterate over each ws key (e.g., "who", "what", "where")
+    Object.keys(apiData).forEach((ws) => {
+      // Iterate over each type key (e.g., "primary", "secondary")
+      Object.keys(apiData[ws]).forEach((typeKey, index) => {
+        apiData[ws][typeKey]?.forEach((item) => {
+          result.push({
+            id: item.id, // ID of the item
+            masterHead: item.masterHead, // Master head value
+            clusterValues: item.clusterValues || [], // Cluster values
+            type: typeArray, // Add type array
+            new: item.new === true, // Determine `new` status
+            updated: item.updated === true, // Determine `updated` status
+            index, // Add the index for sorting
           });
         });
       });
     });
+  
+    return result;
+  }
+  function groupDataByTypeAndWs(apiData) {
+    const typeArray = [
+      { id: 1, name: "Primary" },
+      { id: 2, name: "Secondary" },
+    ];
+  
+    const result = [];
+  
+    // Iterate over each ws key (e.g., "who", "what", "where")
+    Object.keys(apiData).forEach((ws) => {
+      // Iterate over each type key (e.g., "primary", "secondary")
+      Object.keys(apiData[ws]).forEach((typeKey) => {
+        const items = apiData[ws][typeKey];
+  
+        // Ensure items is an array before processing
+        if (Array.isArray(items)) {
+          items.forEach((item) => {
+            // Add structured data
+            result.push({
+              ws, // Add ws key (e.g., "who")
+              type: typeArray.find((type) => type.name.toLowerCase() === typeKey), // Match type (Primary/Secondary)
+              id: item.id, // Add item ID
+              apiType:typeArray,
+              masterHead: item.masterHead, // Add masterHead
+              clusterValues: item.clusterValues?.map((cluster) => ({
+                id: cluster?.id,
+                value: cluster?.value,
+              })) || [], // Add cluster values or empty array
+              new: item.new === true, // Add `new` status
+              updated: item.updated === true, // Add `updated` status
+            });
+          });
+        }
+      });
+    });
+  
+    return result;
+  }
+  
+  
 
-      result.sort((a, b) => a.index - b.index);
+  const manualData = convertData(filterData);
+  
+  // function updateType(convertedData, typeMapping) {
+  //   // Loop through each key in the converted data
+  //   for (const wsKey in convertedData) {
+  //     if (convertedData.hasOwnProperty(wsKey)) {
+  //       // Update each item in the array under the key
+  //       convertedData[wsKey] = convertedData[wsKey].map((item) => {
+  //         // Check if the item's id exists in the typeMapping
+  //         if (typeMapping[item.id]) {
+  //           // Replace the type with the mapped value as an array
+  //           return {
+  //             ...item,
+  //             type: [{ name: typeMapping[item.id] }],
+  //           };
+  //         }
+  //         return item; // If no mapping exists, return the item as is
+  //       });
+  //     }
+  //   }
+  //   return convertedData;
+  // }
+  
+  // const updatedData = updateType(manualData, selectedTypeByRow);
 
+  // console.log("updatedData",updatedData);
+  // const tabData = convertApiDataWithWs(tableData)
+  console.log("tabData",tableData);
+  
+  const processData = (data) => {
+    // debugger
+    const result = [];
+  
+    // Iterate over the keys of the input data (ws keys)
+    Object.keys(data)?.forEach((ws) => {
+      // Iterate over each item in the ws array
+      data[ws]?.forEach((item) => {
+        result.push({
+          ws, // Add the ws key
+          id: item?.id, // Add the id from the item
+          type: item?.type || [], // Use the item's type or an empty array
+          masterHead: item?.masterHead, // Add the masterHead
+          clusterValues: item?.clusterValues?.map((cluster) => ({
+            id: cluster?.id,
+            value: cluster?.value,
+          })), // Map clusterValues if present
+          new: item?.new === true, // Compute the new field
+          updated: item?.updated === true, // Compute the updated field
+          index: item?.index, // Include the index of the item
+        });
+      });
+    });
+  
+    // Sort the result array by the index field
+    result.sort((a, b) => a.index - b.index);
+  
     return result;
   };
+  
+  
+  // const processData = (data) => {
+  //   const result = [];
+
+  //   Object?.keys(data)?.forEach((ws) => {
+  //     Object?.keys(data[ws])?.forEach((type) => {
+  //       data[ws][type]?.forEach((item) => {
+  //         result?.push({
+  //           ws,
+  //           id: item?.id,
+  //           type,
+  //           masterHead: item?.masterHead,
+  //           clusterValues: item?.clusterValues?.map((cluster) => ({
+  //             id: cluster?.id,
+  //             value: cluster?.value,
+  //           })),
+  //           new: (item?.isNewField == true || item?.new == true) ? true:item?.new ?? false,
+  //           updated: (item?.updated == true) ? true: item?.updated ?? false,
+  //           index: item.index
+  //         });
+  //       });
+  //     });
+  //   });
+
+  //     result.sort((a, b) => a.index - b.index);
+
+  //   return result;
+  // };
 
   const newManualData = useMemo(
     () => processData(manualData || []),
@@ -748,6 +1157,8 @@ const handleDelete = () => {
       setMyNewData(combinedData);
     }
   }, [tableData, newManualData]);
+  console.log("myNewData",myNewData);
+  
 
   const flattenData = myNewData?.map((item) => {
     const normalizedClusterValues = (() => {
@@ -770,7 +1181,7 @@ const handleDelete = () => {
   });
 
   const transformData = (data) => {
-  
+    // debugger
     const result = {
       who: {
         primary: [],
@@ -785,22 +1196,8 @@ const handleDelete = () => {
         secondary: [],
       },
     };
-    data?.forEach((item) => {
-      const normalizedClusterValues = (() => {
-        if (Array?.isArray(item.clusterValues)) {
-          return item.clusterValues?.map((cluster) => ({
-            id: cluster.id ?? null,
-            value: cluster.value ?? cluster,
-          }));
-        } else if (typeof item.clusterValues === "string") {
-          return item.clusterValues?.split(",")?.map((value) => ({
-            id: null,
-            value: value?.trim(),
-          }));
-        }
-        return [];
-      })();
 
+    data?.forEach((item) => {
       const newItem = {
         id: item.id ?? null,
         masterHead: item?.masterHead?.value ?? item.masterHead, 
@@ -808,7 +1205,7 @@ const handleDelete = () => {
           id: cluster.id,
           value: cluster.value,
         })),
-        new: (item.new == true || item?.isNewField == true) ? true:false ,
+        new:true ,
         updated: item.updated,
       };
 
@@ -853,8 +1250,77 @@ const handleDelete = () => {
     return cleanedData;
   };
   
+  function updateAndNormalizeData(data, typeMapping) {
+    return data.map((item) => {
+      let updatedItem = { ...item };
+  
+      // Case 1: If `typeMapping` exists and has a mapping for the item's ID
+      if (typeMapping && typeMapping[item.id]) {
+        updatedItem.type = typeMapping[item.id];
+      }
+      // Case 2: If `typeMapping` is undefined or empty, normalize `type` and remove `apiType`
+      else {
+        updatedItem.type = item.type?.name ?  item.type.name:undefined ;
+      }
+  // Remove `type` if undefined
+  // if (!updatedItem.type) {
+  //   delete updatedItem.type;
+  // }
 
-  const transformedData = transformData(myNewData);
+      // Remove `apiType` in either case
+      delete updatedItem.apiType;
+  
+      return updatedItem;
+    })
+    .filter((item) => item.type !== undefined);
+  }
+  const updatedData = updateAndNormalizeData(myNewData, selectedTypeByRow);
+  console.log("updatedData",updatedData);
+  
+  // const transformedData = {};
+  // function updateType(convertedData, typeMapping) {
+  //   debugger;
+  //   // If typeMapping is undefined or empty, return convertedData as is
+  //   if (!typeMapping || Object.keys(typeMapping).length === 0) {
+  //     return convertedData;
+  //   }
+  
+  //   // Iterate through the converted data array and update the type
+  //   return convertedData.map((item) => {
+  //     // Check if the item's id exists in the typeMapping
+  //     if (typeMapping[item.id]) {
+  //       // Replace the type with the selected value in typeMapping
+  //       return {
+  //         ...item,
+  //         type: typeMapping[item.id],
+  //       };
+  //     }
+  //     return item; // If no mapping exists, return the item as is
+  //   });
+  // }
+  
+  // function updateTypeWithOnlyName(data) {
+  //   return data.map((item) => {
+  //     // Remove apiType and keep only type with name field
+  //     const updatedItem = {
+  //       ...item,
+  //       type: item.type.name, // Only keep the name from type
+  //     };
+  //     delete updatedItem.apiType; // Remove apiType field
+  //     return updatedItem;
+  //   });
+  // }
+// const updatedData = updateType(filterData, selectedTypeByRow);
+// const alreadyComingData = updateTypeWithOnlyName(tableData)
+// console.log("updatedData",updatedData);
+// console.log("alreadyComingData",alreadyComingData);
+// const transData = [...updatedData, ...alreadyComingData]
+// console.log("transData",transData);
+
+// const transformedData = {}
+  const transformedData = transformData(updatedData|| []);
+  console.log("transformedData", transformedData);
+  
   const [whoSelectedValues, setWhoSelectedValue] = useState(false);
   const [whatSelectedValues, setWhatSelectedValue] = useState(false);
   const [whereSelectedValues, setWhereSelectedValue] = useState(false);
@@ -971,6 +1437,7 @@ const handleDelete = () => {
   ]);  
 
   const onModify = (updatedObj) => {
+    debugger
     let modifiedFilterData = [];
     let modifiedTableData = [];
   
@@ -1108,7 +1575,7 @@ const handleDelete = () => {
                     className="text-sm text-red-500"
                   />
                 </div>
-                <div className="flex-1 min-w-[200px]">
+                {/* <div className="flex-1 min-w-[200px]">
                   <label
                     htmlFor="masterHead"
                     className="block text-sm font-medium text-gray-900"
@@ -1205,7 +1672,7 @@ const handleDelete = () => {
                     component="div"
                     className="mt-1 text-sm text-red-500"
                   />
-                </div>
+                </div> */}
               </div>
             </Form>
           )}
@@ -1214,7 +1681,7 @@ const handleDelete = () => {
         <div className="overflow-auto mt-8">
           {!isClusterLoading && (
             <Table
-              dataSource={myNewData}
+              dataSource={uniqueData}
               columns={historyColumns}
               className="custom-table"
               // pagination={{ pageSize: 10 }}
