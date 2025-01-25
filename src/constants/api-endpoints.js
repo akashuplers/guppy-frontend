@@ -1,4 +1,4 @@
-export const API_BASE_PATH = "https://guppy-backend.researchwork.ai";
+export const API_BASE_PATH = "https://guppy-backend-dev.researchwork.ai";
 
 export const API_ROUTES = {
     SIGNUP: '/auth/signup',
