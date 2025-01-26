@@ -18,6 +18,7 @@ const ModifyMasterWsPopup = ({
   modalType,
   myNewData,
   filteredData,
+  updateNewData,
   whos,
   whats,
   wheres,
@@ -45,6 +46,8 @@ const ModifyMasterWsPopup = ({
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const [typeData, setTypeData] = useState(types);
   const [allData, setAllData] = useState([]);
+console.log("mmmmmmmmm", modifyItemObj);
+console.log("typo", typo);
 
   useEffect(() => {
     if (filterData?.length > 0 || tableData?.length > 0) {
@@ -134,6 +137,7 @@ const ModifyMasterWsPopup = ({
   useEffect(() => {
     handleClusterChange();
   }, [wsForm, clusterList]);
+console.log("typo",typo);
 
   useEffect(() => {
     if (!anythingChanged) {
@@ -146,30 +150,46 @@ const ModifyMasterWsPopup = ({
       }
       setTypo(modifyItemObj?.type || []);
       if (modalType === "InBetweenFlow") {
+        // debugger
+
         const selectedWs = modifyItemObj?.ws;
-        const isPrimarySelected = myNewData?.some(
-          (comb) => comb.ws === "who" && comb.type === "primary"
-        );
-        if (selectedWs === "who" && isPrimarySelected) {
-          setTypeData((prevTypo) =>
-            prevTypo?.filter((item) => item.name !== "Primary")
-          );
-        }
-        if (selectedWs === "what") {
-          if (!typeData?.some((item) => item.name === "Primary")) {
-            setTypeData((prevTypo) => [
-              { id: 1, name: "Primary" },
-              ...prevTypo,
-            ]);
-          }
-        } else if (selectedWs === "where") {
-          if (!typeData?.some((item) => item.name === "Primary")) {
-            setTypeData((prevTypo) => [
-              { id: 1, name: "Primary" },
-              ...prevTypo,
-            ]);
-          }
-        }
+        // const modifyItemObj
+        console.log(updateNewData,"updatsssseNewData");
+        const matchedData = updateNewData.find((data) => data.id === modifyItemObj?.id);
+        console.log("matchedData",matchedData);
+        
+        setTypo(matchedData?.type)
+        
+        // const isPrimarySelected = updateNewData?.some((comb) => {
+        //   if (Array.isArray(comb.type)) {
+        //     return comb.ws === "who" && comb.type === "Primary";
+        //   }
+
+        //   if (typeof comb.type === "object" && comb.type !== null) {
+        //     return comb.ws === "who" && comb.type === "Primary";
+        //   }
+        //   return false;
+        // });
+        // if (selectedWs === "who" && isPrimarySelected) {
+        //   setTypeData((prevTypo) =>
+        //     prevTypo?.filter((item) => item.name !== "Primary")
+        //   );
+        // }
+        // if (selectedWs === "what") {
+        //   if (!typeData?.some((item) => item.name === "Primary")) {
+        //     setTypeData((prevTypo) => [
+        //       { id: 1, name: "Primary" },
+        //       ...prevTypo,
+        //     ]);
+        //   }
+        // } else if (selectedWs === "where") {
+        //   if (!typeData?.some((item) => item.name === "Primary")) {
+        //     setTypeData((prevTypo) => [
+        //       { id: 1, name: "Primary" },
+        //       ...prevTypo,
+        //     ]);
+        //   }
+        // }
       } else if (modalType === "saparate") {
         const selectedWs = modifyItemObj?.ws;
         const isPrimarySelected = filteredData?.some(
@@ -427,10 +447,26 @@ const ModifyMasterWsPopup = ({
   };
 
   const handleUpdate = () => {
+    // debugger
+    const currentType = !Array.isArray(modifyItemObj?.type) ? modifyItemObj?.type : typo;
     const updatedObj = {
       id: clusterHeadId ? clusterHeadId : modifyItemObj.id,
       ws: wsForm,
-      type: typo || modifyItemObj.type,
+      ...(modalType == "saparate" && {
+        type: typo || modifyItemObj.type,
+      }),
+      ...(modalType === "InBetweenFlow" && {
+
+        type: !Array.isArray(modifyItemObj?.type)
+        ? modifyItemObj?.type
+        : typo === "Primary"
+        ? { id: 1, name: "Primary" }
+        : typo === "Secondary"
+        ? { id: 2, name: "Secondary" }
+        : modifyItemObj?.type,
+                apiType:modifyItemObj?.apiType ?? modifyItemObj?.type
+      }),
+      // type:modalType === "saparate" ? typo || modifyItemObj.type:modifyItemObj.type,
       masterHead:
         modalType === "saparate"
           ? clusterHeadData ?? modifyItemObj?.masterHead
@@ -492,6 +528,7 @@ const ModifyMasterWsPopup = ({
             value={wsForm}
             onChange={(value) => onWsChange(value, "wsForm")}
             placeholder={"Select Ws Form"}
+            disabled={modalType==="InBetweenFlow"}
           >
             {storyWorldOptions?.map((item, index) => (
               <Option key={item.name} value={item?.name}>
@@ -500,7 +537,9 @@ const ModifyMasterWsPopup = ({
             ))}
           </Select>
         </div>
-        <div className="mt-8 mb-6">
+        {modalType === "saparate" && (
+          <>
+          <div className="mt-8 mb-6">
           <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
             Type
           </label>
@@ -518,6 +557,34 @@ const ModifyMasterWsPopup = ({
             ))}
           </Select>
         </div>
+          </>
+        )}
+        
+        {modalType === "InBetweenFlow" &&
+        (
+          <>
+           <div className="mt-8 mb-6">
+          <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
+            Type
+          </label>
+          <Select
+            size="large"
+            className="w-full"
+            value={typo?.name ?? typo} 
+            onChange={(value) => onTypeChange(value, "typo")} 
+            placeholder={"Select Type"}
+            disabled
+          >
+            {typeData?.map((item, index) => (
+              <Option key={item.name} value={item?.name}>
+                {item?.name}
+              </Option>
+            ))}
+          </Select>
+        </div>
+          </>
+        )}
+       
         {modalType === "InBetweenFlow" && (
           <div>
             <div className="mt-8 mb-6">
@@ -533,6 +600,7 @@ const ModifyMasterWsPopup = ({
                 optionFilterProp="children" // Enables search by dropdown text
                 allowClear
                 placeholder="Select Cluster Head"
+                disabled
               >
                 {whoCluster &&
                   whoCluster?.map((item, index) => (
