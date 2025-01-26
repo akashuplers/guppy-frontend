@@ -13,6 +13,7 @@ import { StoryUploadApiContext } from "../../../contexts/ApiContext";
 import DownloadVersionSelectPopup from "../DownloadVersionSelectPopup";
 import { API_BASE_PATH, API_ROUTES } from "../../../constants/api-endpoints";
 import DeleteConfirmationDialog from "../../../utils/modals/DeleteConfirmationDialog";
+import SaveConfirmationDialog from "../../../utils/modals/SaveConfirmationModal";
 
 const MasterWssPage = ({
   onDiscard = () => {},
@@ -76,6 +77,7 @@ function removeDuplicates(data) {
 }
 
 const uniqueData = removeDuplicates(myNewData);
+
 
 console.log("uniqueData", uniqueData);
 
@@ -294,15 +296,6 @@ const handleDelete = () => {
   ];
 
   const [typo, setTypo] = useState(type);
-
-  // const dataSource = whos.map((item, index) => ({
-  //   id: item.id, // Corresponds to the S.No column
-  //   ws: item.value, // Corresponds to the W's Form column
-  //   type: typo,  // Example logic for Type column
-  //   masterHead: item.value, // Example logic for Cluster Head column
-  //   clusterValues: [], // Cluster Value column
-  // }));
-  // console.log("dataSource",dataSource);
   const [selectedTypeByRow, setSelectedTypeByRow] = useState({});
 console.log("selectedTypeByRow",selectedTypeByRow);
 
@@ -313,6 +306,8 @@ console.log("selectedTypeByRow",selectedTypeByRow);
     }));
   };
 
+  console.log("filterData",);
+  
   
   
   const historyColumns = [
@@ -342,66 +337,63 @@ console.log("selectedTypeByRow",selectedTypeByRow);
       dataIndex: 'type',
       title: 'Type',
       render: (text, record) => {
-        // debugger
-        // Check if type is an array, and use apiType as fallback
-        console.log("recorrrrrrr", record);
-        
-        const typoArray = record?.apiType ?? record?.type ?? [];
-        const typApi =  record?.type || [];
-        const isTypeObject = !Array.isArray(record?.type) && typeof record?.type === 'object' ; // Check if `record?.type` is an object
-        const preSelectedType = isTypeObject ? record?.type?.name : null; // Extract preselected type for the object case;
-        debugger
-        const isApplicableForWs = record.ws === "who";
-        const isAnySelectedForWs = isApplicableForWs && Object.entries(selectedTypeByRow).some(([key, value]) => {
-          const currentRecord = uniqueData.find(item => item.id === key); // Find the record by ID
-          const currentTypeName = Array.isArray(currentRecord?.type)
-            ? value // Current selection for array type
-            : currentRecord?.type?.name; // Preselected type for object case
+        // Extract type array and preselected type
+        const typoArray = Array.isArray(record?.type) ? record?.type : record?.apiType ?? [];
+        const preSelectedType =
+          typeof record?.type === 'object' && record?.type?.name ? record?.type?.name : null;
     
-          return currentRecord?.ws === (record.ws) && currentTypeName === 'Primary'; // Check for "Primary" selection
-        });
-        console.log("isAnySelectedForWs",isAnySelectedForWs);
-        
+        // Dynamically check if "Primary" is selected for any record with ws: "who"
+        const isPrimarySelectedForWho = updateNewData.some(
+          (item) => item.ws === 'who' && (item.type === 'Primary' || selectedTypeByRow[item.id] === 'Primary')
+        );
+    
         return (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {/* Render for array of types */}
-          {typoArray.length > 0 &&
-            typoArray.map((typeItem) => {
+            {/* Render radio buttons */}
+            {typoArray.map((typeItem) => {
+              // Determine if this option should be disabled
               const isDisabled =
-              isAnySelectedForWs && typeItem.name === 'Primary' && selectedTypeByRow[record.id] !== 'Primary';              return(
-                <label key={typeItem.id} 
-                style={{ 
-                  marginBottom: '5px',
-                  color: isDisabled ? '#b0b0b0' : 'black', // Greyed-out text for disabled
-                  cursor: isDisabled ? 'not-allowed' : 'pointer', // Disable p
-                  opacity: isDisabled ? 0.6 : 1, // Reduced opacity for a greyed-out effect
-  
-                   }}>
+                record.ws === 'who' &&
+                typeItem.name === 'Primary' &&
+                isPrimarySelectedForWho &&
+                selectedTypeByRow[record.id] !== 'Primary';
+    
+              return (
+                <label
+                  key={typeItem.id || typeItem.name}
+                  style={{
+                    marginBottom: '5px',
+                    color: isDisabled ? '#b0b0b0' : 'black', // Greyed-out text for disabled
+                    cursor: isDisabled ? 'not-allowed' : 'pointer', // Pointer cursor
+                    opacity: isDisabled ? 0.6 : 1, // Reduced opacity for disabled
+                  }}
+                >
                   <input
                     type="radio"
                     name={`type-${record.id}`} // Group radio buttons by record ID
                     value={typeItem.name}
-                    onChange={() => handleRadioChange(record.id, typeItem.name)} // Handle user selection
+                    onChange={() => handleRadioChange(record.id, typeItem.name)} // Handle selection
                     style={{
                       marginRight: '10px',
                       width: '20px',
                       height: '20px',
                       border: '0.5px solid',
-                      borderRadius: '50%', // Make it circular
-                      backgroundColor: selectedTypeByRow[record.id] === typeItem.name || preSelectedType === typeItem.name ? 'green' : 'white', // Green for selected
-                      cursor: 'pointer', // Pointer cursor for better UX
+                      borderRadius: '50%', // Circular shape
+                      backgroundColor:
+                        selectedTypeByRow[record.id] === typeItem.name || preSelectedType === typeItem.name
+                          ? 'green'
+                          : 'white', // Green for selected,
+                      cursor: isDisabled ? 'not-allowed' : 'pointer', // Pointer cursor
+
                     }}
-                    checked={selectedTypeByRow[record.id] === typeItem.name || preSelectedType === typeItem.name} // Checked based on selected state
-                    // disabled={isAnySelectedForWs && typeItem.name === 'Primary' && selectedTypeByRow[record.id] !== 'Primary'} // Disable logic
-                    disabled={isDisabled}
+                    checked={selectedTypeByRow[record.id] === typeItem.name || preSelectedType === typeItem.name} // Handle checked state
+                    disabled={isDisabled} // Apply disable logic
                   />
                   {typeItem.name}
                 </label>
-              )
-            }
-            )}
-        </div>
-        
+              );
+            })}
+          </div>
         );
       },
     },
@@ -467,12 +459,20 @@ console.log("selectedTypeByRow",selectedTypeByRow);
       dataIndex: "action",
       title: "Action",
       render: (val, record, index) => {
+        const matchedData = updateNewData.some((data) => data.id === record?.id);
+        console.log("matchedData",matchedData);
+        
         return (
           <div style={{ display: "flex", gap: "15px" }}>
             <button
               title="View/Modify"
               onClick={() => {
-                setDialogPopup(true);
+                if(matchedData == false) {
+                  setIsDialogOpen(true);
+                  setTitles("Please Select all type either Primary or Secondary");
+                } else {
+                  setDialogPopup(true);
+                }
                 setSelectedRow(record);
                 setEditIndex(index);
               }}
@@ -837,7 +837,7 @@ console.log("selectedTypeByRow",selectedTypeByRow);
   };
 
   const onSave = async () => {
-    debugger
+    // debugger
     setIsSubmitting(true);
     let alertKey;
     try {
@@ -973,9 +973,9 @@ console.log("selectedTypeByRow",selectedTypeByRow);
           value: cluster?.value,
         })) || [], // Format `clusterValues` or use an empty array
         type: item?.type || [], // Assign the predefined type array
-        new: item?.isNewField === true ? true : item?.new ?? false, // Determine `new` status
+        apiType: item?.apiType,
+        new: filterData?.length > 0 ? true:item?.new, // Determine `new` status
         updated: item?.updated === true ? true : item?.updated ?? false, // Determine `updated` status
-        // index, // Include the index of the item
       };
   
       result[wsKey].push(formattedItem); // Add the formatted item to the array
@@ -1056,6 +1056,8 @@ console.log("selectedTypeByRow",selectedTypeByRow);
   
 
   const manualData = convertData(filterData);
+  console.log("manualData", manualData);
+  
   
   // function updateType(convertedData, typeMapping) {
   //   // Loop through each key in the converted data
@@ -1101,8 +1103,9 @@ console.log("selectedTypeByRow",selectedTypeByRow);
             id: cluster?.id,
             value: cluster?.value,
           })), // Map clusterValues if present
-          new: item?.new === true, // Compute the new field
-          updated: item?.updated === true, // Compute the updated field
+          new: filterData?.length > 0 ? true:item?.new, // Compute the new field
+          updated: item?.updated === true, // Compute the updated field,
+          apiType: item?.apiType,
           index: item?.index, // Include the index of the item
         });
       });
@@ -1113,35 +1116,6 @@ console.log("selectedTypeByRow",selectedTypeByRow);
   
     return result;
   };
-  
-  
-  // const processData = (data) => {
-  //   const result = [];
-
-  //   Object?.keys(data)?.forEach((ws) => {
-  //     Object?.keys(data[ws])?.forEach((type) => {
-  //       data[ws][type]?.forEach((item) => {
-  //         result?.push({
-  //           ws,
-  //           id: item?.id,
-  //           type,
-  //           masterHead: item?.masterHead,
-  //           clusterValues: item?.clusterValues?.map((cluster) => ({
-  //             id: cluster?.id,
-  //             value: cluster?.value,
-  //           })),
-  //           new: (item?.isNewField == true || item?.new == true) ? true:item?.new ?? false,
-  //           updated: (item?.updated == true) ? true: item?.updated ?? false,
-  //           index: item.index
-  //         });
-  //       });
-  //     });
-  //   });
-
-  //     result.sort((a, b) => a.index - b.index);
-
-  //   return result;
-  // };
 
   const newManualData = useMemo(
     () => processData(manualData || []),
@@ -1157,8 +1131,6 @@ console.log("selectedTypeByRow",selectedTypeByRow);
       setMyNewData(combinedData);
     }
   }, [tableData, newManualData]);
-  console.log("myNewData",myNewData);
-  
 
   const flattenData = myNewData?.map((item) => {
     const normalizedClusterValues = (() => {
@@ -1181,7 +1153,6 @@ console.log("selectedTypeByRow",selectedTypeByRow);
   });
 
   const transformData = (data) => {
-    // debugger
     const result = {
       who: {
         primary: [],
@@ -1205,7 +1176,7 @@ console.log("selectedTypeByRow",selectedTypeByRow);
           id: cluster.id,
           value: cluster.value,
         })),
-        new:true ,
+        new:filterData?.length > 0 ? true:item?.new ,
         updated: item.updated,
       };
 
@@ -1254,20 +1225,13 @@ console.log("selectedTypeByRow",selectedTypeByRow);
     return data.map((item) => {
       let updatedItem = { ...item };
   
-      // Case 1: If `typeMapping` exists and has a mapping for the item's ID
       if (typeMapping && typeMapping[item.id]) {
         updatedItem.type = typeMapping[item.id];
       }
-      // Case 2: If `typeMapping` is undefined or empty, normalize `type` and remove `apiType`
       else {
         updatedItem.type = item.type?.name ?  item.type.name:undefined ;
       }
-  // Remove `type` if undefined
-  // if (!updatedItem.type) {
-  //   delete updatedItem.type;
-  // }
 
-      // Remove `apiType` in either case
       delete updatedItem.apiType;
   
       return updatedItem;
@@ -1275,52 +1239,14 @@ console.log("selectedTypeByRow",selectedTypeByRow);
     .filter((item) => item.type !== undefined);
   }
   const updatedData = updateAndNormalizeData(myNewData, selectedTypeByRow);
-  console.log("updatedData",updatedData);
+  const updateNewData = removeDuplicates(updatedData)
   
-  // const transformedData = {};
-  // function updateType(convertedData, typeMapping) {
-  //   debugger;
-  //   // If typeMapping is undefined or empty, return convertedData as is
-  //   if (!typeMapping || Object.keys(typeMapping).length === 0) {
-  //     return convertedData;
-  //   }
-  
-  //   // Iterate through the converted data array and update the type
-  //   return convertedData.map((item) => {
-  //     // Check if the item's id exists in the typeMapping
-  //     if (typeMapping[item.id]) {
-  //       // Replace the type with the selected value in typeMapping
-  //       return {
-  //         ...item,
-  //         type: typeMapping[item.id],
-  //       };
-  //     }
-  //     return item; // If no mapping exists, return the item as is
-  //   });
-  // }
-  
-  // function updateTypeWithOnlyName(data) {
-  //   return data.map((item) => {
-  //     // Remove apiType and keep only type with name field
-  //     const updatedItem = {
-  //       ...item,
-  //       type: item.type.name, // Only keep the name from type
-  //     };
-  //     delete updatedItem.apiType; // Remove apiType field
-  //     return updatedItem;
-  //   });
-  // }
-// const updatedData = updateType(filterData, selectedTypeByRow);
-// const alreadyComingData = updateTypeWithOnlyName(tableData)
-// console.log("updatedData",updatedData);
-// console.log("alreadyComingData",alreadyComingData);
-// const transData = [...updatedData, ...alreadyComingData]
-// console.log("transData",transData);
+  const checkIfPrimaryWhoExists = (data) => {
+    return data.some(item => item.ws === "who" && (item.type.name === "Primary" || item.type === "Primary"));
+  };
 
-// const transformedData = {}
-  const transformedData = transformData(updatedData|| []);
+  const transformedData = transformData(updateNewData|| []);
   console.log("transformedData", transformedData);
-  
   const [whoSelectedValues, setWhoSelectedValue] = useState(false);
   const [whatSelectedValues, setWhatSelectedValue] = useState(false);
   const [whereSelectedValues, setWhereSelectedValue] = useState(false);
@@ -1437,7 +1363,7 @@ console.log("selectedTypeByRow",selectedTypeByRow);
   ]);  
 
   const onModify = (updatedObj) => {
-    debugger
+    // debugger
     let modifiedFilterData = [];
     let modifiedTableData = [];
   
@@ -1478,6 +1404,10 @@ console.log("selectedTypeByRow",selectedTypeByRow);
     }
   };
 
+  const handleSaveModalClose = () => {
+    handleCloseDialog();
+  };
+
   useEffect(() => {
     if (myNewData) {
       const { who, what, where } = transformedData;
@@ -1508,6 +1438,28 @@ console.log("selectedTypeByRow",selectedTypeByRow);
     });
   };
 
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [titles, setTitles] = useState(false);
+  const handleOpenDialog = () => {
+    const hasPrimaryWho = checkIfPrimaryWhoExists(updateNewData);
+    if (uniqueData?.length === updateNewData?.length && hasPrimaryWho) {
+      onSave();
+    } else {
+      setIsDialogOpen(true);
+      if (uniqueData?.length !== updateNewData?.length) {
+        setTitles("Please Select all type either Primary or Secondary");
+      } else if (!hasPrimaryWho) {
+        setTitles("Please select at least one who primary");
+      }
+    }
+  };
+console.log("updateNewData",updateNewData);
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+  };
+console.log("uniqueData",uniqueData);
+
   return (
     <>
       <div className="px-5 pb-5 border rounded-md">
@@ -1535,13 +1487,13 @@ console.log("selectedTypeByRow",selectedTypeByRow);
                       storyWorld={storyWorld}
                     />
                   </button>
-                  <button
+                  {/* <button
                     type="button"
                     className="w-full max-w-[120px] px-4 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 md:w-24 lg:w-28"
                     onClick={() => handleSaveCluster(values, resetForm)}
                   >
                     Save Ws
-                  </button>
+                  </button> */}
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 mt-4">
@@ -1721,6 +1673,7 @@ console.log("selectedTypeByRow",selectedTypeByRow);
           modifyItemObj={selectedRow}
           clusterList={clusterList}
           whos={whos}
+          updateNewData={updateNewData}
           whats={whats}
           wheres={wheres}
           tableData={tableData}
@@ -1738,10 +1691,20 @@ console.log("selectedTypeByRow",selectedTypeByRow);
       <FooterButtons
         onDiscard={onDiscard}
         onReset={onReset}
-        onSubmit={onSave}
+        onSubmit={handleOpenDialog}
         saveType="Clusters"
         isSubmitting={isSubmitting}
       />
+      <div>
+      {isDialogOpen && (
+        <SaveConfirmationDialog
+          open={isDialogOpen}
+          // onConfirm={handleSaveModal}
+          onClose={handleSaveModalClose}
+          title={titles}
+        />
+      )}
+    </div>
     </>
   );
 };

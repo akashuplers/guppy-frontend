@@ -18,6 +18,7 @@ const ModifyMasterWsPopup = ({
   modalType,
   myNewData,
   filteredData,
+  updateNewData,
   whos,
   whats,
   wheres,
@@ -136,6 +137,7 @@ console.log("typo", typo);
   useEffect(() => {
     handleClusterChange();
   }, [wsForm, clusterList]);
+console.log("typo",typo);
 
   useEffect(() => {
     if (!anythingChanged) {
@@ -148,40 +150,46 @@ console.log("typo", typo);
       }
       setTypo(modifyItemObj?.type || []);
       if (modalType === "InBetweenFlow") {
-        debugger
+        // debugger
 
         const selectedWs = modifyItemObj?.ws;
+        // const modifyItemObj
+        console.log(updateNewData,"updatsssseNewData");
+        const matchedData = updateNewData.find((data) => data.id === modifyItemObj?.id);
+        console.log("matchedData",matchedData);
         
-        const isPrimarySelected = myNewData?.some((comb) => {
-          if (Array.isArray(comb.type)) {
-            return comb.ws === "who" && comb.type[0]?.name === "Primary";
-          }
+        setTypo(matchedData?.type)
+        
+        // const isPrimarySelected = updateNewData?.some((comb) => {
+        //   if (Array.isArray(comb.type)) {
+        //     return comb.ws === "who" && comb.type === "Primary";
+        //   }
 
-          if (typeof comb.type === "object" && comb.type !== null) {
-            return comb.ws === "who" && comb.type.name === "Primary";
-          }
-          return false;
-        });
-        if (selectedWs === "who" && isPrimarySelected) {
-          setTypeData((prevTypo) =>
-            prevTypo?.filter((item) => item.name !== "Primary")
-          );
-        }
-        if (selectedWs === "what") {
-          if (!typeData?.some((item) => item.name === "Primary")) {
-            setTypeData((prevTypo) => [
-              { id: 1, name: "Primary" },
-              ...prevTypo,
-            ]);
-          }
-        } else if (selectedWs === "where") {
-          if (!typeData?.some((item) => item.name === "Primary")) {
-            setTypeData((prevTypo) => [
-              { id: 1, name: "Primary" },
-              ...prevTypo,
-            ]);
-          }
-        }
+        //   if (typeof comb.type === "object" && comb.type !== null) {
+        //     return comb.ws === "who" && comb.type === "Primary";
+        //   }
+        //   return false;
+        // });
+        // if (selectedWs === "who" && isPrimarySelected) {
+        //   setTypeData((prevTypo) =>
+        //     prevTypo?.filter((item) => item.name !== "Primary")
+        //   );
+        // }
+        // if (selectedWs === "what") {
+        //   if (!typeData?.some((item) => item.name === "Primary")) {
+        //     setTypeData((prevTypo) => [
+        //       { id: 1, name: "Primary" },
+        //       ...prevTypo,
+        //     ]);
+        //   }
+        // } else if (selectedWs === "where") {
+        //   if (!typeData?.some((item) => item.name === "Primary")) {
+        //     setTypeData((prevTypo) => [
+        //       { id: 1, name: "Primary" },
+        //       ...prevTypo,
+        //     ]);
+        //   }
+        // }
       } else if (modalType === "saparate") {
         const selectedWs = modifyItemObj?.ws;
         const isPrimarySelected = filteredData?.some(
@@ -439,7 +447,8 @@ console.log("typo", typo);
   };
 
   const handleUpdate = () => {
-    debugger
+    // debugger
+    const currentType = !Array.isArray(modifyItemObj?.type) ? modifyItemObj?.type : typo;
     const updatedObj = {
       id: clusterHeadId ? clusterHeadId : modifyItemObj.id,
       ws: wsForm,
@@ -447,8 +456,15 @@ console.log("typo", typo);
         type: typo || modifyItemObj.type,
       }),
       ...(modalType === "InBetweenFlow" && {
-        type:!Array.isArray(modifyItemObj?.type) ? modifyItemObj?.type : modifyItemObj?.apiType,
-        apiType:modifyItemObj?.apiType
+
+        type: !Array.isArray(modifyItemObj?.type)
+        ? modifyItemObj?.type
+        : typo === "Primary"
+        ? { id: 1, name: "Primary" }
+        : typo === "Secondary"
+        ? { id: 2, name: "Secondary" }
+        : modifyItemObj?.type,
+                apiType:modifyItemObj?.apiType ?? modifyItemObj?.type
       }),
       // type:modalType === "saparate" ? typo || modifyItemObj.type:modifyItemObj.type,
       masterHead:
@@ -554,7 +570,7 @@ console.log("typo", typo);
           <Select
             size="large"
             className="w-full"
-            value={typo[0]?.name ?? typo?.name} 
+            value={typo?.name ?? typo} 
             onChange={(value) => onTypeChange(value, "typo")} 
             placeholder={"Select Type"}
             disabled
