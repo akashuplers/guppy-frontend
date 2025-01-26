@@ -61,12 +61,18 @@ const MasterWssPage = ({
   const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged} = useContext(StoryUploadApiContext);
   const {token,story_id,storyWorld,fileName,storyWorldId,masterws} = storyUploadApiResponse;
   const [filterData, setFilteredData] = useState([]);
+  const [selectedTypeByRow, setSelectedTypeByRow] = useState({});
+
 console.log("myNewData",myNewData);
-function removeDuplicates(data) {
+function removeDuplicates(data, typeMapping) {
   const seenIds = new Set(); // Use a Set to track unique IDs
   const uniqueData = [];
 
-  for (const item of data) {
+  // First, update and normalize the data
+  const normalizedData = updateForUnique(data, typeMapping);
+
+  // Deduplicate the normalized data
+  for (const item of normalizedData) {
     if (!seenIds.has(item.id)) {
       seenIds.add(item.id); // Add the ID to the Set
       uniqueData.push(item); // Add the object to the result array
@@ -76,11 +82,9 @@ function removeDuplicates(data) {
   return uniqueData;
 }
 
-const uniqueData = removeDuplicates(myNewData);
 
 
-console.log("uniqueData", uniqueData);
-
+const uniqueData = removeDuplicates(myNewData, selectedTypeByRow);
 
   const formik = useFormik({
     initialValues: {
@@ -105,8 +109,6 @@ console.log("uniqueData", uniqueData);
     label: item?.value,
     value: item?.id,
   }));
-
-  console.log("whos",whos);
   
   const fetchMasterWsList = async () => {
     setClusterLoading(true);
@@ -296,19 +298,14 @@ const handleDelete = () => {
   ];
 
   const [typo, setTypo] = useState(type);
-  const [selectedTypeByRow, setSelectedTypeByRow] = useState({});
-console.log("selectedTypeByRow",selectedTypeByRow);
+  // const [selectedTypeByRow, setSelectedTypeByRow] = useState({});
 
   const handleRadioChange = (recordId, selectedType) => {
     setSelectedTypeByRow((prev) => ({
       ...prev,
       [recordId]: selectedType,
     }));
-  };
-
-  console.log("filterData",);
-  
-  
+  };  
   
   const historyColumns = [
     {
@@ -349,51 +346,58 @@ console.log("selectedTypeByRow",selectedTypeByRow);
     
         return (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {/* Render radio buttons */}
-            {typoArray.map((typeItem) => {
-              // Determine if this option should be disabled
-              const isDisabled =
-                record.ws === 'who' &&
-                typeItem.name === 'Primary' &&
-                isPrimarySelectedForWho &&
-                selectedTypeByRow[record.id] !== 'Primary';
-    
-              return (
-                <label
-                  key={typeItem.id || typeItem.name}
+          {typoArray.map((typeItem) => {
+            // Determine if this option should be disabled
+            const isDisabled =
+              record.ws === 'who' &&
+              typeItem.name === 'Primary' &&
+              isPrimarySelectedForWho &&
+              selectedTypeByRow[record.id] !== 'Primary';
+        
+            // Determine the background color based on selection
+            const backgroundColor =
+              selectedTypeByRow[record.id] === typeItem.name // User-selected value
+                ? 'green'
+                : preSelectedType === typeItem.name && !selectedTypeByRow[record.id] // Pre-selected value when no new selection
+                ? 'green'
+                : 'white';
+        
+            return (
+              <label
+                key={typeItem.id || typeItem.name}
+                style={{
+                  marginBottom: '5px',
+                  color: isDisabled ? '#b0b0b0' : 'black', // Greyed-out text for disabled
+                  cursor: isDisabled ? 'not-allowed' : 'pointer', // Pointer cursor
+                  opacity: isDisabled ? 0.6 : 1, // Reduced opacity for disabled
+                }}
+              >
+                <input
+                  type="radio"
+                  name={`type-${record.id}`} // Group radio buttons by record ID
+                  value={typeItem.name}
+                  onChange={() => handleRadioChange(record.id, typeItem.name)} // Handle selection
                   style={{
-                    marginBottom: '5px',
-                    color: isDisabled ? '#b0b0b0' : 'black', // Greyed-out text for disabled
-                    cursor: isDisabled ? 'not-allowed' : 'pointer', // Pointer cursor
-                    opacity: isDisabled ? 0.6 : 1, // Reduced opacity for disabled
+                    marginRight: '10px',
+                    width: '20px',
+                    height: '20px',
+                    border: '0.5px solid',
+                    borderRadius: '50%', // Circular shape
+                    backgroundColor: backgroundColor, // Highlight logic
+                    cursor: isDisabled ? 'not-allowed' : 'pointer',
                   }}
-                >
-                  <input
-                    type="radio"
-                    name={`type-${record.id}`} // Group radio buttons by record ID
-                    value={typeItem.name}
-                    onChange={() => handleRadioChange(record.id, typeItem.name)} // Handle selection
-                    style={{
-                      marginRight: '10px',
-                      width: '20px',
-                      height: '20px',
-                      border: '0.5px solid',
-                      borderRadius: '50%', // Circular shape
-                      backgroundColor:
-                        selectedTypeByRow[record.id] === typeItem.name || preSelectedType === typeItem.name
-                          ? 'green'
-                          : 'white', // Green for selected,
-                      cursor: isDisabled ? 'not-allowed' : 'pointer', // Pointer cursor
-
-                    }}
-                    checked={selectedTypeByRow[record.id] === typeItem.name || preSelectedType === typeItem.name} // Handle checked state
-                    disabled={isDisabled} // Apply disable logic
-                  />
-                  {typeItem.name}
-                </label>
-              );
-            })}
-          </div>
+                  checked={
+                    selectedTypeByRow[record.id] === typeItem.name || // User-selected value
+                    preSelectedType === typeItem.name // Pre-selected value
+                  }
+                  disabled={isDisabled} // Apply disable logic
+                />
+                {typeItem.name}
+              </label>
+            );
+          })}
+        </div>
+        
         );
       },
     },
@@ -459,9 +463,7 @@ console.log("selectedTypeByRow",selectedTypeByRow);
       dataIndex: "action",
       title: "Action",
       render: (val, record, index) => {
-        const matchedData = updateNewData.some((data) => data.id === record?.id);
-        console.log("matchedData",matchedData);
-        
+        const matchedData = updateNewData.some((data) => data.id === record?.id);        
         return (
           <div style={{ display: "flex", gap: "15px" }}>
             <button
@@ -954,7 +956,7 @@ console.log("selectedTypeByRow",selectedTypeByRow);
   //   return result;
   // }
   function convertData(inputData) {
-    // debugger;
+
     const result = {};
   
     inputData.forEach((item, index) => {
@@ -973,7 +975,7 @@ console.log("selectedTypeByRow",selectedTypeByRow);
           value: cluster?.value,
         })) || [], // Format `clusterValues` or use an empty array
         type: item?.type || [], // Assign the predefined type array
-        apiType: item?.apiType,
+        apiType: item?.apiType ?? item?.type,
         new: filterData?.length > 0 ? true:item?.new, // Determine `new` status
         updated: item?.updated === true ? true : item?.updated ?? false, // Determine `updated` status
       };
@@ -983,10 +985,8 @@ console.log("selectedTypeByRow",selectedTypeByRow);
   
     return result;
   }
+console.log("filterData",filterData);
 
-  
-  
-  console.log("filterData",filterData);
   function convertApiData(apiData) {
     const typeArray = [
       { id: 1, name: "Primary" },
@@ -1084,7 +1084,6 @@ console.log("selectedTypeByRow",selectedTypeByRow);
 
   // console.log("updatedData",updatedData);
   // const tabData = convertApiDataWithWs(tableData)
-  console.log("tabData",tableData);
   
   const processData = (data) => {
     // debugger
@@ -1232,15 +1231,46 @@ console.log("selectedTypeByRow",selectedTypeByRow);
         updatedItem.type = item.type?.name ?  item.type.name:undefined ;
       }
 
-      delete updatedItem.apiType;
+        delete updatedItem.apiType;
+     
+      
+      return updatedItem;
+    })
+    .filter((item) => item.type !== undefined);
+  }
   
+  function updateForUnique(data, typeMapping) {
+    return data.map((item) => {
+      let updatedItem = { ...item };
+  
+      if (typeMapping && typeMapping[item.id]) {
+        const name = typeMapping[item.id]; // Retrieve the name ("Primary" or "Secondary")
+        const id = name === "Primary" ? 1 : name === "Secondary" ? 2 : undefined; // Assign ID based 
+        updatedItem.type = {
+          id: id, 
+          name: name, 
+        };
+      }
+      else {
+        updatedItem.type = item.type ?  item.type:undefined ;
+      }
+      updatedItem.apiType = item.apiType?.map((apiItem) => ({
+        id: apiItem.id,
+        name: apiItem.name,
+      })) || []; 
+      
       return updatedItem;
     })
     .filter((item) => item.type !== undefined);
   }
   const updatedData = updateAndNormalizeData(myNewData, selectedTypeByRow);
   const updateNewData = removeDuplicates(updatedData)
-  
+  console.log("updatedData",updatedData);
+  console.log("uniqueData", uniqueData);
+  console.log("filterData",filterData);
+  console.log("tableData",tableData);
+  console.log("myNewData", myNewData);
+
   const checkIfPrimaryWhoExists = (data) => {
     return data.some(item => item.ws === "who" && (item.type.name === "Primary" || item.type === "Primary"));
   };
