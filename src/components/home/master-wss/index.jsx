@@ -1226,7 +1226,6 @@ console.log("filterData",filterData);
     let modifiedFilterData = [];
     let modifiedTableData = [];
     let modifiedMyNewTableData = [];
-    debugger
     if(myNewData?.length > 0) {
       const curFilterData = [...myNewData];
       modifiedMyNewTableData = curFilterData.map((ele) =>
