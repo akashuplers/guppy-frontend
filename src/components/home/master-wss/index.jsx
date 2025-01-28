@@ -20,7 +20,6 @@ const MasterWssPage = ({
   handleSaveSuccess = () => {},
 }) => {
   const { Option } = Select;
-
   const navigate = useNavigate();
   const flow = true;
   const [editIndex, setEditIndex] = useState(null);
@@ -58,11 +57,7 @@ const MasterWssPage = ({
   const [newWhatTypeData, setNewWhatTypeData] = useState([]);
   const [newWhereTypeData, setNewWhereTypeData] = useState([]);
   const [handleAnyChange, setHandleAnythingChange] = useState(false)
-
-const meregedData =  [...newWhoTypeData, ...newWhatTypeData, ...newWhereTypeData]
-console.log("meregedData",meregedData);
-console.log("handleAnyChange", handleAnyChange);
-
+  const meregedData =  [...newWhoTypeData, ...newWhatTypeData, ...newWhereTypeData]
 
   const [tablePagination, setTablePagination] = useState({
     current: 1,   // Default to page 1
@@ -75,18 +70,13 @@ console.log("handleAnyChange", handleAnyChange);
   const [selectedTypeByRow, setSelectedTypeByRow] = useState({});
 
 function removeDuplicates(data, typeMapping) {
-  // debugger
-  const seenIds = new Set(); // Use a Set to track unique IDs
+  const seenIds = new Set(); 
   const uniqueData = [];
-
-  // First, update and normalize the data
   const normalizedData = updateForUnique(data, typeMapping);
-
-  // Deduplicate the normalized data
   for (const item of normalizedData) {
     if (!seenIds.has(item.id)) {
-      seenIds.add(item.id); // Add the ID to the Set
-      uniqueData.push(item); // Add the object to the result array
+      seenIds.add(item.id); 
+      uniqueData.push(item); 
     }
   }
 
@@ -894,28 +884,25 @@ console.log("filterData",filterData);
   
     const result = [];
   
-    // Iterate over each ws key (e.g., "who", "what", "where")
     Object.keys(apiData).forEach((ws) => {
-      // Iterate over each type key (e.g., "primary", "secondary")
       Object.keys(apiData[ws]).forEach((typeKey) => {
         const items = apiData[ws][typeKey];
   
-        // Ensure items is an array before processing
         if (Array.isArray(items)) {
           items.forEach((item) => {
-            // Add structured data
+            
             result.push({
-              ws, // Add ws key (e.g., "who")
-              type: typeArray.find((type) => type.name.toLowerCase() === typeKey), // Match type (Primary/Secondary)
-              id: item.id, // Add item ID
+              ws, 
+              type: typeArray.find((type) => type.name.toLowerCase() === typeKey), 
+              id: item.id, 
               apiType:typeArray,
-              masterHead: item.masterHead, // Add masterHead
+              masterHead: item.masterHead, 
               clusterValues: item.clusterValues?.map((cluster) => ({
                 id: cluster?.id,
                 value: cluster?.value,
-              })) || [], // Add cluster values or empty array
-              new: item.new === true, // Add `new` status
-              updated: item.updated === true, // Add `updated` status
+              })) || [], 
+              new: item.new === true, 
+              updated: item.updated === true, 
             });
           });
         }
@@ -1098,19 +1085,11 @@ console.log("filterData",filterData);
     .filter((item) => item.type !== undefined);
   }
 
-  // const removeDups = removeDuplicates(meregedData)
-  // console.log("removeDups", removeDups);
-  console.log("meregedData",meregedData);
   const updatedData = updateAndNormalizeData(meregedData, selectedTypeByRow); 
-  console.log("updatedDasssssssta",updatedData);
   const apiData = updateAndNormalizeData(tableData, selectedTypeByRow) 
-  console.log("apiData",apiData);
-  console.log("updatedDatass",updatedData); 
   const newGeneratedData = (updatedData?.length == 0) ? apiData:updatedData  
   const [updateNewData, setUpdateNewData] = useState([]);
   const prevDataRef = useRef(null);
-  console.log("tableData",tableData);
-  console.log("updatedData",updatedData);
   
   useEffect(() => {
     const currentDataString = JSON.stringify(newGeneratedData);
@@ -1118,32 +1097,22 @@ console.log("filterData",filterData);
     if (currentDataString !== previousDataString) {
       const uniqueData = removeDuplicates(newGeneratedData);
       setUpdateNewData(uniqueData);
-      // debugger
-      // if(updatedData?.length === tableData?.length){
-      //   setHandleAnythingChange(true)
-      // } else {
-      //   setHandleAnythingChange(false)
-      // }
-      // handleAnythingChanged(true);
-      prevDataRef.current = newGeneratedData; // Update the previous data reference
+      prevDataRef.current = newGeneratedData; 
     }
   }, [newGeneratedData]);
-  
-  // const updateNewData = removeDuplicates(updatedData)
-  console.log("updateNewData",updateNewData);
   
   const checkIfPrimaryWhoExists = (data) => {
     return data.some(item => item.ws === "who" && (item.type.name === "Primary" || item.type === "Primary"));
   };
 
   const transformedData = transformData(updateNewData|| []);
-  console.log("transformedData", transformedData);
   const [whoSelectedValues, setWhoSelectedValue] = useState(false);
   const [whatSelectedValues, setWhatSelectedValue] = useState(false);
   const [whereSelectedValues, setWhereSelectedValue] = useState(false);
   const whosRef = useRef(whos);
   const whatsRef = useRef(whats);
   const wheresRef = useRef(wheres);
+
   useEffect(() => {
   const whosChanged = whosRef.current !== whos;
   const whatsChanged = whatsRef.current !== whats;
@@ -1254,7 +1223,6 @@ console.log("filterData",filterData);
   ]);  
 
   const onModify = (updatedObj) => {
-    // debugger
     let modifiedFilterData = [];
     let modifiedTableData = [];
     let modifiedMyNewTableData = [];
@@ -1266,37 +1234,6 @@ console.log("filterData",filterData);
       setMyNewData(modifiedMyNewTableData)
       message.success("Updated Successfully!");
     }
-    // if (filterData?.length > 0 && tableData?.length > 0) {
-    //   const curFilterData = [...filterData];
-    //   modifiedFilterData = curFilterData.map((ele) =>
-    //     ele.id === selectedRow.id ? updatedObj : ele
-    //   );
-    //   setFilteredData(modifiedFilterData);
-  
-    //   const curTableData = [...tableData];
-    //   modifiedTableData = curTableData.map((ele) =>
-    //     ele.id === selectedRow.id ? updatedObj : ele
-    //   );
-    //   setTableData(modifiedTableData);
-  
-    //   message.success("Updated Successfully!");
-    // } else if (filterData?.length > 0) {
-    //   const curFilterData = [...filterData];
-    //   modifiedFilterData = curFilterData.map((ele) =>
-    //     ele.id === selectedRow.id ? updatedObj : ele
-    //   );
-    //   setFilteredData(modifiedFilterData);
-  
-    //   message.success("Updated Successfully!");
-    // } else if (tableData?.length > 0) {
-    //   const curTableData = [...tableData];
-    //   modifiedTableData = curTableData.map((ele) =>
-    //     ele.id === selectedRow.id ? updatedObj : ele
-    //   );
-    //   setTableData(modifiedTableData);
-  
-    //   message.success("Table Data Updated Successfully!");
-    // }
   
     if (modifiedFilterData.length > 0 || modifiedTableData.length > 0 || modifiedMyNewTableData > 0) {
       handleAnythingChanged(true);
@@ -1339,10 +1276,9 @@ console.log("filterData",filterData);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [titles, setTitles] = useState(false);
+
   const handleOpenDialog = () => {
-    // debugger
     const hasPrimaryWho = checkIfPrimaryWhoExists(updateNewData);
-    // const allNewFilteredData = removeDuplicates(allFilteredData)
     if (meregedData?.length === updateNewData?.length && hasPrimaryWho) {
       onSave();
     } else {
@@ -1360,17 +1296,13 @@ console.log("filterData",filterData);
   };
 
 const removeDuplicateClusterHeads = (data) => {
-  // Create a Set to track `masterHead` values present in `clusterValues`
   const clusterHeads = new Set();
-
-  // Extract all `masterHead` values from clusterValues
   data.forEach((item) => {
     item.clusterValues?.forEach((cluster) => {
       clusterHeads.add(cluster.value);
     });
   });
 
-  // Filter out any object whose `masterHead` exists in the `clusterHeads` set
   const filteredData = data.filter((item) => !clusterHeads.has(item.masterHead));
 
   return filteredData;
@@ -1380,31 +1312,16 @@ const handleDataFiltering = (newData) => {
   const newFilteredData = removeDuplicateClusterHeads(newData);
   console.log("delete",newFilteredData);
   setFilteredNewData(newFilteredData);
-  // setAllFilteredData((prevData) => [...prevData, ...newFilteredData]);
 };
 
 useEffect(() => {
-  // if(forFilter?.length  forFilter?.length) {
     handleDataFiltering(myNewData);
-  // }
 }, [myNewData]);
-console.log("forFilterforFilternew",myNewData);
-console.log("forFilterforFilter",forFilter);
-
 
 const uniqueFilterData = removeDuplicates(filteredData, selectedTypeByRow);
 
-// console.log("all;llllllll",allFilteredData);
-
-console.log("whoSelectedValues",whoSelectedValues);
-console.log("uniqueFilterData",uniqueFilterData);
-console.log("myNewData", myNewData);
-
-
 useEffect(()=>{
-  // debugger
   const uniqueFilterDatas = removeDuplicates(filteredData, selectedTypeByRow);
-
 if(whoSelectedValues === "who"){
   setNewWhoTypeData(uniqueFilterDatas)
 } else if(whatSelectedValues === "what"){
@@ -1412,30 +1329,12 @@ if(whoSelectedValues === "who"){
 } else if(whereSelectedValues === "where") {
   setNewWhereTypeData(uniqueFilterDatas)
 }
-
 }, [filteredData, selectedTypeByRow, whoSelectedValues, whatSelectedValues, whereSelectedValues])
-// console.log("uniqueFilterData",uniqueFilterData);
-console.log("newWhoTypeData",newWhoTypeData);
-console.log("newWhatTypeData",newWhatTypeData);
-console.log("newWhereTypeData",newWhereTypeData);
-console.log("filteredsssData",filteredData);
-console.log("updatddded", updateNewData);
-// console.log("filterNewUpdatedData", filterNewUpdatedData);
 
-console.log("tableDasssta", tableData);
-
-console.log("newWhoTypeData",newWhoTypeData);
 useEffect(()=>{
-  // debugger
   if (handleAnyChange === true) {
     handleAnythingChanged(false);
   } 
-  // else if(handleAnyChange === false) {
-  //   handleAnythingChanged(true);
-  // } 
-  //  if (tableData?.length !== updatedData?.length) {
-  //   handleAnythingChanged(true);
-  // }
 },[handleAnyChange])
 
   return (
@@ -1575,7 +1474,6 @@ useEffect(()=>{
       {isDialogOpen && (
         <SaveConfirmationDialog
           open={isDialogOpen}
-          // onConfirm={handleSaveModal}
           onClose={handleSaveModalClose}
           title={titles}
         />
