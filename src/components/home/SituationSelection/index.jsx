@@ -74,7 +74,6 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations,handleSaveSuc
       story_id: story_id,
       ideas: updated,
     };
-    console.log('save',body);
     return body;
   };
   const getUpdatedJsons = (list) => {
@@ -90,6 +89,7 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations,handleSaveSuc
         primaryWheres: item.Where_Primary,
         secondaryWheres: item.Where_Secondary,
         new: item.new,
+        comment: item.comment,
         updated: item.updated
       }));
       return updated;
@@ -129,6 +129,7 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations,handleSaveSuc
         secondaryWhats: situation.What_Secondary,
         secondaryWheres: situation.Where_Secondary,
         updated:situation.updated,
+        comment:situation.comment,
         new:situation.new,
         ...(situation.comment && {comment: situation.comment})
       }
@@ -146,6 +147,7 @@ const SituationSelection = ({ onDiscard = () => {}, saveSituations,handleSaveSuc
         secondaryWhats: situation.What_Secondary,
         secondaryWheres: situation.Where_Secondary,
         updated:situation.updated,
+        comment:situation.comment,
         new:situation.new,
         ...(situation.comment && {comment: situation.comment})
       }
