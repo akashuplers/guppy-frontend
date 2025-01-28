@@ -6,7 +6,6 @@ import FooterButtons from "../FooterButtons";
 import { useNavigate } from "react-router-dom";
 import DownloadCSVFile from "../../DownloadCsv";
 import { Table, message, Modal, Select } from "antd";
-import { MultiSelect } from "react-multi-select-component";
 import { useFormik, Field, Form, ErrorMessage } from "formik";
 import ModifyMasterWsPopup from "../../ModifyMasterWsPopUp";
 import { StoryUploadApiContext } from "../../../contexts/ApiContext";
@@ -57,14 +56,13 @@ const MasterWssPage = ({
   const [filteredData, setFilteredNewData] = useState([]);
   const [newWhoTypeData,setNewWhoTypeData ] = useState([]);
   const [newWhatTypeData, setNewWhatTypeData] = useState([]);
-  const [newWhereTypeData, setNewWhereTypeData] = useState([])
+  const [newWhereTypeData, setNewWhereTypeData] = useState([]);
+  const [handleAnyChange, setHandleAnythingChange] = useState(false)
 
 const meregedData =  [...newWhoTypeData, ...newWhatTypeData, ...newWhereTypeData]
 console.log("meregedData",meregedData);
+console.log("handleAnyChange", handleAnyChange);
 
-// State for accumulating all filtered data over time
-const [allFilteredData, setAllFilteredData] = useState([]);
-console.log("allFilteredData",allFilteredData);
 
   const [tablePagination, setTablePagination] = useState({
     current: 1,   // Default to page 1
@@ -75,10 +73,6 @@ console.log("allFilteredData",allFilteredData);
   const {token,story_id,storyWorld,fileName,storyWorldId,masterws} = storyUploadApiResponse;
   const [filterData, setFilteredData] = useState([]);
   const [selectedTypeByRow, setSelectedTypeByRow] = useState({});
-// console.log("storyUploadApiResponse",storyUploadApiResponse);
-
-console.log("myNewData",myNewData);
-console.log("filterDatafilterData",filterData);
 
 function removeDuplicates(data, typeMapping) {
   // debugger
@@ -98,13 +92,8 @@ function removeDuplicates(data, typeMapping) {
 
   return uniqueData;
 }
-console.log("handleAnythingChanged",handleAnythingChanged);
-
-
-// console.log("uniqueData", uniqueData);
 
 const uniqueData = removeDuplicates(myNewData, selectedTypeByRow);
-console.log("uniqueData",uniqueData);
 
   const formik = useFormik({
     initialValues: {
@@ -237,8 +226,6 @@ const handleDelete = () => {
     message.error("Invalid ID for deletion.");
   }
 };
-
-
   
   useEffect(() => {
     if (!tokenVal) {
@@ -301,7 +288,7 @@ const handleDelete = () => {
   };
 
   const handleRemoveChip = (value) => {
-    // debugger
+    debugger
     const removeChipFromClusterValues = (data, isIdCheck) => {
       return data.map((item) => ({
         ...item,
@@ -313,9 +300,14 @@ const handleDelete = () => {
     if(myNewData?.length > 0) {
       const updatedNewData = removeChipFromClusterValues(myNewData, true); // Use `id` check
       setMyNewData(updatedNewData);
-      message.success("Cluster Value removed successfully!");
-      handleAnythingChanged(true);
     }
+    if(forFilter?.length > 0) {
+      const updatedNewData = removeChipFromClusterValues(forFilter, true); // Use `id` check
+      setForFilter(updatedNewData);
+      // message.success("Cluster Value removed successfully!");
+    }
+    handleAnythingChanged(true);
+    message.success("Cluster Value removed successfully!");
   
     // if (filterData?.length > 0 && tableData?.length > 0) {
     //   // Handle both filterData and tableData
@@ -589,21 +581,12 @@ const handleDelete = () => {
     { id: 3, name: "where" },
   ];
 
-
-
   const onReset = () => {
     setTableData(processData(masterws?.masterWs));
     message.success("Reset Successfully !");
     handleAnythingChanged(true);
   };
 
-  // const apiUrl = API_BASE_PATH + API_ROUTES.SORT_WS + story_id;
-  // const config = {
-  //   headers: {
-  //     "Content-Type": "application/json",
-  //     Authorization: `Bearer ${token}`,
-  //   },
-  // };
   console.log("tableData",tableData);
   
   const [blankValue, setBlankValue] = useState();
@@ -630,12 +613,12 @@ const handleDelete = () => {
   
     return categorizedData;
   };
-  const categorizedData = organizeDataByWs(tableData);
-  console.log("categorizedData", categorizedData);
-  // console.log("allData", allData);
-  const [mySpecialData, setSpecialData] = useState([])
-
+  
+  const [forFilter, setForFilter] = useState([])
+  
   const handleChange = async (e, name) => { 
+    const categorizedData = organizeDataByWs(tableData);
+    console.log("categorizedData",categorizedData);
     const blankValue = e?.target?.value;
     const fieldName = name;
     let combinedData = []; // Define combinedData at the top
@@ -660,6 +643,17 @@ const handleDelete = () => {
       } else if(newWhoTypeData?.length > 0){
         setMyNewData(newWhoTypeData)
       }
+      // debugger
+      if(newWhoTypeData?.length > 0) {
+        handleAnythingChanged(true);
+      } else if (newWhoTypeData?.length === 0) {
+        handleAnythingChanged(false);
+      } else if (newWhoTypeData?.length !== categorizedData?.who) {
+        handleAnythingChanged(true);
+      } else {
+        handleAnythingChanged(false);
+      }
+      setForFilter(removeDuplicates(combinedData))
       setWhoSelectedValue(e?.target?.value)
       setWhatSelectedValue(false);
       setWhereSelectedValue(false);      
@@ -681,6 +675,16 @@ const handleDelete = () => {
       } else if(newWhatTypeData?.length > 0){
         setMyNewData(newWhatTypeData)
       }
+      if(newWhatTypeData?.length > 0) {
+        handleAnythingChanged(true);
+      } else if (newWhatTypeData?.length === 0) {
+        handleAnythingChanged(false);
+      } else if (newWhatTypeData?.length !== categorizedData?.what) {
+        handleAnythingChanged(true);
+      } else {
+        handleAnythingChanged(false);
+      }
+      setForFilter(removeDuplicates(combinedData))
       // setMyNewData(removeDuplicates(combinedData))
       setWhatSelectedValue(e?.target?.value);
       setWhereSelectedValue(false);
@@ -703,6 +707,16 @@ const handleDelete = () => {
       } else if(newWhereTypeData?.length > 0){
         setMyNewData(newWhereTypeData)
       }
+      if(newWhereTypeData?.length > 0) {
+        handleAnythingChanged(true);
+      } else if (newWhereTypeData?.length === 0) {
+        handleAnythingChanged(false);
+      } else if (newWhereTypeData?.length !== categorizedData?.where) {
+        handleAnythingChanged(true);
+      } else {
+        handleAnythingChanged(false);
+      }
+      setForFilter(removeDuplicates(combinedData))
       // setMyNewData(removeDuplicates(combinedData))
       setWhereSelectedValue(e?.target?.value);
       setWhatSelectedValue(false);
@@ -723,6 +737,10 @@ const handleDelete = () => {
       formik.setFieldValue("ws", e.target.value);
     } 
   };
+
+  const [mergedData, setMergedData] =  useState([])
+  
+  console.log("mergedData",mergedData);
 
   const getUpdatedJson = (list) => {
     const arr = list || [];
@@ -783,6 +801,7 @@ const handleDelete = () => {
         message.success("Clusters Saved Successfully !");
         handleSaveSuccess(true);
         handleAnythingChanged(false);
+        setHandleAnythingChange(true)
       } else {
         message.destroy(alertKey);
         message.error("Error In Saving Ws ! Unable To Fetch Response !");
@@ -806,30 +825,6 @@ const handleDelete = () => {
       }
     }
     setIsSubmitting(false);
-  };
-
-  const handleSaveCluster = (values, resetForm) => {   
-    if (formik.values.ws && formik.values.type && formik.values.masterHead) {
-      const newRow = {
-        id: formik?.values?.masterHead?.id, 
-        ws: formik?.values?.ws,
-        type: formik?.values?.type,
-        masterHead: formik.values.masterHead,
-        clusterValues: formik.values.clusterValues?.map((val) => ({
-          id: val.value,
-          value: val.label,
-        })),
-        isNewField: true,
-      };
-
-      setFilteredData((prevArray = []) => [...prevArray, newRow]); 
-      handleAnythingChanged(true);
-      formik.resetForm(formik.values);
-      setWhats([]);
-      setWhos([]);
-      setWheres([]);
-      setFilteredOption([]);
-    }
   };
 
   function convertData(inputData) {
@@ -1106,25 +1101,29 @@ console.log("filterData",filterData);
   // const removeDups = removeDuplicates(meregedData)
   // console.log("removeDups", removeDups);
   console.log("meregedData",meregedData);
-  
-  const updatedData = updateAndNormalizeData(meregedData, selectedTypeByRow);  
-  const apiData = updateAndNormalizeData(tableData, selectedTypeByRow)
-  console.log("updatsssedData",updatedData?.length, tableData?.length);
-  console.log("updatedDataupdatedDataupdatedData",updatedData);
-  
-  const newGeneratedData = (updatedData?.length == 0) ? apiData:updatedData
-    console.log("newGeneratedData",newGeneratedData);
-  
+  const updatedData = updateAndNormalizeData(meregedData, selectedTypeByRow); 
+  console.log("updatedDasssssssta",updatedData);
+  const apiData = updateAndNormalizeData(tableData, selectedTypeByRow) 
+  console.log("apiData",apiData);
+  console.log("updatedDatass",updatedData); 
+  const newGeneratedData = (updatedData?.length == 0) ? apiData:updatedData  
   const [updateNewData, setUpdateNewData] = useState([]);
   const prevDataRef = useRef(null);
+  console.log("tableData",tableData);
+  console.log("updatedData",updatedData);
+  
   useEffect(() => {
-    // console.log("newGeneratedData",newGeneratedData);
-    
     const currentDataString = JSON.stringify(newGeneratedData);
     const previousDataString = JSON.stringify(prevDataRef.current);
     if (currentDataString !== previousDataString) {
       const uniqueData = removeDuplicates(newGeneratedData);
       setUpdateNewData(uniqueData);
+      // debugger
+      // if(updatedData?.length === tableData?.length){
+      //   setHandleAnythingChange(true)
+      // } else {
+      //   setHandleAnythingChange(false)
+      // }
       // handleAnythingChanged(true);
       prevDataRef.current = newGeneratedData; // Update the previous data reference
     }
@@ -1343,7 +1342,7 @@ console.log("filterData",filterData);
   const handleOpenDialog = () => {
     // debugger
     const hasPrimaryWho = checkIfPrimaryWhoExists(updateNewData);
-    const allNewFilteredData = removeDuplicates(allFilteredData)
+    // const allNewFilteredData = removeDuplicates(allFilteredData)
     if (meregedData?.length === updateNewData?.length && hasPrimaryWho) {
       onSave();
     } else {
@@ -1385,15 +1384,21 @@ const handleDataFiltering = (newData) => {
 };
 
 useEffect(() => {
+  // if(forFilter?.length  forFilter?.length) {
+    handleDataFiltering(myNewData);
+  // }
+}, [myNewData]);
+console.log("forFilterforFilternew",myNewData);
+console.log("forFilterforFilter",forFilter);
 
-  handleDataFiltering(myNewData);
-}, [myNewData]); 
+
 const uniqueFilterData = removeDuplicates(filteredData, selectedTypeByRow);
 
-console.log("all;llllllll",allFilteredData);
+// console.log("all;llllllll",allFilteredData);
 
 console.log("whoSelectedValues",whoSelectedValues);
 console.log("uniqueFilterData",uniqueFilterData);
+console.log("myNewData", myNewData);
 
 
 useEffect(()=>{
@@ -1418,13 +1423,21 @@ console.log("updatddded", updateNewData);
 // console.log("filterNewUpdatedData", filterNewUpdatedData);
 
 console.log("tableDasssta", tableData);
+
+console.log("newWhoTypeData",newWhoTypeData);
 useEffect(()=>{
   // debugger
-  if(updatedData?.length > 0) {
-    handleAnythingChanged(true);
-  }
-  
-},[updatedData])
+  if (handleAnyChange === true) {
+    handleAnythingChanged(false);
+  } 
+  // else if(handleAnyChange === false) {
+  //   handleAnythingChanged(true);
+  // } 
+  //  if (tableData?.length !== updatedData?.length) {
+  //   handleAnythingChanged(true);
+  // }
+},[handleAnyChange])
+
   return (
     <>
       <div className="px-5 pb-5 border rounded-md">
