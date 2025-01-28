@@ -1226,6 +1226,7 @@ console.log("filterData",filterData);
     let modifiedFilterData = [];
     let modifiedTableData = [];
     let modifiedMyNewTableData = [];
+    debugger
     if(myNewData?.length > 0) {
       const curFilterData = [...myNewData];
       modifiedMyNewTableData = curFilterData.map((ele) =>
@@ -1234,10 +1235,7 @@ console.log("filterData",filterData);
       setMyNewData(modifiedMyNewTableData)
       message.success("Updated Successfully!");
     }
-  
-    if (modifiedFilterData.length > 0 || modifiedTableData.length > 0 || modifiedMyNewTableData > 0) {
-      handleAnythingChanged(true);
-    }
+    handleAnythingChanged(true);
   };
 
   const handleSaveModalClose = () => {

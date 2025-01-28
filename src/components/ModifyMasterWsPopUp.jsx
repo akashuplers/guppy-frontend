@@ -383,7 +383,7 @@ console.log("clusterVaaaaaaaaaaalueSet",clusterValueSet);
   };  
 
   const newClusterValues = filterClusterValues(uniqueFilterData, clusterValuesVals,updateNewData);  
-  const clusterValus = (newClusterValues?.length > 0) ? newClusterValues:clusterValuesVals
+  const clusterValus = (newClusterValues?.length > 0) ? newClusterValues:clusterValuesVals?.length > 1 ? clusterValuesVals:[]
   
   const removeItemsWithClusterValues = (filteredData, clusterValues, updateNewData) => {
     const dataToProcess = filteredData && filteredData.length > 0 ? filteredData : updateNewData;
