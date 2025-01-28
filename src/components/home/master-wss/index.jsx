@@ -55,6 +55,13 @@ const MasterWssPage = ({
   const [myNewData, setMyNewData] = useState([]);
   const [allData, setAllData] = useState([]);
   const [filteredData, setFilteredNewData] = useState([]);
+  const [newWhoTypeData,setNewWhoTypeData ] = useState([]);
+  const [newWhatTypeData, setNewWhatTypeData] = useState([]);
+  const [newWhereTypeData, setNewWhereTypeData] = useState([])
+
+const meregedData =  [...newWhoTypeData, ...newWhatTypeData, ...newWhereTypeData]
+console.log("meregedData",meregedData);
+
 // State for accumulating all filtered data over time
 const [allFilteredData, setAllFilteredData] = useState([]);
 console.log("allFilteredData",allFilteredData);
@@ -68,10 +75,13 @@ console.log("allFilteredData",allFilteredData);
   const {token,story_id,storyWorld,fileName,storyWorldId,masterws} = storyUploadApiResponse;
   const [filterData, setFilteredData] = useState([]);
   const [selectedTypeByRow, setSelectedTypeByRow] = useState({});
+// console.log("storyUploadApiResponse",storyUploadApiResponse);
 
 console.log("myNewData",myNewData);
+console.log("filterDatafilterData",filterData);
+
 function removeDuplicates(data, typeMapping) {
-  debugger
+  // debugger
   const seenIds = new Set(); // Use a Set to track unique IDs
   const uniqueData = [];
 
@@ -88,6 +98,7 @@ function removeDuplicates(data, typeMapping) {
 
   return uniqueData;
 }
+console.log("handleAnythingChanged",handleAnythingChanged);
 
 
 // console.log("uniqueData", uniqueData);
@@ -169,17 +180,30 @@ console.log("uniqueData",uniqueData);
   }, [storyWorldId]);
 
 const handleDelete = () => {
-  debugger
+  // debugger
   const deleteId= selectedRow?.id
   if (deleteId !== null && deleteId !== undefined) {
     const tableIndex = tableData.findIndex((item) => item.id === deleteId);
     const filterIndex = filterData.findIndex((item) => item.id === deleteId);
     const myNewDataIndex = myNewData.findIndex((item) => item.id === deleteId);
-    const allDataIndexCase = allFilteredData.findIndex((item)=> item.id === deleteId);
+    const newWhoDataIndex = newWhoTypeData.findIndex((item) => item.id === deleteId);
+    const newWhatDataIndex = newWhatTypeData.findIndex((item) => item.id === deleteId);
+    const newWhereDataIndex = newWhereTypeData.findIndex((item) => item.id === deleteId);
+    // const allDataIndexCase = allFilteredData.findIndex((item)=> item.id === deleteId);
     let updatedTableData = [...tableData];
     let updatedFilterData = [...filterData];
     let updateMyNewData = [...myNewData];
-    let updateAllData = [...allFilteredData];
+    // if (newWhoDataIndex !== -1) {
+    //   newWhoTableData = newWhoTypeData.filter((item) => item.id !== deleteId);
+    //   setNewWhoTypeData(newWhoTableData);
+    // } else if (newWhatDataIndex !== -1) {
+    //   newWhatTableData = newWhatTypeData.filter((item) => item.id !== deleteId);
+    //   setNewWhatTypeData(newWhatTableData);
+    // } else if(newWhereDataIndex !== -1) {
+    //   newWherewData = newWhereTypeData.filter((item) => item.id !== deleteId);
+    //   setNewWhereTypeData(newWherewData);
+    // }
+    // let updateAllData = [...allFilteredData];
 
     if (myNewDataIndex !== -1) {
       updateMyNewData = myNewData.filter((item) => item.id !== deleteId);
@@ -190,10 +214,10 @@ const handleDelete = () => {
       updatedTableData = tableData.filter((item) => item.id !== deleteId);
       setTableData(updatedTableData);
     }
-    if (myNewDataIndex !== -1) {
-      updateAllData = allFilteredData.filter((item) => item.id !== deleteId);
-      setAllFilteredData(updateAllData);
-    } 
+    // if (myNewDataIndex !== -1) {
+    //   updateAllData = allFilteredData.filter((item) => item.id !== deleteId);
+    //   setAllFilteredData(updateAllData);
+    // } 
 
     // if(tableIndex )
     
@@ -277,7 +301,7 @@ const handleDelete = () => {
   };
 
   const handleRemoveChip = (value) => {
-    debugger
+    // debugger
     const removeChipFromClusterValues = (data, isIdCheck) => {
       return data.map((item) => ({
         ...item,
@@ -322,7 +346,8 @@ const handleDelete = () => {
   
   useEffect(() => {
     if(saveMasterWs){
-      onSave();
+      handleOpenDialog()
+      // onSave();
     }
   }, [saveMasterWs]);
 
@@ -567,18 +592,18 @@ const handleDelete = () => {
 
 
   const onReset = () => {
-    // setTableData(processData(masterws?.masterWs));
+    setTableData(processData(masterws?.masterWs));
     message.success("Reset Successfully !");
     handleAnythingChanged(true);
   };
 
-  const apiUrl = API_BASE_PATH + API_ROUTES.SORT_WS + story_id;
-  const config = {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  };
+  // const apiUrl = API_BASE_PATH + API_ROUTES.SORT_WS + story_id;
+  // const config = {
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //     Authorization: `Bearer ${token}`,
+  //   },
+  // };
   console.log("tableData",tableData);
   
   const [blankValue, setBlankValue] = useState();
@@ -607,7 +632,7 @@ const handleDelete = () => {
   };
   const categorizedData = organizeDataByWs(tableData);
   console.log("categorizedData", categorizedData);
-  console.log("allData", allData);
+  // console.log("allData", allData);
   const [mySpecialData, setSpecialData] = useState([])
 
   const handleChange = async (e, name) => { 
@@ -630,7 +655,11 @@ const handleDelete = () => {
       combinedData = [...categorizedData?.who, ...dataSource] 
       
       setFilteredData(dataSource)
-      setMyNewData(removeDuplicates(combinedData))
+      if(newWhoTypeData?.length === 0){
+        setMyNewData(removeDuplicates(combinedData))
+      } else if(newWhoTypeData?.length > 0){
+        setMyNewData(newWhoTypeData)
+      }
       setWhoSelectedValue(e?.target?.value)
       setWhatSelectedValue(false);
       setWhereSelectedValue(false);      
@@ -647,7 +676,12 @@ const handleDelete = () => {
       }));
       combinedData = [...categorizedData?.what, ...dataSource] 
       setFilteredData(dataSource)
-      setMyNewData(removeDuplicates(combinedData))
+      if(newWhatTypeData?.length === 0){
+        setMyNewData(removeDuplicates(combinedData))
+      } else if(newWhatTypeData?.length > 0){
+        setMyNewData(newWhatTypeData)
+      }
+      // setMyNewData(removeDuplicates(combinedData))
       setWhatSelectedValue(e?.target?.value);
       setWhereSelectedValue(false);
       setWhoSelectedValue(false);
@@ -664,7 +698,12 @@ const handleDelete = () => {
       }));
       combinedData = [...categorizedData?.where, ...dataSource] 
       setFilteredData(dataSource)
-      setMyNewData(removeDuplicates(combinedData))
+      if(newWhereTypeData?.length === 0){
+        setMyNewData(removeDuplicates(combinedData))
+      } else if(newWhereTypeData?.length > 0){
+        setMyNewData(newWhereTypeData)
+      }
+      // setMyNewData(removeDuplicates(combinedData))
       setWhereSelectedValue(e?.target?.value);
       setWhatSelectedValue(false);
       setWhoSelectedValue(false);
@@ -679,14 +718,6 @@ const handleDelete = () => {
       // formik.setFieldValue("masterHead", { id: "", value: "" }); 
 
     }
-    setAllData((prevAllData) => {
-      const updatedAllData = [...prevAllData, ...combinedData];
-      // Remove duplicates by ID
-      return Array.from(new Set(updatedAllData.map((item) => item.id))).map((id) =>
-        updatedAllData.find((item) => item.id === id)
-      );
-    });
-    // setAllData()
 
     if (name === "ws") {
       formik.setFieldValue("ws", e.target.value);
@@ -1046,7 +1077,7 @@ console.log("filterData",filterData);
   }
   
   function updateForUnique(data, typeMapping) {
-    debugger
+    // debugger
     const typeArray = [
       { id: 1, name: "Primary" },
       { id: 2, name: "Secondary" },
@@ -1072,24 +1103,32 @@ console.log("filterData",filterData);
     .filter((item) => item.type !== undefined);
   }
 
-  const removeDups = removeDuplicates(allFilteredData)
-  console.log("removeDups", removeDups);
+  // const removeDups = removeDuplicates(meregedData)
+  // console.log("removeDups", removeDups);
+  console.log("meregedData",meregedData);
   
-  const updatedData = updateAndNormalizeData(removeDups, selectedTypeByRow);  
-  console.log("updatedData",updatedData);
+  const updatedData = updateAndNormalizeData(meregedData, selectedTypeByRow);  
+  const apiData = updateAndNormalizeData(tableData, selectedTypeByRow)
+  console.log("updatsssedData",updatedData?.length, tableData?.length);
+  console.log("updatedDataupdatedDataupdatedData",updatedData);
+  
+  const newGeneratedData = (updatedData?.length == 0) ? apiData:updatedData
+    console.log("newGeneratedData",newGeneratedData);
   
   const [updateNewData, setUpdateNewData] = useState([]);
   const prevDataRef = useRef(null);
   useEffect(() => {
-    const currentDataString = JSON.stringify(updatedData);
+    // console.log("newGeneratedData",newGeneratedData);
+    
+    const currentDataString = JSON.stringify(newGeneratedData);
     const previousDataString = JSON.stringify(prevDataRef.current);
     if (currentDataString !== previousDataString) {
-      const uniqueData = removeDuplicates(updatedData);
+      const uniqueData = removeDuplicates(newGeneratedData);
       setUpdateNewData(uniqueData);
       // handleAnythingChanged(true);
-      prevDataRef.current = updatedData; // Update the previous data reference
+      prevDataRef.current = newGeneratedData; // Update the previous data reference
     }
-  }, [updatedData]);
+  }, [newGeneratedData]);
   
   // const updateNewData = removeDuplicates(updatedData)
   console.log("updateNewData",updateNewData);
@@ -1216,7 +1255,7 @@ console.log("filterData",filterData);
   ]);  
 
   const onModify = (updatedObj) => {
-    debugger
+    // debugger
     let modifiedFilterData = [];
     let modifiedTableData = [];
     let modifiedMyNewTableData = [];
@@ -1260,7 +1299,7 @@ console.log("filterData",filterData);
     //   message.success("Table Data Updated Successfully!");
     // }
   
-    if (modifiedFilterData.length > 0 || modifiedTableData.length > 0) {
+    if (modifiedFilterData.length > 0 || modifiedTableData.length > 0 || modifiedMyNewTableData > 0) {
       handleAnythingChanged(true);
     }
   };
@@ -1302,16 +1341,17 @@ console.log("filterData",filterData);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [titles, setTitles] = useState(false);
   const handleOpenDialog = () => {
+    // debugger
     const hasPrimaryWho = checkIfPrimaryWhoExists(updateNewData);
     const allNewFilteredData = removeDuplicates(allFilteredData)
-    if (uniqueData?.length === updateNewData?.length && hasPrimaryWho) {
+    if (meregedData?.length === updateNewData?.length && hasPrimaryWho) {
       onSave();
     } else {
       setIsDialogOpen(true);
-      if (allNewFilteredData?.length !== updateNewData?.length) {
+      if (meregedData?.length !== updateNewData?.length) {
         setTitles("Please Select type as either Primary or Secondary");
       } else if (!hasPrimaryWho) {
-        setTitles("Please Select type as either Primary or Secondary");
+        setTitles("Please Select one who Primary");
       }
     }
   };
@@ -1337,17 +1377,54 @@ const removeDuplicateClusterHeads = (data) => {
   return filteredData;
 };
 
+const handleDataFiltering = (newData) => {
+  const newFilteredData = removeDuplicateClusterHeads(newData);
+  console.log("delete",newFilteredData);
+  setFilteredNewData(newFilteredData);
+  // setAllFilteredData((prevData) => [...prevData, ...newFilteredData]);
+};
 
+useEffect(() => {
 
+  handleDataFiltering(myNewData);
+}, [myNewData]); 
 const uniqueFilterData = removeDuplicates(filteredData, selectedTypeByRow);
 
+console.log("all;llllllll",allFilteredData);
 
+console.log("whoSelectedValues",whoSelectedValues);
 console.log("uniqueFilterData",uniqueFilterData);
 
+
+useEffect(()=>{
+  // debugger
+  const uniqueFilterDatas = removeDuplicates(filteredData, selectedTypeByRow);
+
+if(whoSelectedValues === "who"){
+  setNewWhoTypeData(uniqueFilterDatas)
+} else if(whatSelectedValues === "what"){
+  setNewWhatTypeData(uniqueFilterDatas)
+} else if(whereSelectedValues === "where") {
+  setNewWhereTypeData(uniqueFilterDatas)
+}
+
+}, [filteredData, selectedTypeByRow, whoSelectedValues, whatSelectedValues, whereSelectedValues])
+// console.log("uniqueFilterData",uniqueFilterData);
+console.log("newWhoTypeData",newWhoTypeData);
+console.log("newWhatTypeData",newWhatTypeData);
+console.log("newWhereTypeData",newWhereTypeData);
 console.log("filteredsssData",filteredData);
-
 console.log("updatddded", updateNewData);
+// console.log("filterNewUpdatedData", filterNewUpdatedData);
 
+console.log("tableDasssta", tableData);
+useEffect(()=>{
+  // debugger
+  if(updatedData?.length > 0) {
+    handleAnythingChanged(true);
+  }
+  
+},[updatedData])
   return (
     <>
       <div className="px-5 pb-5 border rounded-md">
@@ -1458,6 +1535,7 @@ console.log("updatddded", updateNewData);
           clusterList={clusterList}
           whos={whos}
           updateNewData={updateNewData}
+          uniqueFilterData={uniqueFilterData}
           whats={whats}
           wheres={wheres}
           tableData={tableData}
@@ -1475,8 +1553,8 @@ console.log("updatddded", updateNewData);
       <FooterButtons
         onDiscard={onDiscard}
         onReset={onReset}
-        // onSubmit={handleOpenDialog}
-        onSubmit={onSave}
+        onSubmit={handleOpenDialog}
+        // onSubmit={onSave}
         saveType="Clusters"
         isSubmitting={isSubmitting}
       />
