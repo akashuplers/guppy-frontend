@@ -312,7 +312,6 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
   }
   
   const onSave = async () => {
-    debugger
     setIsSubmitting(true);
     let alertKey;
     try {
