@@ -24,6 +24,8 @@ const ModifyMasterWsPopup = ({
   wheres,
   tableData,
   filterData,
+  filteredNewData,
+  uniqueFilterData
 }) => {
   const [currentValue, setCurrentValue] = useState("");
   const [popupTitle, setPopupTitle] = useState("");
@@ -46,87 +48,125 @@ const ModifyMasterWsPopup = ({
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const [typeData, setTypeData] = useState(types);
   const [allData, setAllData] = useState([]);
+  const [oldData,setOldData] = useState([])
 console.log("mmmmmmmmm", modifyItemObj);
-console.log("typo", typo);
+console.log("clusterHeadVals",clusterHeadVals);
 
-  useEffect(() => {
-    if (filterData?.length > 0 || tableData?.length > 0) {
-      let masterHeadValues = [];
-      let clusterValues = [];
-      if (filterData?.length > 0 && tableData?.length > 0) {
-        masterHeadValues = [
-          ...new Set([
-            ...filterData.map((item) => item.masterHead?.value || item?.masterHead),
-            ...tableData.map((item) => item.masterHead),
-          ]),
-        ];
-        clusterValues = [
-          ...new Set([
-            ...filterData.flatMap(
-              (item) =>
-                item.clusterValues?.map((cluster) => cluster.value) || []
-            ),
-            ...tableData.flatMap(
-              (item) =>
-                item.clusterValues?.map((cluster) => cluster.value) || []
-            ),
-          ]),
-        ];
-      } else if (filterData?.length > 0) {
-        masterHeadValues = filterData.map((item) => item.masterHead?.value || item?.masterHead);
-        clusterValues = filterData.flatMap(
-          (item) => item.clusterValues?.map((cluster) => cluster.value) || []
-        );
-      } else if (tableData?.length > 0) {
-        masterHeadValues = tableData.map((item) => item.masterHead);
-        clusterValues = tableData.flatMap(
-          (item) => item.clusterValues?.map((cluster) => cluster.value) || []
-        );
-      }
-      const combinedValues = [
-        ...new Set([...masterHeadValues, ...clusterValues]),
-      ];
-      setAllData(combinedValues);
-      if (combinedValues?.length > 0) {
-        setWhoCluster((prevWhos) => {
-          const updatedWhos = prevWhos?.filter(
-            (item) => !combinedValues?.includes(item.value)
-          );
-          return JSON.stringify(updatedWhos) !== JSON.stringify(prevWhos)
-            ? updatedWhos
-            : prevWhos;
-        });
+console.log("clusterValuesVals",clusterValuesVals);
+console.log("filtesssredNewData",filteredNewData);
+console.log("clusterList", clusterList);
+console.log("payloadClusterValues",payloadClusterValues);
 
-        setWhatCluster((prevWheres) => {
-          const updatedWheres = prevWheres?.filter(
-            (item) => !combinedValues?.includes(item.value)
-          );
-          return JSON.stringify(updatedWheres) !== JSON.stringify(prevWheres)
-            ? updatedWheres
-            : prevWheres;
-        });
-        setWhereCluster((prevWhats) => {
-          const updatedWhats = prevWhats?.filter(
-            (item) => !combinedValues?.includes(item.value)
-          );
-          return JSON.stringify(updatedWhats) !== JSON.stringify(prevWhats)
-            ? updatedWhats
-            : prevWhats;
-        });
-      }
-    }
-  }, [filterData, tableData, whoCluster, whatCluster, whereCluster]);
+  // useEffect(() => {
+  //   if (filterData?.length > 0 || tableData?.length > 0) {
+  //     let masterHeadValues = [];
+  //     let clusterValues = [];
+  //     if (filterData?.length > 0 && tableData?.length > 0) {
+  //       masterHeadValues = [
+  //         ...new Set([
+  //           ...filterData.map((item) => item.masterHead?.value || item?.masterHead),
+  //           ...tableData.map((item) => item.masterHead),
+  //         ]),
+  //       ];
+  //       clusterValues = [
+  //         ...new Set([
+  //           ...filterData.flatMap(
+  //             (item) =>
+  //               item.clusterValues?.map((cluster) => cluster.value) || []
+  //           ),
+  //           ...tableData.flatMap(
+  //             (item) =>
+  //               item.clusterValues?.map((cluster) => cluster.value) || []
+  //           ),
+  //         ]),
+  //       ];
+  //     } else if (filterData?.length > 0) {
+  //       masterHeadValues = filterData.map((item) => item.masterHead?.value || item?.masterHead);
+  //       clusterValues = filterData.flatMap(
+  //         (item) => item.clusterValues?.map((cluster) => cluster.value) || []
+  //       );
+  //     } else if (tableData?.length > 0) {
+  //       masterHeadValues = tableData.map((item) => item.masterHead);
+  //       clusterValues = tableData.flatMap(
+  //         (item) => item.clusterValues?.map((cluster) => cluster.value) || []
+  //       );
+  //     }
+  //     const combinedValues = [
+  //       ...new Set([...masterHeadValues, ...clusterValues]),
+  //     ];
+  //     setAllData(combinedValues);
+  //     if (combinedValues?.length > 0) {
+  //       setWhoCluster((prevWhos) => {
+  //         const updatedWhos = prevWhos?.filter(
+  //           (item) => !combinedValues?.includes(item.value)
+  //         );
+  //         return JSON.stringify(updatedWhos) !== JSON.stringify(prevWhos)
+  //           ? updatedWhos
+  //           : prevWhos;
+  //       });
+
+  //       setWhatCluster((prevWheres) => {
+  //         const updatedWheres = prevWheres?.filter(
+  //           (item) => !combinedValues?.includes(item.value)
+  //         );
+  //         return JSON.stringify(updatedWheres) !== JSON.stringify(prevWheres)
+  //           ? updatedWheres
+  //           : prevWheres;
+  //       });
+  //       setWhereCluster((prevWhats) => {
+  //         const updatedWhats = prevWhats?.filter(
+  //           (item) => !combinedValues?.includes(item.value)
+  //         );
+  //         return JSON.stringify(updatedWhats) !== JSON.stringify(prevWhats)
+  //           ? updatedWhats
+  //           : prevWhats;
+  //       });
+  //     }
+  //   }
+  // }, [filterData, tableData, whoCluster, whatCluster, whereCluster]);
+
+  const filterClusterList = (clusterList, updatedTableData) => {
+    // Extract IDs from updatedTableData
+    const updatedTableIds = updatedTableData.map((item) => item.id);
+  
+    // Filter clusterList.Who to include only items present in updatedTableData
+    const filteredWho = clusterList.Who.filter((item) =>
+      updatedTableIds.includes(item.id)
+    );
+    const filteredWhat = clusterList.What.filter((item) =>
+      updatedTableIds.includes(item.id)
+    );
+    const filteredWhere = clusterList.Where.filter((item) =>
+      updatedTableIds.includes(item.id)
+    );
+  
+    return {
+      ...clusterList,
+      Who: filteredWho, // Replace the original Who list with the filtered list
+      What: filteredWhat,
+      Where: filteredWhere
+    };
+  };
+
+  const updatedClusterList = filterClusterList(clusterList, filteredNewData);
+
+console.log("oldData",oldData);
 
   const handleClusterChange = () => {
+    const filteredClusterList = filterClusterList(clusterList, uniqueFilterData);
+
     if (wsForm === "who") {
-      setclusterHeadVals(clusterList?.Who);
-      setWhoCluster(clusterList?.Who);
+      setclusterHeadVals(filteredClusterList?.Who);
+      setWhoCluster(filteredClusterList?.Who);
+      setOldData(clusterList?.Who)
     } else if (wsForm === "what") {
-      setclusterHeadVals(clusterList?.What);
-      setWhatCluster(clusterList?.What);
+      setclusterHeadVals(filteredClusterList?.What);
+      setWhatCluster(filteredClusterList?.What);
+      setOldData(clusterList?.What)
     } else if (wsForm === "where") {
-      setWhereCluster(clusterList?.Where);
-      setclusterHeadVals(clusterList?.Where);
+      setWhereCluster(filteredClusterList?.Where);
+      setclusterHeadVals(filteredClusterList?.Where);
+      setOldData(clusterList?.Where)
     } else {
       setWhoCluster(null);
       setWhatCluster(null);
@@ -136,8 +176,7 @@ console.log("typo", typo);
 
   useEffect(() => {
     handleClusterChange();
-  }, [wsForm, clusterList]);
-console.log("typo",typo);
+  }, [wsForm, clusterList, uniqueFilterData]);
 
   useEffect(() => {
     if (!anythingChanged) {
@@ -154,42 +193,11 @@ console.log("typo",typo);
 
         const selectedWs = modifyItemObj?.ws;
         // const modifyItemObj
-        console.log(updateNewData,"updatsssseNewData");
         const matchedData = updateNewData.find((data) => data.id === modifyItemObj?.id);
-        console.log("matchedData",matchedData);
         
         setTypo(matchedData?.type)
         
-        // const isPrimarySelected = updateNewData?.some((comb) => {
-        //   if (Array.isArray(comb.type)) {
-        //     return comb.ws === "who" && comb.type === "Primary";
-        //   }
-
-        //   if (typeof comb.type === "object" && comb.type !== null) {
-        //     return comb.ws === "who" && comb.type === "Primary";
-        //   }
-        //   return false;
-        // });
-        // if (selectedWs === "who" && isPrimarySelected) {
-        //   setTypeData((prevTypo) =>
-        //     prevTypo?.filter((item) => item.name !== "Primary")
-        //   );
-        // }
-        // if (selectedWs === "what") {
-        //   if (!typeData?.some((item) => item.name === "Primary")) {
-        //     setTypeData((prevTypo) => [
-        //       { id: 1, name: "Primary" },
-        //       ...prevTypo,
-        //     ]);
-        //   }
-        // } else if (selectedWs === "where") {
-        //   if (!typeData?.some((item) => item.name === "Primary")) {
-        //     setTypeData((prevTypo) => [
-        //       { id: 1, name: "Primary" },
-        //       ...prevTypo,
-        //     ]);
-        //   }
-        // }
+       
       } else if (modalType === "saparate") {
         const selectedWs = modifyItemObj?.ws;
         const isPrimarySelected = filteredData?.some(
@@ -227,16 +235,17 @@ console.log("typo",typo);
         setClusterData(modifyItemObj?.clusterValues || []);
       }
       if (modalType === "InBetweenFlow") {
-        if (
-          clusterValuesVals?.length === 0 &&
-          modifyItemObj?.masterHead?.id === clusterHead?.id
-        ) {
+        // if (
+        //   clusterValuesVals?.length === 0 &&
+        //   modifyItemObj?.masterHead?.id === clusterHead?.id
+        // ) {
+        // debugger
           getClusterValueData(
             modifyItemObj?.masterHead,
             modifyItemObj?.id ?? clusterHeadId,
             false
           );
-        }
+        // }
       }
     }
   }, [modifyItemObj, type, clusterHead, clusterHeadVals]);
@@ -298,6 +307,7 @@ console.log("typo",typo);
   };
   const [clusterHeadId, setClusterHeadId] = useState("");
   const [clusterValueSet, setClusterValueSet] = useState();
+console.log("clusterVaaaaaaaaaaalueSet",clusterValueSet);
 
   const onClusterHead = (selectedValue, fieldName) => {
     const selectedCluster = clusterHeadVals.find(
@@ -306,6 +316,7 @@ console.log("typo",typo);
     setClusterHead(selectedCluster?.value);
     setClusterHeadId(selectedCluster?.id);
     if (modalType === "InBetweenFlow") {
+      // debugger
       getClusterValueData(selectedCluster?.value, selectedCluster?.id, true);
     }
     setAnythingChanged(true);
@@ -316,18 +327,18 @@ console.log("typo",typo);
     ? selectedValue
     : [selectedValue];
     const allClusterValues = valuesArray;
-    let updatedClusterValues = [];
+    let updatedClusterValuesss = [];
     if (valuesArray.includes(selectedValue)) {
       // If "cat" is selected, add all four values
-      updatedClusterValues = allClusterValues;
+      updatedClusterValuesss = allClusterValues;
     } else {
-      updatedClusterValues = valuesArray.filter(value => allClusterValues.includes(value));
+      updatedClusterValuesss = valuesArray.filter(value => allClusterValues.includes(value));
     }
-    const selectedClusterObjects = updatedClusterValues
-    .map((value) => clusterValuesVals.find((item) => item?.value === value))
+    const selectedClusterObjects = updatedClusterValuesss
+    .map((value) => updatedClusterValues.find((item) => item?.value === value))
     .filter(Boolean);
     const oldClusterObjects =
-    (payloadClusterValues || []).filter((item) =>
+    (oldData || []).filter((item) =>
       valuesArray.includes(item.value)
     );
     const mergedClusterObjects = [
@@ -340,7 +351,7 @@ console.log("typo",typo);
       value: item.value,
     }));
   
-    setClusterValue(updatedClusterValues);
+    setClusterValue(updatedClusterValuesss);
     setClusterValueSet(mergedClusterObjects);
     setAnythingChanged(true);
   };
@@ -401,11 +412,12 @@ console.log("typo",typo);
   };
 
   const getClusterValueData = async (value, clusterId, bool) => {
+    // debugger
     const data = allData;
-    if (clusterHeadVals?.length === 0) {
-      console.error("clusterHeadVals is not yet available.");
-      return;
-    }
+    // if (clusterHeadVals?.length === 0) {
+    //   console.error("clusterHeadVals is not yet available.");
+    //   return;
+    // }
     const clustHeadVal = clusterHeadVals?.filter((item) => item?.value !== value)
     const apiUrl = API_BASE_PATH + API_ROUTES.SORT_WS + story_id;
     const payload = {
@@ -446,9 +458,100 @@ console.log("typo",typo);
     }
   };
 
+  const removeDuplicateClusterHeads = (data) => {
+    // debugger
+    // Create a Set to track `masterHead` values present in `clusterValues`
+    const clusterHeads = new Set();
+  
+    // Extract all `masterHead` values from clusterValues
+    data.forEach((item) => {
+      item.clusterValues?.forEach((cluster) => {
+        clusterHeads.add(cluster.value);
+      });
+    });
+  
+    // Filter out any object whose `masterHead` exists in the `clusterHeads` set
+    const filteredData = data.filter((item) => !clusterHeads.has(item.masterHead));
+  
+    return filteredData;
+  };
+
+
+// console.log("result",result);
+
+  const filterClusterValues = (filteredNewData, finalFilteredArray,updateNewData) => {
+    // debugger
+  //   const deduplicatedFilteredData = removeItemsWithClusterValues(filteredNewData);
+  // const deduplicatedUpdatedData = removeItemsWithClusterValues(updateNewData);
+    // Find all masterHeads with ws="who" and type.name="Primary"
+    const primaryWhoMasterHeads = filteredNewData
+      .filter((item) => item.ws === "who" && item.type?.name === "Primary")
+      .map((item) => item.masterHead);
+
+      const primaryWhoRemovedHeads = updateNewData
+      .filter((item) => item.ws === "who" && item.type === "Primary")
+      .map((item) => item.masterHead);
+      const combinedMasterHeads = new Set([...primaryWhoMasterHeads, ...primaryWhoRemovedHeads]);
+
+  
+    // Filter out items from finalFilteredArray if their value matches any masterHead
+    const updatedFilteredArray = finalFilteredArray.filter(
+    (item) => !combinedMasterHeads.has(item.value)
+  );
+  
+    return updatedFilteredArray;
+  };  
+
+  const newClusterValues = filterClusterValues(uniqueFilterData, clusterValuesVals,updateNewData);
+  const newClusterValueCheck = filterClusterValues(uniqueFilterData, clusterValuesVals,updateNewData);
+  console.log("newClusterValues",newClusterValues);
+  
+  const clusterValus = (newClusterValues?.length > 0) ? newClusterValues:clusterValuesVals
+  console.log("clusterValus",clusterValus);
+  
+  const removeItemsWithClusterValues = (filteredData, clusterValues, updateNewData) => {
+    // Use filteredData or updateNewData based on availability
+    const dataToProcess = filteredData && filteredData.length > 0 ? filteredData : updateNewData;
+  
+    if (!dataToProcess) {
+      console.warn("No valid data to process");
+      return {
+        updatedFilteredData: [],
+        updatedClusterValues: clusterValues,
+      };
+    }
+  
+    // Extract all masterHeads with clusterValues
+    const masterHeadsWithClusterValues = dataToProcess
+      .filter((item) => item.clusterValues && item.clusterValues.length > 0)
+      .map((item) => item.masterHead);
+  
+    // Remove items from clusterValues where value matches any masterHead
+    const updatedClusterValues = clusterValues.filter(
+      (cluster) => !masterHeadsWithClusterValues.includes(cluster.value)
+    );
+  
+    // Remove items from filteredData or updateNewData with non-empty clusterValues
+    const updatedFilteredData = dataToProcess.filter(
+      (item) => !item.clusterValues || item.clusterValues.length === 0
+    );
+    // setPayloadClusterValues(updatedFilteredData)
+  
+    return {
+      updatedFilteredData,
+      updatedClusterValues,
+    };
+  };
+  const { updatedFilteredData, updatedClusterValues } = removeItemsWithClusterValues(
+    uniqueFilterData, // This can be null or empty in some cases
+    clusterValus,
+    updateNewData // Fallback to this if filteredNewData is not valid
+  ); 
+console.log("updatedFilteredData", updatedFilteredData);
+console.log("updatedClusterValues", updatedClusterValues);
+
   const handleUpdate = () => {
     // debugger
-    const currentType = !Array.isArray(modifyItemObj?.type) ? modifyItemObj?.type : typo;
     const updatedObj = {
       id: clusterHeadId ? clusterHeadId : modifyItemObj.id,
       ws: wsForm,
@@ -466,7 +569,6 @@ console.log("typo",typo);
         : modifyItemObj?.type,
                 apiType:modifyItemObj?.apiType ?? modifyItemObj?.type
       }),
-      // type:modalType === "saparate" ? typo || modifyItemObj.type:modifyItemObj.type,
       masterHead:
         modalType === "saparate"
           ? clusterHeadData ?? modifyItemObj?.masterHead
@@ -491,6 +593,7 @@ console.log("typo",typo);
     onModify(updatedObj);
     onClose();
   };
+console.log("clusssssssssssssterValue",clusterValue);
 
   return (
     <Modal
@@ -638,7 +741,7 @@ console.log("typo",typo);
                 onChange={(value) => onClusterValues(value, "clusterValues")} 
                 placeholder={"Select Cluster Values"}
               >
-                {clusterValuesVals?.map((option) => (
+                {updatedClusterValues?.map((option) => (
                   <Option key={option.id} value={option.value}>
                     {option?.value}
                   </Option>
