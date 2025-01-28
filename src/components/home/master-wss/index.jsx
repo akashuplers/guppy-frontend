@@ -288,7 +288,7 @@ const handleDelete = () => {
   };
 
   const handleRemoveChip = (value) => {
-    debugger
+    // debugger
     const removeChipFromClusterValues = (data, isIdCheck) => {
       return data.map((item) => ({
         ...item,
