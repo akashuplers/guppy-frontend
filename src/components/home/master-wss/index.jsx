@@ -1001,9 +1001,6 @@ if (updatedWhoData?.length > 0) {
     return data.some(item => item.ws === "who" && (item.type.name === "Primary" || item.type === "Primary"));
   };
 
-  console.log("updateNewData", updateNewData);
-  
-
   const transformedData = transformData(updateNewData|| []);
   const [whoSelectedValues, setWhoSelectedValue] = useState(false);
   const [whatSelectedValues, setWhatSelectedValue] = useState(false);
