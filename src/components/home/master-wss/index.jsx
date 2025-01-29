@@ -1177,7 +1177,7 @@ if (updatedWhoData?.length > 0) {
     } else {
       setIsDialogOpen(true);
       if (meregedData?.length !== updateNewData?.length) {
-        setTitles("Please Select type as either Primary or Secondary");
+        setTitles("Please Select a type: either Primary or Secondary.");
       } else if (!hasPrimaryWho) {
         setTitles("Please Select one who Primary");
       }
