@@ -198,6 +198,7 @@ const Home = () => {
         
         setStoryUploadApiResponse(saveObj); 
         if (prevStep == false) {
+          debugger
           if (respObj?.masterws == null) {
             setCurrentStep(1);
           } else if (

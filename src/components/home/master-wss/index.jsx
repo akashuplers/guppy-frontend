@@ -69,19 +69,25 @@ const MasterWssPage = ({
   const [filterData, setFilteredData] = useState([]);
   const [selectedTypeByRow, setSelectedTypeByRow] = useState({});
 
-function removeDuplicates(data, typeMapping) {
-  const seenIds = new Set(); 
-  const uniqueData = [];
-  const normalizedData = updateForUnique(data, typeMapping);
-  for (const item of normalizedData) {
-    if (!seenIds.has(item.id)) {
-      seenIds.add(item.id); 
-      uniqueData.push(item); 
+  function removeDuplicates(data, typeMapping) {
+    const seenMasterHeads = new Set();
+    const uniqueData = [];
+    const normalizedData = updateForUnique(data, typeMapping);
+  
+    for (const item of normalizedData) {
+      if (typeof item.masterHead === "string") {
+        const lowerCaseMasterHead = item.masterHead.trim().toLowerCase(); 
+        if (!seenMasterHeads.has(lowerCaseMasterHead)) {  
+          seenMasterHeads.add(lowerCaseMasterHead);
+          uniqueData.push(item);
+        }
+      }
     }
+  
+    return uniqueData;
   }
-
-  return uniqueData;
-}
+  
+  
 
 const uniqueData = removeDuplicates(myNewData, selectedTypeByRow);
 
@@ -253,7 +259,6 @@ const handleDelete = () => {
   };
 
   const handleRemoveChip = (value) => {
-    // debugger
     const removeChipFromClusterValues = (data, isIdCheck) => {
       return data.map((item) => ({
         ...item,
@@ -286,12 +291,15 @@ const handleDelete = () => {
   ];
 
   const [typo, setTypo] = useState(type);
+  const [radioChange, setRadioChange] = useState(false)
 
   const handleRadioChange = (recordId, selectedType) => {
+    
     setSelectedTypeByRow((prev) => ({
       ...prev,
       [recordId]: selectedType,
     }));
+   setRadioChange(true);
   };  
   
   const historyColumns = [
@@ -548,8 +556,8 @@ const handleDelete = () => {
   
   const [forFilter, setForFilter] = useState([])
   
+  const categorizedData = organizeDataByWs(tableData);
   const handleChange = async (e, name) => { 
-    const categorizedData = organizeDataByWs(tableData);
     const blankValue = e?.target?.value;
     const fieldName = name;
     let combinedData = []; 
@@ -562,7 +570,7 @@ const handleDelete = () => {
         id: item.id, 
         ws: e?.target?.value, 
         type: typo,  
-        masterHead: item.value, 
+        masterHead: item.value.toLowerCase(), 
         clusterValues: [],
       }));
 
@@ -573,15 +581,6 @@ const handleDelete = () => {
         setMyNewData(removeDuplicates(combinedData))
       } else if(newWhoTypeData?.length > 0){
         setMyNewData(newWhoTypeData)
-      }
-      if(newWhoTypeData?.length > 0) {
-        handleAnythingChanged(true);
-      } else if (newWhoTypeData?.length === 0) {
-        handleAnythingChanged(false);
-      } else if (newWhoTypeData?.length !== categorizedData?.who) {
-        handleAnythingChanged(true);
-      } else {
-        handleAnythingChanged(false);
       }
       setForFilter(removeDuplicates(combinedData))
       setWhoSelectedValue(e?.target?.value)
@@ -595,7 +594,7 @@ const handleDelete = () => {
         id: item.id, 
         ws: e?.target?.value, 
         type: typo,  
-        masterHead: item.value,
+        masterHead: item.value.toLowerCase(),
         clusterValues: [], 
       }));
       combinedData = [...categorizedData?.what, ...dataSource] 
@@ -604,15 +603,6 @@ const handleDelete = () => {
         setMyNewData(removeDuplicates(combinedData))
       } else if(newWhatTypeData?.length > 0){
         setMyNewData(newWhatTypeData)
-      }
-      if(newWhatTypeData?.length > 0) {
-        handleAnythingChanged(true);
-      } else if (newWhatTypeData?.length === 0) {
-        handleAnythingChanged(false);
-      } else if (newWhatTypeData?.length !== categorizedData?.what) {
-        handleAnythingChanged(true);
-      } else {
-        handleAnythingChanged(false);
       }
       setForFilter(removeDuplicates(combinedData))
       setWhatSelectedValue(e?.target?.value);
@@ -626,7 +616,7 @@ const handleDelete = () => {
         id: item.id,
         ws: e?.target?.value, 
         type: typo, 
-        masterHead: item.value, 
+        masterHead: item.value.toLowerCase(), 
         clusterValues: [], 
       }));
       combinedData = [...categorizedData?.where, ...dataSource] 
@@ -635,15 +625,6 @@ const handleDelete = () => {
         setMyNewData(removeDuplicates(combinedData))
       } else if(newWhereTypeData?.length > 0){
         setMyNewData(newWhereTypeData)
-      }
-      if(newWhereTypeData?.length > 0) {
-        handleAnythingChanged(true);
-      } else if (newWhereTypeData?.length === 0) {
-        handleAnythingChanged(false);
-      } else if (newWhereTypeData?.length !== categorizedData?.where) {
-        handleAnythingChanged(true);
-      } else {
-        handleAnythingChanged(false);
       }
       setForFilter(removeDuplicates(combinedData))
       setWhereSelectedValue(e?.target?.value);
@@ -721,6 +702,7 @@ const handleDelete = () => {
         handleSaveSuccess(true);
         handleAnythingChanged(false);
         setHandleAnythingChange(true)
+        setRadioChange(false)
       } else {
         message.destroy(alertKey);
         message.error("Error In Saving Ws ! Unable To Fetch Response !");
@@ -1133,6 +1115,8 @@ if (updatedWhoData?.length > 0) {
     handleAnythingChanged(true);
   };
 
+  console.log("tra", transformedData);
+  
   const handleSaveModalClose = () => {
     handleCloseDialog();
   };
@@ -1172,9 +1156,14 @@ if (updatedWhoData?.length > 0) {
 
   const handleOpenDialog = () => {
     const hasPrimaryWho = checkIfPrimaryWhoExists(updateNewData);
-    if (meregedData?.length === updateNewData?.length && hasPrimaryWho) {
+    const result = meregedData.every(item => typeof item.type === 'object' && !Array.isArray(item.type));
+    
+    if(newMergedData.length === updateNewData?.length && hasPrimaryWho && result==true){
       onSave();
-    } else {
+    } else if (meregedData?.length === updateNewData?.length && hasPrimaryWho) {
+      onSave();
+    }  
+     else {
       setIsDialogOpen(true);
       if (meregedData?.length !== updateNewData?.length) {
         setTitles("Please Select type as either Primary or Secondary");
@@ -1224,10 +1213,55 @@ if(whoSelectedValues === "who"){
 }, [filteredData, selectedTypeByRow, whoSelectedValues, whatSelectedValues, whereSelectedValues])
 
 useEffect(()=>{
+  if(radioChange === true) {
+    handleAnythingChanged(true);
+    return;
+  }
   if (handleAnyChange === true) {
     handleAnythingChanged(false);
+    return;
   } 
-},[handleAnyChange])
+
+  if (apiWhoData?.length == newWhoTypeData?.length && whoSelectedValues === "who") {
+    handleAnythingChanged(false);
+    return;
+  }
+  if (apiDataWhatData?.length == newWhatTypeData?.length && whatSelectedValues === "what") {
+    if (apiWhoData?.length == newWhoTypeData?.length) {
+      handleAnythingChanged(false);
+      return;
+    }
+  }
+  if (apiDataWhereData?.length == newWhereTypeData?.length && whereSelectedValues === "where") {
+    if (apiWhoData?.length == newWhoTypeData?.length && apiDataWhatData?.length == newWhatTypeData?.length) {
+      handleAnythingChanged(false);
+      return;
+    } 
+  }
+
+   if (tableData?.length > 0) {
+    if(whoSelectedValues === "who" || whatSelectedValues === "what" || whereSelectedValues === "where") {
+      if ((newWhoTypeData?.length !== categorizedData?.who?.length ) || (newWhatTypeData?.length !== categorizedData?.what?.length ) ||
+      (newWhereTypeData?.length !== categorizedData?.where?.length )
+    ) {
+      handleAnythingChanged(true);
+      return;
+    }
+    }
+    
+  } else if( tableData?.length === 0) {
+    if (
+      (newWhoTypeData?.length > 0 ) ||
+      (newWhatTypeData?.length > 0 ) ||
+      (newWhereTypeData?.length > 0 )
+    ) {
+      handleAnythingChanged(true);
+      return;
+    }
+  }
+    handleAnythingChanged(false);
+
+},[handleAnyChange, categorizedData,newWhoTypeData, newWhatTypeData, newWhereTypeData])
 
 const flattenData = updateNewData?.map((item) => {
   const normalizedClusterValues = (() => {
@@ -1248,6 +1282,8 @@ const flattenData = updateNewData?.map((item) => {
     clusterValues: normalizedClusterValues?.join(", "),
   };
 });
+
+console.log("updatedData", updatedData?.length);
 
   return (
     <>

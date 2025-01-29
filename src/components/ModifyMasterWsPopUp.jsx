@@ -51,15 +51,15 @@ const ModifyMasterWsPopup = ({
   const [oldData,setOldData] = useState([])
 
   const filterClusterList = (clusterList, updatedTableData) => {
-    const updatedTableIds = updatedTableData.map((item) => item.id);  
+    const updatedTableIds = updatedTableData.map((item) => item.masterHead);  
     const filteredWho = clusterList.Who.filter((item) =>
-      updatedTableIds.includes(item.id)
+      updatedTableIds.includes(item.value.toLowerCase())
     );
     const filteredWhat = clusterList.What.filter((item) =>
-      updatedTableIds.includes(item.id)
+      updatedTableIds.includes(item.value.toLowerCase())
     );
     const filteredWhere = clusterList.Where.filter((item) =>
-      updatedTableIds.includes(item.id)
+      updatedTableIds.includes(item.value.toLowerCase())
     );
   
     return {
@@ -91,6 +91,8 @@ const ModifyMasterWsPopup = ({
     }
   };
 
+  console.log("clusterHeadVals", clusterHeadVals);
+  
   useEffect(() => {
     handleClusterChange();
   }, [wsForm, clusterList, uniqueFilterData]);
@@ -148,8 +150,7 @@ const ModifyMasterWsPopup = ({
       if (modalType === "InBetweenFlow") {
           getClusterValueData(
             modifyItemObj?.masterHead,
-            modifyItemObj?.id ?? clusterHeadId,
-            false
+            modifyItemObj?.id ?? clusterHeadId
           );
       }
     }
@@ -221,7 +222,7 @@ console.log("clusterVaaaaaaaaaaalueSet",clusterValueSet);
     setClusterHead(selectedCluster?.value);
     setClusterHeadId(selectedCluster?.id);
     if (modalType === "InBetweenFlow") {
-      getClusterValueData(selectedCluster?.value, selectedCluster?.id, true);
+      getClusterValueData(selectedCluster?.value, selectedCluster?.id);
     }
     setAnythingChanged(true);
   };
@@ -242,7 +243,7 @@ console.log("clusterVaaaaaaaaaaalueSet",clusterValueSet);
     .filter(Boolean);
     const oldClusterObjects =
     (oldData || []).filter((item) =>
-      valuesArray.includes(item.value)
+      valuesArray.includes(item.value.toLowerCase())
     );
     const mergedClusterObjects = [
       ...oldClusterObjects,
@@ -251,7 +252,7 @@ console.log("clusterVaaaaaaaaaaalueSet",clusterValueSet);
       ),
     ].map((item) => ({
       id: item.id,
-      value: item.value,
+      value: item.value.toLowerCase(),
     }));
   
     setClusterValue(updatedClusterValuesss);
@@ -315,9 +316,9 @@ console.log("clusterVaaaaaaaaaaalueSet",clusterValueSet);
     setAnythingChanged(true);
   };
 
-  const getClusterValueData = async (value, clusterId, bool) => {
+  const getClusterValueData = async (value, clusterId) => {    
     const data = allData;
-    const clustHeadVal = clusterHeadVals?.filter((item) => item?.value !== value)
+    const clustHeadVal = clusterHeadVals?.filter((item) => item.value.toLowerCase() !== value.toLowerCase())
     const apiUrl = API_BASE_PATH + API_ROUTES.SORT_WS + story_id;
     const payload = {
       clusterHead: { value: value, id: clusterId },
@@ -332,22 +333,12 @@ console.log("clusterVaaaaaaaaaaalueSet",clusterValueSet);
 
     try {
       const response = await axios.post(apiUrl, payload, config);
-
-      if (bool) {
-        const filteredArray = response?.data?.ws?.clusterValues;
-        const finalFilteredArray = filteredArray?.filter(
-          (item) => !data.includes(item.value)
-        );
-
-        setclusterValuesVals(finalFilteredArray);
-      } else {
         const filteredArray = response?.data?.ws?.clusterValues;
         const filteredArrays = filteredArray?.filter(
           (item) => !data.includes(item.value)
         );
         setclusterValuesVals(filteredArrays);
         setPayloadClusterValues(filteredArray)
-      }
     } catch (error) {
       console.error("Error calling the API:", error);
     }
@@ -376,16 +367,16 @@ console.log("clusterVaaaaaaaaaaalueSet",clusterValueSet);
       .map((item) => item.masterHead);
       const combinedMasterHeads = new Set([...primaryWhoMasterHeads, ...primaryWhoRemovedHeads]);
       const updatedFilteredArray = finalFilteredArray.filter(
-        (item) => !combinedMasterHeads.has(item.value)
+        (item) => !combinedMasterHeads.has(item.value.toLowerCase())
       );
   
     return updatedFilteredArray;
   };  
 
   const newClusterValues = filterClusterValues(uniqueFilterData, clusterValuesVals,updateNewData);  
-  const clusterValus = (newClusterValues?.length > 0) ? newClusterValues:clusterValuesVals?.length > 1 ? clusterValuesVals:[]
+  const clusterValus = (newClusterValues?.length > 0) ? newClusterValues: clusterValuesVals?.length > 1 ? clusterValuesVals:[]
   
-  const removeItemsWithClusterValues = (filteredData, clusterValues, updateNewData) => {
+  const removeItemsWithClusterValues = (filteredData, clusterValues, updateNewData) => {  
     const dataToProcess = filteredData && filteredData.length > 0 ? filteredData : updateNewData;
   
     if (!dataToProcess) {
@@ -398,10 +389,10 @@ console.log("clusterVaaaaaaaaaaalueSet",clusterValueSet);
   
     const masterHeadsWithClusterValues = dataToProcess
       .filter((item) => item.clusterValues && item.clusterValues.length > 0)
-      .map((item) => item.masterHead);
+      .map((item) => item.masterHead?.toLowerCase());
   
     const updatedClusterValues = clusterValues.filter(
-      (cluster) => !masterHeadsWithClusterValues.includes(cluster.value)
+      (cluster) => !masterHeadsWithClusterValues.includes(cluster.value.toLowerCase())
     );
   
     const updatedFilteredData = dataToProcess.filter(
@@ -418,6 +409,9 @@ console.log("clusterVaaaaaaaaaaalueSet",clusterValueSet);
     clusterValus,
     updateNewData 
   ); 
+console.log("updatedFilteredData",updatedFilteredData);
+console.log(updatedClusterValues, "updatedClusterValues");
+
 
   const handleUpdate = () => {
     const updatedObj = {
@@ -607,8 +601,8 @@ console.log("clusterVaaaaaaaaaaalueSet",clusterValueSet);
                 placeholder={"Select Cluster Values"}
               >
                 {updatedClusterValues?.map((option) => (
-                  <Option key={option.id} value={option.value}>
-                    {option?.value}
+                  <Option key={option.id} value={option.value.toLowerCase()}>
+                    {option.value.toLowerCase()}
                   </Option>
                 ))}
               </Select>
