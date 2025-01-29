@@ -26,10 +26,6 @@ const Home = () => {
   const storyId = JSON.parse(localStorage.getItem("storyId"));
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const [prevStep, setPrevStep] = useState(false);
-  console.log("activeStep", activeStep);
-  console.log("prevStep",prevStep);
-  console.log("cccccc",currentStep);
-  
   
   // story upload context
   const {
@@ -297,7 +293,6 @@ const Home = () => {
         setCurrentStep((prevStep) => prevStep - 1);
       }
   };
-console.log("curree", currentStep);
 
   return (
     <SidebarWithHeader>
