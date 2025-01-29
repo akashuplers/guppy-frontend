@@ -164,6 +164,8 @@ const uniqueData = removeDuplicates(myNewData, selectedTypeByRow);
     fetchMasterWsList();
   }, [storyWorldId]);
 
+  const [deleteChange, setDeleteChange] = useState(false)
+
 const handleDelete = () => {
   const deleteId= selectedRow?.id
   if (deleteId !== null && deleteId !== undefined) {
@@ -192,7 +194,7 @@ const handleDelete = () => {
 
     setShowDeleteModal(false);
     message.success("Deleted Successfully!");
-    handleAnythingChanged(true);
+    setDeleteChange(true)
   } else {
     message.error("Invalid ID for deletion.");
   }
@@ -703,6 +705,7 @@ const handleDelete = () => {
         handleAnythingChanged(false);
         setHandleAnythingChange(true)
         setRadioChange(false)
+        setDeleteChange(false)
       } else {
         message.destroy(alertKey);
         message.error("Error In Saving Ws ! Unable To Fetch Response !");
@@ -1214,6 +1217,10 @@ if(whoSelectedValues === "who"){
 
 useEffect(()=>{
   if(radioChange === true) {
+    handleAnythingChanged(true);
+    return;
+  }
+  if(deleteChange === true) {
     handleAnythingChanged(true);
     return;
   }
