@@ -844,27 +844,7 @@ const handleDelete = () => {
     () => processData(manualData || []),
     [manualData]
   );
-
-  const flattenData = myNewData?.map((item) => {
-    const normalizedClusterValues = (() => {
-      if (Array?.isArray(item?.clusterValues)) {
-        return item?.clusterValues.map((val) =>
-          typeof val === "object" ? val?.value : val
-        );
-      } else if (typeof item?.clusterValues === "string") {
-        return item?.clusterValues?.split(",").map((value) => value?.trim());
-      }
-      return [];
-    })();
-
-    return {
-      ws: item?.ws ?? "",
-      type: item?.type ?? "",
-      ClusterHead: item?.masterHead ?? "",
-      clusterValues: normalizedClusterValues?.join(", "),
-    };
-  });
-
+  
   const transformData = (data) => {
     const result = {
       who: {
@@ -1020,6 +1000,9 @@ if (updatedWhoData?.length > 0) {
   const checkIfPrimaryWhoExists = (data) => {
     return data.some(item => item.ws === "who" && (item.type.name === "Primary" || item.type === "Primary"));
   };
+
+  console.log("updateNewData", updateNewData);
+  
 
   const transformedData = transformData(updateNewData|| []);
   const [whoSelectedValues, setWhoSelectedValue] = useState(false);
@@ -1248,6 +1231,26 @@ useEffect(()=>{
     handleAnythingChanged(false);
   } 
 },[handleAnyChange])
+
+const flattenData = updateNewData?.map((item) => {
+  const normalizedClusterValues = (() => {
+    if (Array?.isArray(item?.clusterValues)) {
+      return item?.clusterValues.map((val) =>
+        typeof val === "object" ? val?.value : val
+      );
+    } else if (typeof item?.clusterValues === "string") {
+      return item?.clusterValues?.split(",").map((value) => value?.trim());
+    }
+    return [];
+  })();
+
+  return {
+    ws: item?.ws ?? "",
+    type: item?.type ?? "",
+    ClusterHead: item?.masterHead ?? "",
+    clusterValues: normalizedClusterValues?.join(", "),
+  };
+});
 
   return (
     <>
