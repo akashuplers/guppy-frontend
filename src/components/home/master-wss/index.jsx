@@ -159,7 +159,6 @@ const uniqueData = removeDuplicates(myNewData, selectedTypeByRow);
   }, [storyWorldId]);
 
 const handleDelete = () => {
-  // debugger
   const deleteId= selectedRow?.id
   if (deleteId !== null && deleteId !== undefined) {
     const tableIndex = tableData.findIndex((item) => item.id === deleteId);
@@ -168,22 +167,9 @@ const handleDelete = () => {
     const newWhoDataIndex = newWhoTypeData.findIndex((item) => item.id === deleteId);
     const newWhatDataIndex = newWhatTypeData.findIndex((item) => item.id === deleteId);
     const newWhereDataIndex = newWhereTypeData.findIndex((item) => item.id === deleteId);
-    // const allDataIndexCase = allFilteredData.findIndex((item)=> item.id === deleteId);
     let updatedTableData = [...tableData];
     let updatedFilterData = [...filterData];
     let updateMyNewData = [...myNewData];
-    // if (newWhoDataIndex !== -1) {
-    //   newWhoTableData = newWhoTypeData.filter((item) => item.id !== deleteId);
-    //   setNewWhoTypeData(newWhoTableData);
-    // } else if (newWhatDataIndex !== -1) {
-    //   newWhatTableData = newWhatTypeData.filter((item) => item.id !== deleteId);
-    //   setNewWhatTypeData(newWhatTableData);
-    // } else if(newWhereDataIndex !== -1) {
-    //   newWherewData = newWhereTypeData.filter((item) => item.id !== deleteId);
-    //   setNewWhereTypeData(newWherewData);
-    // }
-    // let updateAllData = [...allFilteredData];
-
     if (myNewDataIndex !== -1) {
       updateMyNewData = myNewData.filter((item) => item.id !== deleteId);
       setMyNewData(updateMyNewData);
@@ -193,17 +179,6 @@ const handleDelete = () => {
       updatedTableData = tableData.filter((item) => item.id !== deleteId);
       setTableData(updatedTableData);
     }
-    // if (myNewDataIndex !== -1) {
-    //   updateAllData = allFilteredData.filter((item) => item.id !== deleteId);
-    //   setAllFilteredData(updateAllData);
-    // } 
-
-    // if(tableIndex )
-    
-    //  else if (filterIndex !== -1) {
-    //   updatedFilterData = filterData.filter((item) => item.id !== deleteId);
-    //   setFilteredData(updatedFilterData);
-    // }
      else {
       // If deleteId is not found in either dataset
       return;
@@ -288,48 +263,20 @@ const handleDelete = () => {
       }));
     };
     if(myNewData?.length > 0) {
-      const updatedNewData = removeChipFromClusterValues(myNewData, true); // Use `id` check
+      const updatedNewData = removeChipFromClusterValues(myNewData, true); 
       setMyNewData(updatedNewData);
     }
     if(forFilter?.length > 0) {
-      const updatedNewData = removeChipFromClusterValues(forFilter, true); // Use `id` check
+      const updatedNewData = removeChipFromClusterValues(forFilter, true); 
       setForFilter(updatedNewData);
-      // message.success("Cluster Value removed successfully!");
     }
     handleAnythingChanged(true);
     message.success("Cluster Value removed successfully!");
-  
-    // if (filterData?.length > 0 && tableData?.length > 0) {
-    //   // Handle both filterData and tableData
-    //   const updatedFilterData = removeChipFromClusterValues(filterData, true); // Use `id` check
-    //   setFilteredData(updatedFilterData);
-  
-    //   const updatedTableData = removeChipFromClusterValues(tableData, true); // Use `id` check
-    //   setTableData(updatedTableData);
-  
-    //   message.success("Cluster Value removed successfully!");
-    //   handleAnythingChanged(true);
-    // } else if (filterData?.length > 0) {
-    //   // Handle only filterData
-    //   const updatedFilterData = removeChipFromClusterValues(filterData, true); // Use `id` check
-    //   setFilteredData(updatedFilterData);
-  
-    //   message.success("Cluster Value removed successfully!");
-    //   handleAnythingChanged(true);
-    // } else if (tableData?.length > 0) {
-    //   // Handle only tableData
-    //   const updatedTableData = removeChipFromClusterValues(tableData, true); // Use `id` check
-    //   setTableData(updatedTableData);
-  
-    //   message.success("Cluster Value removed successfully!");
-    //   handleAnythingChanged(true);
-    // }
   };
   
   useEffect(() => {
     if(saveMasterWs){
       handleOpenDialog()
-      // onSave();
     }
   }, [saveMasterWs]);
 
@@ -339,7 +286,6 @@ const handleDelete = () => {
   ];
 
   const [typo, setTypo] = useState(type);
-  // const [selectedTypeByRow, setSelectedTypeByRow] = useState({});
 
   const handleRadioChange = (recordId, selectedType) => {
     setSelectedTypeByRow((prev) => ({
@@ -576,21 +522,17 @@ const handleDelete = () => {
     message.success("Reset Successfully !");
     handleAnythingChanged(true);
   };
-
-  console.log("tableData",tableData);
   
   const [blankValue, setBlankValue] = useState();
   const [fieldValue, setFieldValue] = useState();
 
   const organizeDataByWs = (data) => {
-    // Initialize separate arrays for 'who', 'what', and 'where'
     const categorizedData = {
       who: [],
       what: [],
       where: []
     };
   
-    // Iterate through the data and group by 'ws'
     data.forEach((item) => {
       if (item.ws === "who") {
         categorizedData.who.push(item);
@@ -608,10 +550,9 @@ const handleDelete = () => {
   
   const handleChange = async (e, name) => { 
     const categorizedData = organizeDataByWs(tableData);
-    console.log("categorizedData",categorizedData);
     const blankValue = e?.target?.value;
     const fieldName = name;
-    let combinedData = []; // Define combinedData at the top
+    let combinedData = []; 
 
     setFieldValue(fieldName)
     setBlankValue(blankValue)
@@ -633,7 +574,6 @@ const handleDelete = () => {
       } else if(newWhoTypeData?.length > 0){
         setMyNewData(newWhoTypeData)
       }
-      // debugger
       if(newWhoTypeData?.length > 0) {
         handleAnythingChanged(true);
       } else if (newWhoTypeData?.length === 0) {
@@ -675,7 +615,6 @@ const handleDelete = () => {
         handleAnythingChanged(false);
       }
       setForFilter(removeDuplicates(combinedData))
-      // setMyNewData(removeDuplicates(combinedData))
       setWhatSelectedValue(e?.target?.value);
       setWhereSelectedValue(false);
       setWhoSelectedValue(false);
@@ -684,11 +623,11 @@ const handleDelete = () => {
     } else if (e?.target?.value === "where") {
       setWheres(clusterList?.Where);
       const dataSource = clusterList?.Where?.map((item, index) => ({
-        id: item.id, // Corresponds to the S.No column
-        ws: e?.target?.value, // Corresponds to the W's Form column
-        type: typo,  // Example logic for Type column
-        masterHead: item.value, // Example logic for Cluster Head column
-        clusterValues: [], // Cluster Value column
+        id: item.id,
+        ws: e?.target?.value, 
+        type: typo, 
+        masterHead: item.value, 
+        clusterValues: [], 
       }));
       combinedData = [...categorizedData?.where, ...dataSource] 
       setFilteredData(dataSource)
@@ -707,7 +646,6 @@ const handleDelete = () => {
         handleAnythingChanged(false);
       }
       setForFilter(removeDuplicates(combinedData))
-      // setMyNewData(removeDuplicates(combinedData))
       setWhereSelectedValue(e?.target?.value);
       setWhatSelectedValue(false);
       setWhoSelectedValue(false);
@@ -717,20 +655,12 @@ const handleDelete = () => {
       
     }  else if(blankValue=="" && name==="ws"){
       setMyNewData([]);
-      // setWhats([]);
-      // setWheres([]);
-      // formik.setFieldValue("masterHead", { id: "", value: "" }); 
-
     }
 
     if (name === "ws") {
       formik.setFieldValue("ws", e.target.value);
     } 
   };
-
-  const [mergedData, setMergedData] =  useState([])
-  
-  console.log("mergedData",mergedData);
 
   const getUpdatedJson = (list) => {
     const arr = list || [];
@@ -754,7 +684,6 @@ const handleDelete = () => {
   };
 
   const onSave = async () => {
-    // debugger
     setIsSubmitting(true);
     let alertKey;
     try {
@@ -822,60 +751,30 @@ const handleDelete = () => {
     const result = {};
   
     inputData.forEach((item, index) => {
-      const wsKey = item.ws.toLowerCase().replace(/'s$/, ""); // Normalize the `ws` key
-  
-      // Initialize the `wsKey` as an array if it doesn't exist
+      const wsKey = item.ws.toLowerCase().replace(/'s$/, ""); 
       if (!result[wsKey]) {
         result[wsKey] = [];
       }
   
       const formattedItem = {
-        id: item.masterHead?.id ?? item.id, // Use `id` or fallback to `item.id`
-        masterHead: item?.masterHead?.value || item?.masterHead, // Normalize `masterHead`
+        id: item.masterHead?.id ?? item.id,
+        masterHead: item?.masterHead?.value || item?.masterHead, 
         clusterValues: item?.clusterValues?.map((cluster) => ({
           id: cluster?.id,
           value: cluster?.value,
-        })) || [], // Format `clusterValues` or use an empty array
-        type: item?.type || [], // Assign the predefined type array
+        })) || [], 
+        type: item?.type || [], 
         apiType: item?.apiType ?? item?.type,
-        new: filterData?.length > 0 ? true:item?.new, // Determine `new` status
-        updated: item?.updated === true ? true : item?.updated ?? false, // Determine `updated` status
+        new: filterData?.length > 0 ? true:item?.new, 
+        updated: item?.updated === true ? true : item?.updated ?? false, 
       };
   
-      result[wsKey].push(formattedItem); // Add the formatted item to the array
+      result[wsKey].push(formattedItem); 
     });
   
     return result;
   }
-console.log("filterData",filterData);
 
-  function convertApiData(apiData) {
-    const typeArray = [
-      { id: 1, name: "Primary" },
-      { id: 2, name: "Secondary" },
-    ];
-    let result = [];
-  
-    // Iterate over each ws key (e.g., "who", "what", "where")
-    Object.keys(apiData).forEach((ws) => {
-      // Iterate over each type key (e.g., "primary", "secondary")
-      Object.keys(apiData[ws]).forEach((typeKey, index) => {
-        apiData[ws][typeKey]?.forEach((item) => {
-          result.push({
-            id: item.id, // ID of the item
-            masterHead: item.masterHead, // Master head value
-            clusterValues: item.clusterValues || [], // Cluster values
-            type: typeArray, // Add type array
-            new: item.new === true, // Determine `new` status
-            updated: item.updated === true, // Determine `updated` status
-            index, // Add the index for sorting
-          });
-        });
-      });
-    });
-  
-    return result;
-  }
   function groupDataByTypeAndWs(apiData) {
     const typeArray = [
       { id: 1, name: "Primary" },
@@ -915,31 +814,27 @@ console.log("filterData",filterData);
   const manualData = convertData(filterData);
 
   const processData = (data) => {
-    // debugger
     const result = [];
   
-    // Iterate over the keys of the input data (ws keys)
     Object.keys(data)?.forEach((ws) => {
-      // Iterate over each item in the ws array
       data[ws]?.forEach((item) => {
         result.push({
-          ws, // Add the ws key
-          id: item?.id, // Add the id from the item
-          type: item?.type || [], // Use the item's type or an empty array
-          masterHead: item?.masterHead, // Add the masterHead
+          ws, 
+          id: item?.id, 
+          type: item?.type || [], 
+          masterHead: item?.masterHead, 
           clusterValues: item?.clusterValues?.map((cluster) => ({
             id: cluster?.id,
             value: cluster?.value,
-          })), // Map clusterValues if present
-          new: filterData?.length > 0 ? true:item?.new, // Compute the new field
-          updated: item?.updated === true, // Compute the updated field,
+          })), 
+          new: filterData?.length > 0 ? true:item?.new, 
+          updated: item?.updated === true, 
           apiType: item?.apiType,
-          index: item?.index, // Include the index of the item
+          index: item?.index, 
         });
       });
     });
   
-    // Sort the result array by the index field
     result.sort((a, b) => a.index - b.index);
   
     return result;
@@ -1059,7 +954,6 @@ console.log("filterData",filterData);
   }
   
   function updateForUnique(data, typeMapping) {
-    // debugger
     const typeArray = [
       { id: 1, name: "Primary" },
       { id: 2, name: "Secondary" },
@@ -1068,8 +962,8 @@ console.log("filterData",filterData);
       let updatedItem = { ...item };
   
       if (typeMapping && typeMapping[item.id]) {
-        const name = typeMapping[item.id]; // Retrieve the name ("Primary" or "Secondary")
-        const id = name === "Primary" ? 1 : name === "Secondary" ? 2 : undefined; // Assign ID based 
+        const name = typeMapping[item.id];
+        const id = name === "Primary" ? 1 : name === "Secondary" ? 2 : undefined;
         updatedItem.type = {
           id: id, 
           name: name, 
@@ -1086,8 +980,30 @@ console.log("filterData",filterData);
   }
 
   const updatedData = updateAndNormalizeData(meregedData, selectedTypeByRow); 
-  const apiData = updateAndNormalizeData(tableData, selectedTypeByRow) 
-  const newGeneratedData = (updatedData?.length == 0) ? apiData:updatedData  
+  const apiData = updateAndNormalizeData(tableData, selectedTypeByRow)
+
+const updatedWhoData = updatedData.filter(item => item.ws === "who");
+const updatedWhatData = updatedData.filter(item => item.ws === "what");
+const updatedWhereData = updatedData.filter(item => item.ws === "where");
+
+const apiWhoData = apiData.filter(item => item.ws === "who");
+const apiDataWhatData = apiData.filter(item => item.ws === "what");
+const apiDataWhereData = apiData.filter(item => item.ws === "where");
+
+let newMergedData = [];
+if (updatedWhoData?.length > 0) {
+  if (apiDataWhatData?.length > 0 || apiDataWhereData?.length > 0) {
+    if (updatedWhatData?.length === 0 && updatedWhereData?.length === 0) {
+      newMergedData = [...updatedWhoData, ...apiDataWhatData, ...apiDataWhereData];
+    }
+  }
+
+  if (updatedWhatData?.length > 0 && updatedWhereData?.length === 0 && apiDataWhereData?.length > 0) {
+    newMergedData = [...updatedWhoData, ...updatedWhatData, ...apiDataWhereData];
+  }
+}
+
+  const newGeneratedData = (updatedData?.length == 0) ? apiData:newMergedData?.length > 0 ? newMergedData: updatedData  
   const [updateNewData, setUpdateNewData] = useState([]);
   const prevDataRef = useRef(null);
   
@@ -1307,7 +1223,6 @@ const removeDuplicateClusterHeads = (data) => {
 
 const handleDataFiltering = (newData) => {
   const newFilteredData = removeDuplicateClusterHeads(newData);
-  console.log("delete",newFilteredData);
   setFilteredNewData(newFilteredData);
 };
 
