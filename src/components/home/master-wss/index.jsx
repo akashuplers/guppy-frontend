@@ -58,6 +58,7 @@ const MasterWssPage = ({
   const [newWhereTypeData, setNewWhereTypeData] = useState([]);
   const [handleAnyChange, setHandleAnythingChange] = useState(false)
   const meregedData =  [...newWhoTypeData, ...newWhatTypeData, ...newWhereTypeData]
+console.log("meregedData",meregedData);
 
   const [tablePagination, setTablePagination] = useState({
     current: 1,   // Default to page 1
@@ -253,7 +254,7 @@ const handleDelete = () => {
   };
 
   const handleRemoveChip = (value) => {
-    // debugger
+    debugger
     const removeChipFromClusterValues = (data, isIdCheck) => {
       return data.map((item) => ({
         ...item,
@@ -270,6 +271,11 @@ const handleDelete = () => {
       const updatedNewData = removeChipFromClusterValues(forFilter, true); 
       setForFilter(updatedNewData);
     }
+
+    // if(meregedData?.length > 0) {
+    //   const updatedMeredData = removeChipFromClusterValues(meregedData, true);
+    //   setMyNewData(updatedMeredData);
+    // }
     handleAnythingChanged(true);
     message.success("Cluster Value removed successfully!");
   };
@@ -965,8 +971,6 @@ const handleDelete = () => {
 const updatedWhoData = updatedData.filter(item => item.ws === "who");
 const updatedWhatData = updatedData.filter(item => item.ws === "what");
 const updatedWhereData = updatedData.filter(item => item.ws === "where");
-
-const apiWhoData = apiData.filter(item => item.ws === "who");
 const apiDataWhatData = apiData.filter(item => item.ws === "what");
 const apiDataWhereData = apiData.filter(item => item.ws === "where");
 
@@ -1248,6 +1252,9 @@ const flattenData = updateNewData?.map((item) => {
     clusterValues: normalizedClusterValues?.join(", "),
   };
 });
+
+console.log("uniqueFilterData", uniqueFilterData);
+
 
   return (
     <>
