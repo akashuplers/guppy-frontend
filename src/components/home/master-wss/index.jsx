@@ -256,11 +256,7 @@ const handleDelete = () => {
       message.error("Please select a version to download.");
     }
   };
-  console.log("Alpha_User@123", tableData);
-  console.log("mynew data,", myNewData);
-  
-  
-
+   
   const handleRemoveChip = (value) => {
 
     // const removeChipFromClusterValues = (data, isIdCheck) => {
@@ -307,7 +303,6 @@ const handleDelete = () => {
             return newItem;
         });
     };
-    console.log("removedClusterValueObject",removedClusterValueObject);
     
       if(myNewData?.length < forFilter?.length) {
         const updatedData = forFilter?.map(item => {
@@ -320,32 +315,27 @@ const handleDelete = () => {
           return item;
         });
       const updatedFromfilterData = removeChipFromClusterValues(updatedData, true); 
-      console.log("removedClusterValueObject",removedClusterValueObject);
-      console.log("updatedFromfilterData", updatedFromfilterData);
+
       removedClusterValueObject.forEach((removedObj) => {
-        // Check if the removedObj's masterHead already exists in myNewData
         const existingItem = myNewData.find((item) => item.masterHead === removedObj.masterHead);
       
-        // If the masterHead doesn't exist in myNewData, add the removed object
         if (!existingItem) {
-          updatedFromfilterData.push(removedObj); // Add the removed cluster value object
+          updatedFromfilterData.push(removedObj); 
           console.log("Added Removed Cluster Value Object to myNewData:", removedObj);
         }
       });
       const merge = [...updatedFromfilterData,...removedClusterValueObject ]
       setMyNewData(updatedFromfilterData);
     } else if (myNewData?.length > 0) {
-      // Handle the case where myNewData already has some data
+      
       const updatedNewData = removeChipFromClusterValues(myNewData, true);
       console.log("updatedNewData",updatedNewData);
       console.log("removedClusterValueObject", removedClusterValueObject);
       removedClusterValueObject.forEach((removedObj) => {
-        // Check if the removedObj's masterHead already exists in myNewData
         const existingItem = myNewData.find((item) => item.masterHead === removedObj.masterHead);
       
-        // If the masterHead doesn't exist in myNewData, add the removed object
         if (!existingItem) {
-          updatedNewData.push(removedObj); // Add the removed cluster value object
+          updatedNewData.push(removedObj);
           console.log("Added Removed Cluster Value Object to myNewData:", removedObj);
         }
       });
