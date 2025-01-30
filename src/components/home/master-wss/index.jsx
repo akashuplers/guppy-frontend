@@ -58,6 +58,8 @@ const MasterWssPage = ({
   const [newWhereTypeData, setNewWhereTypeData] = useState([]);
   const [handleAnyChange, setHandleAnythingChange] = useState(false)
   const meregedData =  [...newWhoTypeData, ...newWhatTypeData, ...newWhereTypeData]
+console.log("newWhatTypeData", newWhatTypeData);
+console.log("selectedRow", selectedRow);
 
   const [tablePagination, setTablePagination] = useState({
     current: 1,   // Default to page 1
@@ -88,7 +90,7 @@ const MasterWssPage = ({
   }
   
 
-const uniqueData = removeDuplicates(myNewData, selectedTypeByRow);
+// const uniqueData = removeDuplicates(myNewData, selectedTypeByRow);
 
   const formik = useFormik({
     initialValues: {
@@ -260,7 +262,7 @@ const handleDelete = () => {
       return data?.map((item) => ({
         ...item,
         clusterValues: item.clusterValues?.filter(
-          (clusterItem) => (isIdCheck ? clusterItem?.value !== value?.value : clusterItem?.value !== value?.value)
+          (clusterItem) => (isIdCheck ? clusterItem?.id !== value?.id : clusterItem?.value !== value?.value)
         ),
       }));
     };
@@ -562,28 +564,47 @@ const handleDelete = () => {
   };
   
   const [forFilter, setForFilter] = useState([])
-  console.log("forFilter", forFilter);
-  console.log("myNewData",  myNewData);
-  
-  
+   
   const categorizedData = organizeDataByWs(tableData);
+  
   const handleChange = async (e, name) => { 
     const blankValue = e?.target?.value;
     const fieldName = name;
     let combinedData = []; 
-
     setFieldValue(fieldName)
     setBlankValue(blankValue)
     if (e?.target?.value === "who") {
       setWhos(clusterList?.Who);
-      const dataSource = clusterList?.Who?.map((item, index) => ({
-        id: item.id, 
-        ws: e?.target?.value, 
-        type: typo,  
-        masterHead: item.value.toLowerCase(), 
-        clusterValues: [],
-      }));
-
+      const dataSource = clusterList?.Who?.map((item) => {
+        // Find if there's an existing item in categorizedData?.what with the same masterHead or a matching value in clusterValues
+        const existingItem = categorizedData?.who?.find(
+          (catItem) => catItem.masterHead === item.value.toLowerCase() || 
+                      catItem.clusterValues.some(cluster => cluster.value === item.value)
+        );
+      
+        // If there's a match, check if clusterValues is present, and if so, use its ID
+        if (existingItem) {
+          const matchingCluster = existingItem.clusterValues.find(
+            (cluster) => cluster.value === item.value
+          );
+          return {
+            id: matchingCluster ? matchingCluster.id : existingItem.id, // Use clusterValues id if available, else use existingItem id
+            ws: e?.target?.value,
+            type: typo,
+            masterHead: item.value.toLowerCase(),
+            clusterValues: [],
+          };
+        }
+      
+        // If no match, use the id from clusterList?.What
+        return {
+          id: item.id,
+          ws: e?.target?.value,
+          type: typo,
+          masterHead: item.value.toLowerCase(),
+          clusterValues: [],
+        };
+      });
       combinedData = [...categorizedData?.who, ...dataSource] 
       
       setFilteredData(dataSource)
@@ -600,19 +621,42 @@ const handleDelete = () => {
       setWheres([]);
     } else if (e?.target?.value === "what") {
       setWhats(clusterList?.What);
-      const dataSource = clusterList?.What?.map((item, index) => ({
-        id: item.id, 
-        ws: e?.target?.value, 
-        type: typo,  
-        masterHead: item.value.toLowerCase(),
-        clusterValues: [], 
-      }));
+      const dataSource = clusterList?.What?.map((item) => {
+        // Find if there's an existing item in categorizedData?.what with the same masterHead or a matching value in clusterValues
+        const existingItem = categorizedData?.what?.find(
+          (catItem) => catItem.masterHead === item.value.toLowerCase() || 
+                      catItem.clusterValues.some(cluster => cluster.value === item.value)
+        );
+      
+        // If there's a match, check if clusterValues is present, and if so, use its ID
+        if (existingItem) {
+          const matchingCluster = existingItem.clusterValues.find(
+            (cluster) => cluster.value === item.value
+          );
+          return {
+            id: matchingCluster ? matchingCluster.id : existingItem.id, // Use clusterValues id if available, else use existingItem id
+            ws: e?.target?.value,
+            type: typo,
+            masterHead: item.value.toLowerCase(),
+            clusterValues: [],
+          };
+        }
+      
+        // If no match, use the id from clusterList?.What
+        return {
+          id: item.id,
+          ws: e?.target?.value,
+          type: typo,
+          masterHead: item.value.toLowerCase(),
+          clusterValues: [],
+        };
+      });
       combinedData = [...categorizedData?.what, ...dataSource] 
       setFilteredData(dataSource)
-      if(newWhatTypeData?.length === 0){
-        setMyNewData(removeDuplicates(combinedData))
-      } else if(newWhatTypeData?.length > 0){
+      if(newWhatTypeData?.length > 0){
         setMyNewData(newWhatTypeData)
+      } else if(newWhatTypeData?.length === 0){
+        setMyNewData(removeDuplicates(combinedData))
       }
       setForFilter(removeDuplicates(combinedData))
       setWhatSelectedValue(e?.target?.value);
@@ -622,13 +666,43 @@ const handleDelete = () => {
       setWheres([]);
     } else if (e?.target?.value === "where") {
       setWheres(clusterList?.Where);
-      const dataSource = clusterList?.Where?.map((item, index) => ({
-        id: item.id,
-        ws: e?.target?.value, 
-        type: typo, 
-        masterHead: item.value.toLowerCase(), 
-        clusterValues: [], 
-      }));
+      const dataSource = clusterList?.Where?.map((item) => {
+        // Find if there's an existing item in categorizedData?.what with the same masterHead or a matching value in clusterValues
+        const existingItem = categorizedData?.where.find(
+          (catItem) => catItem.masterHead === item.value.toLowerCase() || 
+                      catItem.clusterValues.some(cluster => cluster.value === item.value)
+        );
+      
+        // If there's a match, check if clusterValues is present, and if so, use its ID
+        if (existingItem) {
+          const matchingCluster = existingItem.clusterValues.find(
+            (cluster) => cluster.value === item.value
+          );
+          return {
+            id: matchingCluster ? matchingCluster.id : existingItem.id, // Use clusterValues id if available, else use existingItem id
+            ws: e?.target?.value,
+            type: typo,
+            masterHead: item.value.toLowerCase(),
+            clusterValues: [],
+          };
+        }
+      
+        // If no match, use the id from clusterList?.What
+        return {
+          id: item.id,
+          ws: e?.target?.value,
+          type: typo,
+          masterHead: item.value.toLowerCase(),
+          clusterValues: [],
+        };
+      });
+      // const dataSource = clusterList?.Where?.map((item, index) => ({
+      //   id: item.id,
+      //   ws: e?.target?.value, 
+      //   type: typo, 
+      //   masterHead: item.value.toLowerCase(), 
+      //   clusterValues: [], 
+      // }));
       combinedData = [...categorizedData?.where, ...dataSource] 
       setFilteredData(dataSource)
       if(newWhereTypeData?.length === 0){
@@ -974,7 +1048,7 @@ if (updatedWhoData?.length > 0) {
   if (updatedWhatData?.length > 0 && updatedWhereData?.length === 0 && apiDataWhereData?.length > 0) {
     newMergedData = [...updatedWhoData, ...updatedWhatData, ...apiDataWhereData];
   }
-}
+} 
 
   const newGeneratedData = (updatedData?.length == 0) ? apiData:newMergedData?.length > 0 ? newMergedData: updatedData  
   const [updateNewData, setUpdateNewData] = useState([]);
@@ -1111,6 +1185,9 @@ if (updatedWhoData?.length > 0) {
     blankValue,
   ]);  
 
+  console.log("transfor", transformedData);
+  
+
   const onModify = (updatedObj) => {
     let modifiedFilterData = [];
     let modifiedTableData = [];
@@ -1118,7 +1195,7 @@ if (updatedWhoData?.length > 0) {
     if(myNewData?.length > 0) {
       const curFilterData = [...myNewData];
       modifiedMyNewTableData = curFilterData.map((ele) =>
-        ele.id === selectedRow.id ? updatedObj : ele
+        ele.masterHead === selectedRow.masterHead ? updatedObj : ele
       );
       setMyNewData(modifiedMyNewTableData)
       setForFilter(modifiedMyNewTableData)
@@ -1403,6 +1480,7 @@ const flattenData = updateNewData?.map((item) => {
       )}
       {dialogPopup && flow && (
         <ModifyMasterWsPopup
+          forfilter={forFilter}
           open={dialogPopup}
           filteredNewData={filteredData}
           modifyItemObj={selectedRow}
