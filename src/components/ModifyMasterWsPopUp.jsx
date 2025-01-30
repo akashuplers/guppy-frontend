@@ -25,7 +25,8 @@ const ModifyMasterWsPopup = ({
   tableData,
   filterData,
   filteredNewData,
-  uniqueFilterData
+  uniqueFilterData,
+  forfilter
 }) => {
   const [currentValue, setCurrentValue] = useState("");
   const [popupTitle, setPopupTitle] = useState("");
@@ -49,7 +50,20 @@ const ModifyMasterWsPopup = ({
   const [typeData, setTypeData] = useState(types);
   const [allData, setAllData] = useState([]);
   const [oldData,setOldData] = useState([])
+  console.log("forrrr", forfilter);
+  
+  console.log("uniqueFilterData", uniqueFilterData);
+  const result = uniqueFilterData.map(item => ({
+    id: item.id,
+    value: item.masterHead.toLowerCase()
+  }));
 
+  const oldSaved = forfilter.map(item => ({
+    id: item.id,
+    value: item.masterHead.toLowerCase()
+  }));
+  console.log("result",result);
+  
   const filterClusterList = (clusterList, updatedTableData) => {
     const updatedTableIds = updatedTableData.map((item) => item.masterHead);  
     const filteredWho = clusterList.Who.filter((item) =>
@@ -91,7 +105,7 @@ const ModifyMasterWsPopup = ({
     }
   };
 
-  console.log("clusterHeadVals", clusterHeadVals);
+  // console.log("clusterHeadVals", clusterHeadVals);
   
   useEffect(() => {
     handleClusterChange();
@@ -241,8 +255,10 @@ console.log("clusterVaaaaaaaaaaalueSet",clusterValueSet);
     const selectedClusterObjects = updatedClusterValuesss
     .map((value) => updatedClusterValues.find((item) => item?.value === value))
     .filter(Boolean);
+
+    const oldSelected = clusterValue
     const oldClusterObjects =
-    (oldData || []).filter((item) =>
+    (oldSaved || []).filter((item) =>
       valuesArray.includes(item.value.toLowerCase())
     );
     const mergedClusterObjects = [
@@ -318,7 +334,7 @@ console.log("clusterVaaaaaaaaaaalueSet",clusterValueSet);
 
   const getClusterValueData = async (value, clusterId) => {    
     const data = allData;
-    const clustHeadVal = clusterHeadVals?.filter((item) => item.value.toLowerCase() !== value.toLowerCase())
+    const clustHeadVal = result?.filter((item) => item.value.toLowerCase() !== value.toLowerCase())
     const apiUrl = API_BASE_PATH + API_ROUTES.SORT_WS + story_id;
     const payload = {
       clusterHead: { value: value, id: clusterId },
@@ -409,9 +425,6 @@ console.log("clusterVaaaaaaaaaaalueSet",clusterValueSet);
     clusterValus,
     updateNewData 
   ); 
-console.log("updatedFilteredData",updatedFilteredData);
-console.log(updatedClusterValues, "updatedClusterValues");
-
 
   const handleUpdate = () => {
     const updatedObj = {
