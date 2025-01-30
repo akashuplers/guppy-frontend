@@ -324,7 +324,6 @@ const handleDelete = () => {
           console.log("Added Removed Cluster Value Object to myNewData:", removedObj);
         }
       });
-      const merge = [...updatedFromfilterData,...removedClusterValueObject ]
       setMyNewData(updatedFromfilterData);
     } else if (myNewData?.length > 0) {
       
