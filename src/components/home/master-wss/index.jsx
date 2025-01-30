@@ -87,7 +87,6 @@ const MasterWssPage = ({
     return uniqueData;
   }
   
-  
 
 const uniqueData = removeDuplicates(myNewData, selectedTypeByRow);
 
@@ -172,16 +171,12 @@ const handleDelete = () => {
     const tableIndex = tableData.findIndex((item) => item.id === deleteId);
     const filterIndex = filterData.findIndex((item) => item.id === deleteId);
     const myNewDataIndex = myNewData.findIndex((item) => item.id === deleteId);
-    const newWhoDataIndex = newWhoTypeData.findIndex((item) => item.id === deleteId);
-    const newWhatDataIndex = newWhatTypeData.findIndex((item) => item.id === deleteId);
-    const newWhereDataIndex = newWhereTypeData.findIndex((item) => item.id === deleteId);
     let updatedTableData = [...tableData];
     let updatedFilterData = [...filterData];
     let updateMyNewData = [...myNewData];
     if (myNewDataIndex !== -1) {
       updateMyNewData = myNewData.filter((item) => item.id !== deleteId);
       setMyNewData(updateMyNewData);
-      
     } 
     if (tableIndex !== -1) {
       updatedTableData = tableData.filter((item) => item.id !== deleteId);
@@ -262,21 +257,31 @@ const handleDelete = () => {
 
   const handleRemoveChip = (value) => {
     const removeChipFromClusterValues = (data, isIdCheck) => {
-      return data.map((item) => ({
+      return data?.map((item) => ({
         ...item,
-        clusterValues: item.clusterValues.filter(
-          (clusterItem) => (isIdCheck ? clusterItem?.id !== value?.id : clusterItem?.value !== value?.value)
+        clusterValues: item.clusterValues?.filter(
+          (clusterItem) => (isIdCheck ? clusterItem?.value !== value?.value : clusterItem?.value !== value?.value)
         ),
       }));
     };
-    if(myNewData?.length > 0) {
+    
+      if(myNewData?.length < forFilter?.length) {
+        const updatedData = forFilter?.map(item => {
+          const newItem = myNewData?.find(newItem => newItem.masterHead === item.masterHead);
+        
+          if (newItem && newItem.clusterValues && newItem.clusterValues.length > 0) {
+            return { ...item, ...newItem }; 
+          }
+        
+          return item;
+        });
+      const updatedFromfilterData = removeChipFromClusterValues(updatedData, true); 
+      setMyNewData(updatedFromfilterData);
+    } else if(myNewData?.length > 0) {
       const updatedNewData = removeChipFromClusterValues(myNewData, true); 
       setMyNewData(updatedNewData);
     }
-    if(forFilter?.length > 0) {
-      const updatedNewData = removeChipFromClusterValues(forFilter, true); 
-      setForFilter(updatedNewData);
-    }
+
     handleAnythingChanged(true);
     message.success("Cluster Value removed successfully!");
   };
@@ -332,12 +337,12 @@ const handleDelete = () => {
       title: 'Type',
       render: (text, record) => {
         // Extract type array and preselected type
-        const typoArray = Array.isArray(record?.type) ? record?.type : record?.apiType ?? [];
+        const typoArray = Array?.isArray(record?.type) ? record?.type : record?.apiType ?? [];
         const preSelectedType =
           typeof record?.type === 'object' && record?.type?.name ? record?.type?.name : null;
     
         // Dynamically check if "Primary" is selected for any record with ws: "who"
-        const isPrimarySelectedForWho = updateNewData.some(
+        const isPrimarySelectedForWho = updateNewData?.some(
           (item) => item.ws === 'who' && (item.type === 'Primary' || selectedTypeByRow[item.id] === 'Primary')
         );
     
@@ -353,9 +358,9 @@ const handleDelete = () => {
         
             // Determine the background color based on selection
             const backgroundColor =
-              selectedTypeByRow[record.id] === typeItem.name // User-selected value
+              selectedTypeByRow[record.id] === typeItem.name 
                 ? 'green'
-                : preSelectedType === typeItem.name && !selectedTypeByRow[record.id] // Pre-selected value when no new selection
+                : preSelectedType === typeItem.name && !selectedTypeByRow[record.id] 
                 ? 'green'
                 : 'white';
         
@@ -364,30 +369,30 @@ const handleDelete = () => {
                 key={typeItem.id || typeItem.name}
                 style={{
                   marginBottom: '5px',
-                  color: isDisabled ? '#b0b0b0' : 'black', // Greyed-out text for disabled
-                  cursor: isDisabled ? 'not-allowed' : 'pointer', // Pointer cursor
-                  opacity: isDisabled ? 0.6 : 1, // Reduced opacity for disabled
+                  color: isDisabled ? '#b0b0b0' : 'black',
+                  cursor: isDisabled ? 'not-allowed' : 'pointer', 
+                  opacity: isDisabled ? 0.6 : 1, 
                 }}
               >
                 <input
                   type="radio"
-                  name={`type-${record.id}`} // Group radio buttons by record ID
+                  name={`type-${record.id}`} 
                   value={typeItem.name}
-                  onChange={() => handleRadioChange(record.id, typeItem.name)} // Handle selection
+                  onChange={() => handleRadioChange(record.id, typeItem.name)} 
                   style={{
                     marginRight: '10px',
                     width: '20px',
                     height: '20px',
                     border: '0.5px solid',
-                    borderRadius: '50%', // Circular shape
-                    backgroundColor: backgroundColor, // Highlight logic
+                    borderRadius: '50%', 
+                    backgroundColor: backgroundColor, 
                     cursor: isDisabled ? 'not-allowed' : 'pointer',
                   }}
                   checked={
-                    selectedTypeByRow[record.id] === typeItem.name || // User-selected value
-                    preSelectedType === typeItem.name // Pre-selected value
+                    selectedTypeByRow[record.id] === typeItem.name || 
+                    preSelectedType === typeItem.name 
                   }
-                  disabled={isDisabled} // Apply disable logic
+                  disabled={isDisabled} 
                 />
                 {typeItem.name}
               </label>
@@ -557,6 +562,9 @@ const handleDelete = () => {
   };
   
   const [forFilter, setForFilter] = useState([])
+  console.log("forFilter", forFilter);
+  console.log("myNewData",  myNewData);
+  
   
   const categorizedData = organizeDataByWs(tableData);
   const handleChange = async (e, name) => { 
@@ -1113,6 +1121,7 @@ if (updatedWhoData?.length > 0) {
         ele.id === selectedRow.id ? updatedObj : ele
       );
       setMyNewData(modifiedMyNewTableData)
+      setForFilter(modifiedMyNewTableData)
       message.success("Updated Successfully!");
     }
     handleAnythingChanged(true);
@@ -1289,8 +1298,6 @@ const flattenData = updateNewData?.map((item) => {
     clusterValues: normalizedClusterValues?.join(", "),
   };
 });
-
-console.log("updatedData", updatedData?.length);
 
   return (
     <>
