@@ -6,13 +6,13 @@ import FooterButtons from "../FooterButtons";
 import { useNavigate } from "react-router-dom";
 import DownloadCSVFile from "../../DownloadCsv";
 import { Table, message, Modal, Select } from "antd";
-import { MultiSelect } from "react-multi-select-component";
 import { useFormik, Field, Form, ErrorMessage } from "formik";
 import ModifyMasterWsPopup from "../../ModifyMasterWsPopUp";
 import { StoryUploadApiContext } from "../../../contexts/ApiContext";
 import DownloadVersionSelectPopup from "../DownloadVersionSelectPopup";
 import { API_BASE_PATH, API_ROUTES } from "../../../constants/api-endpoints";
 import DeleteConfirmationDialog from "../../../utils/modals/DeleteConfirmationDialog";
+import SaveConfirmationDialog from "../../../utils/modals/SaveConfirmationModal";
 
 const MasterWssPage = ({
   onDiscard = () => {},
@@ -20,7 +20,6 @@ const MasterWssPage = ({
   handleSaveSuccess = () => {},
 }) => {
   const { Option } = Select;
-
   const navigate = useNavigate();
   const flow = true;
   const [editIndex, setEditIndex] = useState(null);
@@ -52,6 +51,16 @@ const MasterWssPage = ({
   const [primaryWheres, setPrimaryWhere] = useState([]);
   const [secondaryWheres, setSecondaryWhere] = useState([]);
   const [myNewData, setMyNewData] = useState([]);
+  const [allData, setAllData] = useState([]);
+  const [filteredData, setFilteredNewData] = useState([]);
+  const [newWhoTypeData,setNewWhoTypeData ] = useState([]);
+  const [newWhatTypeData, setNewWhatTypeData] = useState([]);
+  const [newWhereTypeData, setNewWhereTypeData] = useState([]);
+  const [handleAnyChange, setHandleAnythingChange] = useState(false)
+  const meregedData =  [...newWhoTypeData, ...newWhatTypeData, ...newWhereTypeData]
+console.log("newWhatTypeData", newWhatTypeData);
+console.log("selectedRow", selectedRow);
+
   const [tablePagination, setTablePagination] = useState({
     current: 1,   // Default to page 1
     pageSize: 10, // Default to 10 records per page
@@ -60,6 +69,28 @@ const MasterWssPage = ({
   const {storyUploadApiResponse,setStoryUploadApiResponse,handleAnythingChanged} = useContext(StoryUploadApiContext);
   const {token,story_id,storyWorld,fileName,storyWorldId,masterws} = storyUploadApiResponse;
   const [filterData, setFilteredData] = useState([]);
+  const [selectedTypeByRow, setSelectedTypeByRow] = useState({});
+
+  function removeDuplicates(data, typeMapping) {
+    const seenMasterHeads = new Set();
+    const uniqueData = [];
+    const normalizedData = updateForUnique(data, typeMapping);
+  
+    for (const item of normalizedData) {
+      if (typeof item.masterHead === "string") {
+        const lowerCaseMasterHead = item.masterHead.trim().toLowerCase(); 
+        if (!seenMasterHeads.has(lowerCaseMasterHead)) {  
+          seenMasterHeads.add(lowerCaseMasterHead);
+          uniqueData.push(item);
+        }
+      }
+    }
+  
+    return uniqueData;
+  }
+  
+
+// const uniqueData = removeDuplicates(myNewData, selectedTypeByRow);
 
   const formik = useFormik({
     initialValues: {
@@ -84,7 +115,7 @@ const MasterWssPage = ({
     label: item?.value,
     value: item?.id,
   }));
-
+  
   const fetchMasterWsList = async () => {
     setClusterLoading(true);
     let alertKey = null; 
@@ -101,7 +132,7 @@ const MasterWssPage = ({
       const output = response?.data?.masterWs;
 
       if(output) {
-      setTableData(processData(output));
+      setTableData(groupDataByTypeAndWs(output));
       message.destroy(alertKey);
       message.success("Clusters Fetched Successfully !");
       } else {
@@ -134,31 +165,33 @@ const MasterWssPage = ({
     fetchMasterWsList();
   }, [storyWorldId]);
 
+  const [deleteChange, setDeleteChange] = useState(false)
+
 const handleDelete = () => {
   const deleteId= selectedRow?.id
   if (deleteId !== null && deleteId !== undefined) {
     const tableIndex = tableData.findIndex((item) => item.id === deleteId);
     const filterIndex = filterData.findIndex((item) => item.id === deleteId);
-
+    const myNewDataIndex = myNewData.findIndex((item) => item.id === deleteId);
     let updatedTableData = [...tableData];
     let updatedFilterData = [...filterData];
-
+    let updateMyNewData = [...myNewData];
+    if (myNewDataIndex !== -1) {
+      updateMyNewData = myNewData.filter((item) => item.id !== deleteId);
+      setMyNewData(updateMyNewData);
+    } 
     if (tableIndex !== -1) {
       updatedTableData = tableData.filter((item) => item.id !== deleteId);
       setTableData(updatedTableData);
-    } else if (filterIndex !== -1) {
-      updatedFilterData = filterData.filter((item) => item.id !== deleteId);
-      setFilteredData(updatedFilterData);
-    } else {
+    }
+     else {
       // If deleteId is not found in either dataset
       return;
     }
 
-    const updatedCombinedData = [...updatedTableData, ...updatedFilterData];
-    setMyNewData(updatedCombinedData);
     setShowDeleteModal(false);
     message.success("Deleted Successfully!");
-    handleAnythingChanged(true);
+    setDeleteChange(true)
   } else {
     message.error("Invalid ID for deletion.");
   }
@@ -223,49 +256,120 @@ const handleDelete = () => {
       message.error("Please select a version to download.");
     }
   };
-
+   
   const handleRemoveChip = (value) => {
+
+    // const removeChipFromClusterValues = (data, isIdCheck) => {
+    //   return data?.map((item) => ({
+    //     ...item,
+    //     clusterValues: item.clusterValues?.filter(
+    //       (clusterItem) => (isIdCheck ? clusterItem?.id !== value?.id : clusterItem?.value !== value?.value)
+    //     ),
+    //   }));
+    // };
+    let removedClusterValueObject = [];  // This will store all removed objects.
+
     const removeChipFromClusterValues = (data, isIdCheck) => {
-      return data.map((item) => ({
-        ...item,
-        clusterValues: item.clusterValues.filter(
-          (clusterItem) => (isIdCheck ? clusterItem?.id !== value?.id : clusterItem?.value !== value?.value)
-        ),
-      }));
+        return data?.map((item) => {
+            const newItem = { ...item };
+    
+            // Remove the cluster value from clusterValues based on id or value
+            const initialLength = newItem.clusterValues?.length;
+            newItem.clusterValues = newItem.clusterValues?.filter(
+                (clusterItem) => (isIdCheck ? clusterItem?.id !== value?.id : clusterItem?.value !== value?.value)
+            );
+    
+            // Check if the length changed (i.e., if a value was removed)
+            if (newItem.clusterValues.length !== initialLength) {
+                // Generate the removed cluster value object only if cluster value was removed
+                const removedClusterValueObjects = {
+                    ws: newItem.ws, // Take ws from the original item
+                    type: newItem.apiType, // Take type from the original item
+                    id: value?.id, // Use the id of the removed cluster value (which you pass in the value parameter)
+                    apiType: newItem.apiType, // Take apiType from the original item
+                    masterHead: value.value,  // Adjust masterHead if necessary
+                    clusterValues: [],  // No cluster values after removal
+                    new: newItem.new,
+                    updated: newItem.updated
+                };
+    
+                // Instead of overwriting, push the removed cluster value object to the array
+                removedClusterValueObject.push(removedClusterValueObjects);
+    
+                // Log the removed cluster value object for debugging
+                console.log("Removed Cluster Value Object:", removedClusterValueObjects);
+            }
+    
+            return newItem;
+        });
     };
-  
-    if (filterData?.length > 0 && tableData?.length > 0) {
-      // Handle both filterData and tableData
-      const updatedFilterData = removeChipFromClusterValues(filterData, true); // Use `id` check
-      setFilteredData(updatedFilterData);
-  
-      const updatedTableData = removeChipFromClusterValues(tableData, true); // Use `id` check
-      setTableData(updatedTableData);
-  
-      message.success("Cluster Value removed successfully!");
-      handleAnythingChanged(true);
-    } else if (filterData?.length > 0) {
-      // Handle only filterData
-      const updatedFilterData = removeChipFromClusterValues(filterData, true); // Use `id` check
-      setFilteredData(updatedFilterData);
-  
-      message.success("Cluster Value removed successfully!");
-      handleAnythingChanged(true);
-    } else if (tableData?.length > 0) {
-      // Handle only tableData
-      const updatedTableData = removeChipFromClusterValues(tableData, true); // Use `id` check
-      setTableData(updatedTableData);
-  
-      message.success("Cluster Value removed successfully!");
-      handleAnythingChanged(true);
+    
+      if(myNewData?.length < forFilter?.length) {
+        const updatedData = forFilter?.map(item => {
+          const newItem = myNewData?.find(newItem => newItem.masterHead === item.masterHead);
+        
+          if (newItem && newItem.clusterValues && newItem.clusterValues.length > 0) {
+            return { ...item, ...newItem }; 
+          }
+        
+          return item;
+        });
+      const updatedFromfilterData = removeChipFromClusterValues(updatedData, true); 
+
+      removedClusterValueObject.forEach((removedObj) => {
+        const existingItem = myNewData.find((item) => item.masterHead === removedObj.masterHead);
+      
+        if (!existingItem) {
+          updatedFromfilterData.push(removedObj); 
+          console.log("Added Removed Cluster Value Object to myNewData:", removedObj);
+        }
+      });
+      setMyNewData(updatedFromfilterData);
+    } else if (myNewData?.length > 0) {
+      
+      const updatedNewData = removeChipFromClusterValues(myNewData, true);
+      console.log("updatedNewData",updatedNewData);
+      console.log("removedClusterValueObject", removedClusterValueObject);
+      removedClusterValueObject.forEach((removedObj) => {
+        const existingItem = myNewData.find((item) => item.masterHead === removedObj.masterHead);
+      
+        if (!existingItem) {
+          updatedNewData.push(removedObj);
+          console.log("Added Removed Cluster Value Object to myNewData:", removedObj);
+        }
+      });
+       
+      setMyNewData(updatedNewData);
+
     }
+
+    handleAnythingChanged(true);
+    message.success("Cluster Value removed successfully!");
   };
   
   useEffect(() => {
     if(saveMasterWs){
-      onSave();
+      handleOpenDialog()
     }
   }, [saveMasterWs]);
+
+  const type = [
+    { id: 1, name: "Primary" },
+    { id: 2, name: "Secondary" },
+  ];
+
+  const [typo, setTypo] = useState(type);
+  const [radioChange, setRadioChange] = useState(false)
+
+  const handleRadioChange = (recordId, selectedType) => {
+    
+    setSelectedTypeByRow((prev) => ({
+      ...prev,
+      [recordId]: selectedType,
+    }));
+   setRadioChange(true);
+  };  
+  
   const historyColumns = [
     {
       dataIndex: "id",
@@ -290,13 +394,73 @@ const handleDelete = () => {
       },
     },
     {
-      dataIndex: "type",
-      title: "Type",
+      dataIndex: 'type',
+      title: 'Type',
       render: (text, record) => {
+        // Extract type array and preselected type
+        const typoArray = Array?.isArray(record?.type) ? record?.type : record?.apiType ?? [];
+        const preSelectedType =
+          typeof record?.type === 'object' && record?.type?.name ? record?.type?.name : null;
+    
+        // Dynamically check if "Primary" is selected for any record with ws: "who"
+        const isPrimarySelectedForWho = updateNewData?.some(
+          (item) => item.ws === 'who' && (item.type === 'Primary' || selectedTypeByRow[item.id] === 'Primary')
+        );
+    
         return (
-          <div>
-            <span>{record?.type}</span>{" "}
-          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {typoArray.map((typeItem) => {
+            // Determine if this option should be disabled
+            const isDisabled =
+              record.ws === 'who' &&
+              typeItem.name === 'Primary' &&
+              isPrimarySelectedForWho &&
+              selectedTypeByRow[record.id] !== 'Primary';
+        
+            // Determine the background color based on selection
+            const backgroundColor =
+              selectedTypeByRow[record.id] === typeItem.name 
+                ? 'green'
+                : preSelectedType === typeItem.name && !selectedTypeByRow[record.id] 
+                ? 'green'
+                : 'white';
+        
+            return (
+              <label
+                key={typeItem.id || typeItem.name}
+                style={{
+                  marginBottom: '5px',
+                  color: isDisabled ? '#b0b0b0' : 'black',
+                  cursor: isDisabled ? 'not-allowed' : 'pointer', 
+                  opacity: isDisabled ? 0.6 : 1, 
+                }}
+              >
+                <input
+                  type="radio"
+                  name={`type-${record.id}`} 
+                  value={typeItem.name}
+                  onChange={() => handleRadioChange(record.id, typeItem.name)} 
+                  style={{
+                    marginRight: '10px',
+                    width: '20px',
+                    height: '20px',
+                    border: '0.5px solid',
+                    borderRadius: '50%', 
+                    backgroundColor: backgroundColor, 
+                    cursor: isDisabled ? 'not-allowed' : 'pointer',
+                  }}
+                  checked={
+                    selectedTypeByRow[record.id] === typeItem.name || 
+                    preSelectedType === typeItem.name 
+                  }
+                  disabled={isDisabled} 
+                />
+                {typeItem.name}
+              </label>
+            );
+          })}
+        </div>
+        
         );
       },
     },
@@ -362,12 +526,18 @@ const handleDelete = () => {
       dataIndex: "action",
       title: "Action",
       render: (val, record, index) => {
+        const matchedData = updateNewData.some((data) => data.id === record?.id);        
         return (
           <div style={{ display: "flex", gap: "15px" }}>
             <button
               title="View/Modify"
               onClick={() => {
-                setDialogPopup(true);
+                if(matchedData == false) {
+                  setIsDialogOpen(true);
+                  setTitles("Please Select all type either Primary or Secondary");
+                } else {
+                  setDialogPopup(true);
+                }
                 setSelectedRow(record);
                 setEditIndex(index);
               }}
@@ -423,148 +593,199 @@ const handleDelete = () => {
     { id: 3, name: "where" },
   ];
 
-  const type = [
-    { id: 1, name: "Primary" },
-    { id: 2, name: "Secondary" },
-  ];
-
-  const [typo, setTypo] = useState(type);
-
   const onReset = () => {
     setTableData(processData(masterws?.masterWs));
     message.success("Reset Successfully !");
     handleAnythingChanged(true);
   };
-
-  const apiUrl = API_BASE_PATH + API_ROUTES.SORT_WS + story_id;
-  const config = {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  };
   
   const [blankValue, setBlankValue] = useState();
   const [fieldValue, setFieldValue] = useState();
 
+  const organizeDataByWs = (data) => {
+    const categorizedData = {
+      who: [],
+      what: [],
+      where: []
+    };
+  
+    data.forEach((item) => {
+      if (item.ws === "who") {
+        categorizedData.who.push(item);
+      } else if (item.ws === "what") {
+        categorizedData.what.push(item);
+      } else if (item.ws === "where") {
+        categorizedData.where.push(item);
+      }
+    });
+  
+    return categorizedData;
+  };
+  
+  const [forFilter, setForFilter] = useState([])
+   
+  const categorizedData = organizeDataByWs(tableData);
+  
   const handleChange = async (e, name) => { 
     const blankValue = e?.target?.value;
     const fieldName = name;
+    let combinedData = []; 
     setFieldValue(fieldName)
     setBlankValue(blankValue)
     if (e?.target?.value === "who") {
       setWhos(clusterList?.Who);
+      const dataSource = clusterList?.Who?.map((item) => {
+        // Find if there's an existing item in categorizedData?.what with the same masterHead or a matching value in clusterValues
+        const existingItem = categorizedData?.who?.find(
+          (catItem) => catItem.masterHead === item.value.toLowerCase() || 
+                      catItem.clusterValues.some(cluster => cluster.value === item.value)
+        );
+      
+        // If there's a match, check if clusterValues is present, and if so, use its ID
+        if (existingItem) {
+          const matchingCluster = existingItem.clusterValues.find(
+            (cluster) => cluster.value === item.value
+          );
+          return {
+            id: matchingCluster ? matchingCluster.id : existingItem.id, // Use clusterValues id if available, else use existingItem id
+            ws: e?.target?.value,
+            type: typo,
+            masterHead: item.value.toLowerCase(),
+            clusterValues: [],
+          };
+        }
+      
+        // If no match, use the id from clusterList?.What
+        return {
+          id: item.id,
+          ws: e?.target?.value,
+          type: typo,
+          masterHead: item.value.toLowerCase(),
+          clusterValues: [],
+        };
+      });
+      combinedData = [...categorizedData?.who, ...dataSource] 
+      
+      setFilteredData(dataSource)
+      if(newWhoTypeData?.length === 0){
+        setMyNewData(removeDuplicates(combinedData))
+      } else if(newWhoTypeData?.length > 0){
+        setMyNewData(newWhoTypeData)
+      }
+      setForFilter(removeDuplicates(combinedData))
       setWhoSelectedValue(e?.target?.value)
       setWhatSelectedValue(false);
-      setWhereSelectedValue(false);
-      formik.setFieldValue("masterHead", { id: "", value: "" }); 
-
-      const selectedWs = e?.target?.value;
-
-      const isPrimarySelected = myNewData.some(
-        (comb) => comb.ws === "who" && comb.type === "primary"
-      );
-      if (selectedWs === "who" && isPrimarySelected) {
-        setTypo((prevTypo) => prevTypo?.filter((item) => item.name !== "Primary"));
-      }
+      setWhereSelectedValue(false);      
       setWhats([]);
       setWheres([]);
     } else if (e?.target?.value === "what") {
       setWhats(clusterList?.What);
+      const dataSource = clusterList?.What?.map((item) => {
+        // Find if there's an existing item in categorizedData?.what with the same masterHead or a matching value in clusterValues
+        const existingItem = categorizedData?.what?.find(
+          (catItem) => catItem.masterHead === item.value.toLowerCase() || 
+                      catItem.clusterValues.some(cluster => cluster.value === item.value)
+        );
+      
+        // If there's a match, check if clusterValues is present, and if so, use its ID
+        if (existingItem) {
+          const matchingCluster = existingItem.clusterValues.find(
+            (cluster) => cluster.value === item.value
+          );
+          return {
+            id: matchingCluster ? matchingCluster.id : existingItem.id, // Use clusterValues id if available, else use existingItem id
+            ws: e?.target?.value,
+            type: typo,
+            masterHead: item.value.toLowerCase(),
+            clusterValues: [],
+          };
+        }
+      
+        // If no match, use the id from clusterList?.What
+        return {
+          id: item.id,
+          ws: e?.target?.value,
+          type: typo,
+          masterHead: item.value.toLowerCase(),
+          clusterValues: [],
+        };
+      });
+      combinedData = [...categorizedData?.what, ...dataSource] 
+      setFilteredData(dataSource)
+      if(newWhatTypeData?.length > 0){
+        setMyNewData(newWhatTypeData)
+      } else if(newWhatTypeData?.length === 0){
+        setMyNewData(removeDuplicates(combinedData))
+      }
+      setForFilter(removeDuplicates(combinedData))
       setWhatSelectedValue(e?.target?.value);
       setWhereSelectedValue(false);
       setWhoSelectedValue(false);
-      formik.setFieldValue("masterHead", { id: "", value: "" }); 
       setWhos([]);
       setWheres([]);
-      if (!typo.some((item) => item.name === "Primary")) {
-        setTypo((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo]);
-      }
     } else if (e?.target?.value === "where") {
       setWheres(clusterList?.Where);
+      const dataSource = clusterList?.Where?.map((item) => {
+        // Find if there's an existing item in categorizedData?.what with the same masterHead or a matching value in clusterValues
+        const existingItem = categorizedData?.where.find(
+          (catItem) => catItem.masterHead === item.value.toLowerCase() || 
+                      catItem.clusterValues.some(cluster => cluster.value === item.value)
+        );
+      
+        // If there's a match, check if clusterValues is present, and if so, use its ID
+        if (existingItem) {
+          const matchingCluster = existingItem.clusterValues.find(
+            (cluster) => cluster.value === item.value
+          );
+          return {
+            id: matchingCluster ? matchingCluster.id : existingItem.id, // Use clusterValues id if available, else use existingItem id
+            ws: e?.target?.value,
+            type: typo,
+            masterHead: item.value.toLowerCase(),
+            clusterValues: [],
+          };
+        }
+      
+        // If no match, use the id from clusterList?.What
+        return {
+          id: item.id,
+          ws: e?.target?.value,
+          type: typo,
+          masterHead: item.value.toLowerCase(),
+          clusterValues: [],
+        };
+      });
+      // const dataSource = clusterList?.Where?.map((item, index) => ({
+      //   id: item.id,
+      //   ws: e?.target?.value, 
+      //   type: typo, 
+      //   masterHead: item.value.toLowerCase(), 
+      //   clusterValues: [], 
+      // }));
+      combinedData = [...categorizedData?.where, ...dataSource] 
+      setFilteredData(dataSource)
+      if(newWhereTypeData?.length === 0){
+        setMyNewData(removeDuplicates(combinedData))
+      } else if(newWhereTypeData?.length > 0){
+        setMyNewData(newWhereTypeData)
+      }
+      setForFilter(removeDuplicates(combinedData))
       setWhereSelectedValue(e?.target?.value);
       setWhatSelectedValue(false);
       setWhoSelectedValue(false);
       formik.setFieldValue("masterHead", { id: "", value: "" }); 
       setWhats([]);
       setWhos([]);
-      if (!typo.some((item) => item.name === "Primary")) {
-        setTypo((prevTypo) => [{ id: 1, name: "Primary" },...prevTypo, ]);
-      }
+      
     }  else if(blankValue=="" && name==="ws"){
-      setWhos([]);
-      setWhats([]);
-      setWheres([]);
-      formik.setFieldValue("masterHead", { id: "", value: "" }); 
-
+      setMyNewData([]);
     }
-
-    const selectedOption = [
-      ...clusterList?.Who,
-      ...clusterList?.What,
-      ...clusterList?.Where,
-    ]?.find((option) => option?.id === e);
 
     if (name === "ws") {
       formik.setFieldValue("ws", e.target.value);
-    } else if (name === "masterHead" && selectedOption) {
-      const { id, value } = selectedOption;
-      formik.setFieldValue("masterHead", { id: id, value: value });
-      const payload = {
-        clusterHead: { value: value, id: id }, 
-        ws: [], 
-      };
-  
-      if (e?.target?.value === "who") {
-        payload.ws = clusterList?.Who || [];
-      } else if (e?.target?.value === "what") {
-        payload.ws = clusterList?.What || [];
-      } else if (e?.target?.value === "where") {
-        payload.ws = clusterList?.Where || [];
-      }
-      if (whos?.length > 0) {
-        const clustWho = whos?.filter((item) => item?.value !== value)
-        payload.ws = [...payload.ws, ...clustWho];
-      }
-      if (whats?.length > 0) {
-        const clustWhat = whats?.filter((item) => item?.value !== value)
-        payload.ws = [...payload.ws, ...clustWhat];
-      }
-      if (wheres?.length > 0) {
-        const clustWhere = wheres?.filter((item) => item?.value !== value)
-        payload.ws = [...payload.ws, ...clustWhere];
-      }
-
-      payload.ws = payload.ws.map((item) => ({
-        value: item.value,
-        id: item.id,
-      }));
-      try {
-        if(payload?.ws?.length > 0) {
-          const response = await axios.post(apiUrl, payload, config);
-          const filteredArray = response?.data?.ws?.clusterValues
-          setFilteredOption(filteredArray);
-        } else {
-          setFilteredOption([])
-        }
-        
-      } catch (error) {
-        console.error("Error calling the API:", error);
-      }
-    } else if (name === "type") {
-      
-      formik.setFieldValue("type", e.target.value);
-    
-    } else if(Array.isArray(e)) {
-      const selectedValues = e?.map((option) => ({
-        label: option.label,
-        value: option.value,
-      }));
-      setSelected(selectedValues);
-      formik.setFieldValue("clusterValues", selectedValues);
-    }
+    } 
   };
-  
+
   const getUpdatedJson = (list) => {
     const arr = list || [];
     if (arr && arr.length > 0) {
@@ -623,6 +844,9 @@ const handleDelete = () => {
         message.success("Clusters Saved Successfully !");
         handleSaveSuccess(true);
         handleAnythingChanged(false);
+        setHandleAnythingChange(true)
+        setRadioChange(false)
+        setDeleteChange(false)
       } else {
         message.destroy(alertKey);
         message.error("Error In Saving Ws ! Unable To Fetch Response !");
@@ -648,89 +872,97 @@ const handleDelete = () => {
     setIsSubmitting(false);
   };
 
-  const handleSaveCluster = (values, resetForm) => {   
-    if (formik.values.ws && formik.values.type && formik.values.masterHead) {
-      const newRow = {
-        id: formik?.values?.masterHead?.id, 
-        ws: formik?.values?.ws,
-        type: formik?.values?.type,
-        masterHead: formik.values.masterHead,
-        clusterValues: formik.values.clusterValues?.map((val) => ({
-          id: val.value,
-          value: val.label,
-        })),
-        isNewField: true,
-      };
-
-      setFilteredData((prevArray = []) => [...prevArray, newRow]); 
-      handleAnythingChanged(true);
-      formik.resetForm(formik.values);
-      setWhats([]);
-      setWhos([]);
-      setWheres([]);
-      setFilteredOption([]);
-    }
-  };
-
   function convertData(inputData) {
+
     const result = {};
+  
     inputData.forEach((item, index) => {
       const wsKey = item.ws.toLowerCase().replace(/'s$/, ""); 
-      const typeKey = item.type.toLowerCase(); 
-
       if (!result[wsKey]) {
-        result[wsKey] = {};
+        result[wsKey] = [];
       }
-
-      if (!result[wsKey][typeKey]) {
-        result[wsKey][typeKey] = [];
-      }
-
+  
       const formattedItem = {
-        id: item.masterHead?.id ?? item.id, 
+        id: item.masterHead?.id ?? item.id,
         masterHead: item?.masterHead?.value || item?.masterHead, 
         clusterValues: item?.clusterValues?.map((cluster) => ({
           id: cluster?.id,
           value: cluster?.value,
-        })),
-        new: (item?.isNewField == true) ? true:item?.new ?? false,
-        updated: (item?.updated == true) ? true:item?.updated ?? false,
-        index
+        })) || [], 
+        type: item?.type || [], 
+        apiType: item?.apiType ?? item?.type,
+        new: filterData?.length > 0 ? true:item?.new, 
+        updated: item?.updated === true ? true : item?.updated ?? false, 
       };
-
-      result[wsKey][typeKey].push(formattedItem);
+  
+      result[wsKey].push(formattedItem); 
     });
-
+  
     return result;
   }
 
+  function groupDataByTypeAndWs(apiData) {
+    const typeArray = [
+      { id: 1, name: "Primary" },
+      { id: 2, name: "Secondary" },
+    ];
+  
+    const result = [];
+  
+    Object.keys(apiData).forEach((ws) => {
+      Object.keys(apiData[ws]).forEach((typeKey) => {
+        const items = apiData[ws][typeKey];
+  
+        if (Array.isArray(items)) {
+          items.forEach((item) => {
+            
+            result.push({
+              ws, 
+              type: typeArray.find((type) => type.name.toLowerCase() === typeKey), 
+              id: item.id, 
+              apiType:typeArray,
+              masterHead: item.masterHead, 
+              clusterValues: item.clusterValues?.map((cluster) => ({
+                id: cluster?.id,
+                value: cluster?.value,
+              })) || [], 
+              new: item.new === true, 
+              updated: item.updated === true, 
+            });
+          });
+        }
+      });
+    });
+  
+    return result;
+  }
+  
   const manualData = convertData(filterData);
 
   const processData = (data) => {
     const result = [];
-
-    Object?.keys(data)?.forEach((ws) => {
-      Object?.keys(data[ws])?.forEach((type) => {
-        data[ws][type]?.forEach((item) => {
-          result?.push({
-            ws,
-            id: item?.id,
-            type,
-            masterHead: item?.masterHead,
-            clusterValues: item?.clusterValues?.map((cluster) => ({
-              id: cluster?.id,
-              value: cluster?.value,
-            })),
-            new: (item?.isNewField == true || item?.new == true) ? true:item?.new ?? false,
-            updated: (item?.updated == true) ? true: item?.updated ?? false,
-            index: item.index
-          });
+  
+    Object.keys(data)?.forEach((ws) => {
+      data[ws]?.forEach((item) => {
+        result.push({
+          ws, 
+          id: item?.id, 
+          type: item?.type || [], 
+          masterHead: item?.masterHead, 
+          clusterValues: item?.clusterValues?.map((cluster) => ({
+            id: cluster?.id,
+            value: cluster?.value,
+          })), 
+          new: filterData?.length > 0 ? true:item?.new, 
+          updated: item?.updated === true, 
+          apiType: item?.apiType,
+          index: item?.index, 
         });
       });
     });
-
-      result.sort((a, b) => a.index - b.index);
-
+  
+    result.sort((a, b) => a.index - b.index);
+  
     return result;
   };
 
@@ -738,39 +970,8 @@ const handleDelete = () => {
     () => processData(manualData || []),
     [manualData]
   );
-
-  useEffect(() => {
-    const combinedData = [...tableData, ...newManualData];
-    const combinedDataString = JSON.stringify(combinedData);
-    const currentDataString = JSON.stringify(myNewData);
   
-    if (combinedDataString !== currentDataString) {
-      setMyNewData(combinedData);
-    }
-  }, [tableData, newManualData]);
-
-  const flattenData = myNewData?.map((item) => {
-    const normalizedClusterValues = (() => {
-      if (Array?.isArray(item?.clusterValues)) {
-        return item?.clusterValues.map((val) =>
-          typeof val === "object" ? val?.value : val
-        );
-      } else if (typeof item?.clusterValues === "string") {
-        return item?.clusterValues?.split(",").map((value) => value?.trim());
-      }
-      return [];
-    })();
-
-    return {
-      ws: item?.ws ?? "",
-      type: item?.type ?? "",
-      ClusterHead: item?.masterHead ?? "",
-      clusterValues: normalizedClusterValues?.join(", "),
-    };
-  });
-
   const transformData = (data) => {
-  
     const result = {
       who: {
         primary: [],
@@ -785,22 +986,8 @@ const handleDelete = () => {
         secondary: [],
       },
     };
-    data?.forEach((item) => {
-      const normalizedClusterValues = (() => {
-        if (Array?.isArray(item.clusterValues)) {
-          return item.clusterValues?.map((cluster) => ({
-            id: cluster.id ?? null,
-            value: cluster.value ?? cluster,
-          }));
-        } else if (typeof item.clusterValues === "string") {
-          return item.clusterValues?.split(",")?.map((value) => ({
-            id: null,
-            value: value?.trim(),
-          }));
-        }
-        return [];
-      })();
 
+    data?.forEach((item) => {
       const newItem = {
         id: item.id ?? null,
         masterHead: item?.masterHead?.value ?? item.masterHead, 
@@ -808,7 +995,7 @@ const handleDelete = () => {
           id: cluster.id,
           value: cluster.value,
         })),
-        new: (item.new == true || item?.isNewField == true) ? true:false ,
+        new:filterData?.length > 0 ? true:item?.new ,
         updated: item.updated,
       };
 
@@ -853,14 +1040,101 @@ const handleDelete = () => {
     return cleanedData;
   };
   
+  function updateAndNormalizeData(data, typeMapping) {
+    return data.map((item) => {
+      let updatedItem = { ...item };
+  
+      if (typeMapping && typeMapping[item.id]) {
+        updatedItem.type = typeMapping[item.id];
+      }
+      else {
+        updatedItem.type = item.type?.name ?  item.type.name:undefined ;
+      }
 
-  const transformedData = transformData(myNewData);
+        delete updatedItem.apiType;
+     
+      
+      return updatedItem;
+    })
+    .filter((item) => item.type !== undefined);
+  }
+  
+  function updateForUnique(data, typeMapping) {
+    const typeArray = [
+      { id: 1, name: "Primary" },
+      { id: 2, name: "Secondary" },
+    ];
+    return data.map((item) => {
+      let updatedItem = { ...item };
+  
+      if (typeMapping && typeMapping[item.id]) {
+        const name = typeMapping[item.id];
+        const id = name === "Primary" ? 1 : name === "Secondary" ? 2 : undefined;
+        updatedItem.type = {
+          id: id, 
+          name: name, 
+        };
+      }
+      else {
+        updatedItem.type = item.type ?  item.type:undefined ;
+      }
+      updatedItem.apiType = typeArray;
+      
+      return updatedItem;
+    })
+    .filter((item) => item.type !== undefined);
+  }
+
+  const updatedData = updateAndNormalizeData(meregedData, selectedTypeByRow); 
+  const apiData = updateAndNormalizeData(tableData, selectedTypeByRow)
+
+const updatedWhoData = updatedData.filter(item => item.ws === "who");
+const updatedWhatData = updatedData.filter(item => item.ws === "what");
+const updatedWhereData = updatedData.filter(item => item.ws === "where");
+
+const apiWhoData = apiData.filter(item => item.ws === "who");
+const apiDataWhatData = apiData.filter(item => item.ws === "what");
+const apiDataWhereData = apiData.filter(item => item.ws === "where");
+
+let newMergedData = [];
+if (updatedWhoData?.length > 0) {
+  if (apiDataWhatData?.length > 0 || apiDataWhereData?.length > 0) {
+    if (updatedWhatData?.length === 0 && updatedWhereData?.length === 0) {
+      newMergedData = [...updatedWhoData, ...apiDataWhatData, ...apiDataWhereData];
+    }
+  }
+
+  if (updatedWhatData?.length > 0 && updatedWhereData?.length === 0 && apiDataWhereData?.length > 0) {
+    newMergedData = [...updatedWhoData, ...updatedWhatData, ...apiDataWhereData];
+  }
+} 
+
+  const newGeneratedData = (updatedData?.length == 0) ? apiData:newMergedData?.length > 0 ? newMergedData: updatedData  
+  const [updateNewData, setUpdateNewData] = useState([]);
+  const prevDataRef = useRef(null);
+  
+  useEffect(() => {
+    const currentDataString = JSON.stringify(newGeneratedData);
+    const previousDataString = JSON.stringify(prevDataRef.current);
+    if (currentDataString !== previousDataString) {
+      const uniqueData = removeDuplicates(newGeneratedData);
+      setUpdateNewData(uniqueData);
+      prevDataRef.current = newGeneratedData; 
+    }
+  }, [newGeneratedData]);
+  
+  const checkIfPrimaryWhoExists = (data) => {
+    return data.some(item => item.ws === "who" && (item.type.name === "Primary" || item.type === "Primary"));
+  };
+
+  const transformedData = transformData(updateNewData|| []);
   const [whoSelectedValues, setWhoSelectedValue] = useState(false);
   const [whatSelectedValues, setWhatSelectedValue] = useState(false);
   const [whereSelectedValues, setWhereSelectedValue] = useState(false);
   const whosRef = useRef(whos);
   const whatsRef = useRef(whats);
   const wheresRef = useRef(wheres);
+
   useEffect(() => {
   const whosChanged = whosRef.current !== whos;
   const whatsChanged = whatsRef.current !== whats;
@@ -970,45 +1244,29 @@ const handleDelete = () => {
     blankValue,
   ]);  
 
+  console.log("transfor", transformedData);
+  
+
   const onModify = (updatedObj) => {
     let modifiedFilterData = [];
     let modifiedTableData = [];
-  
-    if (filterData?.length > 0 && tableData?.length > 0) {
-      const curFilterData = [...filterData];
-      modifiedFilterData = curFilterData.map((ele) =>
-        ele.id === selectedRow.id ? updatedObj : ele
+    let modifiedMyNewTableData = [];
+    if(myNewData?.length > 0) {
+      const curFilterData = [...myNewData];
+      modifiedMyNewTableData = curFilterData.map((ele) =>
+        ele.masterHead === selectedRow.masterHead ? updatedObj : ele
       );
-      setFilteredData(modifiedFilterData);
-  
-      const curTableData = [...tableData];
-      modifiedTableData = curTableData.map((ele) =>
-        ele.id === selectedRow.id ? updatedObj : ele
-      );
-      setTableData(modifiedTableData);
-  
+      setMyNewData(modifiedMyNewTableData)
+      setForFilter(modifiedMyNewTableData)
       message.success("Updated Successfully!");
-    } else if (filterData?.length > 0) {
-      const curFilterData = [...filterData];
-      modifiedFilterData = curFilterData.map((ele) =>
-        ele.id === selectedRow.id ? updatedObj : ele
-      );
-      setFilteredData(modifiedFilterData);
-  
-      message.success("Updated Successfully!");
-    } else if (tableData?.length > 0) {
-      const curTableData = [...tableData];
-      modifiedTableData = curTableData.map((ele) =>
-        ele.id === selectedRow.id ? updatedObj : ele
-      );
-      setTableData(modifiedTableData);
-  
-      message.success("Table Data Updated Successfully!");
     }
+    handleAnythingChanged(true);
+  };
+
+  console.log("tra", transformedData);
   
-    if (modifiedFilterData.length > 0 || modifiedTableData.length > 0) {
-      handleAnythingChanged(true);
-    }
+  const handleSaveModalClose = () => {
+    handleCloseDialog();
   };
 
   useEffect(() => {
@@ -1041,6 +1299,140 @@ const handleDelete = () => {
     });
   };
 
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [titles, setTitles] = useState(false);
+
+  const handleOpenDialog = () => {
+    const hasPrimaryWho = checkIfPrimaryWhoExists(updateNewData);
+    const result = meregedData.every(item => typeof item.type === 'object' && !Array.isArray(item.type));
+    
+    if(newMergedData.length === updateNewData?.length && result==true){
+      onSave();
+    } else if (meregedData?.length === updateNewData?.length) {
+      onSave();
+    }  
+     else {
+      setIsDialogOpen(true);
+      if (meregedData?.length !== updateNewData?.length) {
+        setTitles("Please Select type as either Primary or Secondary");
+      } 
+    }
+  };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+  };
+
+const removeDuplicateClusterHeads = (data) => {
+  const clusterHeads = new Set();
+  data.forEach((item) => {
+    item.clusterValues?.forEach((cluster) => {
+      clusterHeads.add(cluster.value);
+    });
+  });
+
+  const filteredData = data.filter((item) => !clusterHeads.has(item.masterHead));
+
+  return filteredData;
+};
+
+const handleDataFiltering = (newData) => {
+  const newFilteredData = removeDuplicateClusterHeads(newData);
+  setFilteredNewData(newFilteredData);
+};
+
+useEffect(() => {
+    handleDataFiltering(myNewData);
+}, [myNewData]);
+
+const uniqueFilterData = removeDuplicates(filteredData, selectedTypeByRow);
+
+useEffect(()=>{
+  const uniqueFilterDatas = removeDuplicates(filteredData, selectedTypeByRow);
+if(whoSelectedValues === "who"){
+  setNewWhoTypeData(uniqueFilterDatas)
+} else if(whatSelectedValues === "what"){
+  setNewWhatTypeData(uniqueFilterDatas)
+} else if(whereSelectedValues === "where") {
+  setNewWhereTypeData(uniqueFilterDatas)
+}
+}, [filteredData, selectedTypeByRow, whoSelectedValues, whatSelectedValues, whereSelectedValues])
+
+useEffect(()=>{
+  if(radioChange === true) {
+    handleAnythingChanged(true);
+    return;
+  }
+  if(deleteChange === true) {
+    handleAnythingChanged(true);
+    return;
+  }
+  if (handleAnyChange === true) {
+    handleAnythingChanged(false);
+    return;
+  } 
+
+  if (apiWhoData?.length == newWhoTypeData?.length && whoSelectedValues === "who") {
+    handleAnythingChanged(false);
+    return;
+  }
+  if (apiDataWhatData?.length == newWhatTypeData?.length && whatSelectedValues === "what") {
+    if (apiWhoData?.length == newWhoTypeData?.length) {
+      handleAnythingChanged(false);
+      return;
+    }
+  }
+  if (apiDataWhereData?.length == newWhereTypeData?.length && whereSelectedValues === "where") {
+    if (apiWhoData?.length == newWhoTypeData?.length && apiDataWhatData?.length == newWhatTypeData?.length) {
+      handleAnythingChanged(false);
+      return;
+    } 
+  }
+
+   if (tableData?.length > 0) {
+    if(whoSelectedValues === "who" || whatSelectedValues === "what" || whereSelectedValues === "where") {
+      if ((newWhoTypeData?.length !== categorizedData?.who?.length ) || (newWhatTypeData?.length !== categorizedData?.what?.length ) ||
+      (newWhereTypeData?.length !== categorizedData?.where?.length )
+    ) {
+      handleAnythingChanged(true);
+      return;
+    }
+    }
+    
+  } else if( tableData?.length === 0) {
+    if (
+      (newWhoTypeData?.length > 0 ) ||
+      (newWhatTypeData?.length > 0 ) ||
+      (newWhereTypeData?.length > 0 )
+    ) {
+      handleAnythingChanged(true);
+      return;
+    }
+  }
+    handleAnythingChanged(false);
+
+},[handleAnyChange, categorizedData,newWhoTypeData, newWhatTypeData, newWhereTypeData])
+
+const flattenData = updateNewData?.map((item) => {
+  const normalizedClusterValues = (() => {
+    if (Array?.isArray(item?.clusterValues)) {
+      return item?.clusterValues.map((val) =>
+        typeof val === "object" ? val?.value : val
+      );
+    } else if (typeof item?.clusterValues === "string") {
+      return item?.clusterValues?.split(",").map((value) => value?.trim());
+    }
+    return [];
+  })();
+
+  return {
+    ws: item?.ws ?? "",
+    type: item?.type ?? "",
+    ClusterHead: item?.masterHead ?? "",
+    clusterValues: normalizedClusterValues?.join(", "),
+  };
+});
+
   return (
     <>
       <div className="px-5 pb-5 border rounded-md">
@@ -1067,13 +1459,6 @@ const handleDelete = () => {
                       fileName={fileName}
                       storyWorld={storyWorld}
                     />
-                  </button>
-                  <button
-                    type="button"
-                    className="w-full max-w-[120px] px-4 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 md:w-24 lg:w-28"
-                    onClick={() => handleSaveCluster(values, resetForm)}
-                  >
-                    Save Ws
                   </button>
                 </div>
               </div>
@@ -1108,104 +1493,6 @@ const handleDelete = () => {
                     className="text-sm text-red-500"
                   />
                 </div>
-                <div className="flex-1 min-w-[200px]">
-                  <label
-                    htmlFor="masterHead"
-                    className="block text-sm font-medium text-gray-900"
-                  >
-                    Select Cluster Head
-                  </label>
-
-                  <Select
-                    name="masterHead"
-                    id="masterHead"
-                    className="wss-custom"
-                    onChange={(value) => handleChange(value, "masterHead")}
-                    value={formik.values.masterHead?.value}
-                    showSearch
-                    optionFilterProp="children"
-                    placeholder="Please Select..."
-                  >
-                    <option value="">Please Select...</option>
-                    {whos &&
-                      whos.map((item, index) => (
-                        <Select.Option key={item?.id} value={item?.id}>
-                          {item?.value}
-                        </Select.Option>
-                      ))}
-                    {whats &&
-                      whats.map((item, index) => (
-                        <Select.Option key={item?.id} value={item?.id}>
-                          {item?.value}
-                        </Select.Option>
-                      ))}
-                    {wheres &&
-                      wheres.map((item, index) => (
-                        <Select.Option key={item?.id} value={item?.id}>
-                          {item?.value}
-                        </Select.Option>
-                      ))}
-                  </Select>
-                  <ErrorMessage
-                    name="masterHead"
-                    component="div"
-                    className="text-sm text-red-500"
-                  />
-                </div>
-                <div className="flex-1 min-w-[200px]">
-                  <labeltable
-                    htmlFor="type"
-                    className="block mb-2 text-sm font-medium text-gray-900"
-                  >
-                    Select Type
-                  </labeltable>
-                  <Field
-                    as="select"
-                    name="type"
-                    id="type"
-                    className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 sm:text-md focus:ring-primary-600 focus:border-primary-600"
-                    onChange={(e) => {
-                      handleChange(e, "type");
-                    }}
-                    value={formik.values.type}
-                  >
-                    <option value="">Please Select...</option>
-                    {typo?.map((item, index) => (
-                      <option key={index} value={item?._id}>
-                        {item?.name}
-                      </option>
-                    ))}
-                  </Field>
-                  <ErrorMessage
-                    name="type"
-                    component="div"
-                    className="text-sm text-red-500"
-                  />
-                </div>
-                <div className="flex-1 min-w-[200px]">
-                  <label
-                    htmlFor="clusterValues"
-                    className="block mb-2 text-sm font-medium text-gray-900"
-                  >
-                    Select Cluster Values
-                  </label>
-                  <Field name="clusterValues">
-                    {({ field, form }) => (
-                      <MultiSelect
-                        id="clusterValues"
-                        options={options}
-                        onChange={(e) => handleChange(e, "clusterValues")}
-                        value={formik?.values?.clusterValues}
-                        labelledBy="Please Select"
-                      />
-                    )}
-                  </Field>
-                  <ErrorMessage
-                    name="clusterValues"
-                    component="div"
-                    className="mt-1 text-sm text-red-500"
-                  />
-                </div>
               </div>
             </Form>
           )}
@@ -1214,7 +1501,7 @@ const handleDelete = () => {
         <div className="overflow-auto mt-8">
           {!isClusterLoading && (
             <Table
-              dataSource={myNewData}
+              dataSource={uniqueFilterData}
               columns={historyColumns}
               className="custom-table"
               // pagination={{ pageSize: 10 }}
@@ -1250,10 +1537,14 @@ const handleDelete = () => {
       )}
       {dialogPopup && flow && (
         <ModifyMasterWsPopup
+          forfilter={forFilter}
           open={dialogPopup}
+          filteredNewData={filteredData}
           modifyItemObj={selectedRow}
           clusterList={clusterList}
           whos={whos}
+          updateNewData={updateNewData}
+          uniqueFilterData={uniqueFilterData}
           whats={whats}
           wheres={wheres}
           tableData={tableData}
@@ -1271,10 +1562,20 @@ const handleDelete = () => {
       <FooterButtons
         onDiscard={onDiscard}
         onReset={onReset}
-        onSubmit={onSave}
+        onSubmit={handleOpenDialog}
+        // onSubmit={onSave}
         saveType="Clusters"
         isSubmitting={isSubmitting}
       />
+      <div>
+      {isDialogOpen && (
+        <SaveConfirmationDialog
+          open={isDialogOpen}
+          onClose={handleSaveModalClose}
+          title={titles}
+        />
+      )}
+    </div>
     </>
   );
 };

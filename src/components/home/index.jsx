@@ -26,6 +26,7 @@ const Home = () => {
   const storyId = JSON.parse(localStorage.getItem("storyId"));
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const [prevStep, setPrevStep] = useState(false);
+  
   // story upload context
   const {
     storyUploadApiResponse,
@@ -55,8 +56,11 @@ const Home = () => {
 
   useEffect(() => {
     if (isSaveSuccess) {
-      if (activeStep === "next") setCurrentStep((prevStep) => prevStep + 1);
-      else if (activeStep == "prev") setCurrentStep((prevStep) => prevStep - 1);
+      if (activeStep === "next") {
+        setCurrentStep((prevStep) => prevStep + 1);
+      } else if (activeStep == "prev" && currentStep > 1) {
+        setCurrentStep((prevStep) => prevStep - 1);
+      } 
       setIsSaveSuccess(false);
       setActiveStep(null);
     }
@@ -244,8 +248,10 @@ const Home = () => {
       handleSaveModalOpen(true);
       setIsSaveChanges(false);
     } else {
-      setPrevStep(true);
-      setCurrentStep((prevStep) => prevStep - 1);
+      if(currentStep > 1) {
+        setPrevStep(true);
+        setCurrentStep((prevStep) => prevStep - 1);
+      }
     }
   };
 
@@ -281,8 +287,11 @@ const Home = () => {
   const handleSaveModalClose = () => {
     handleSaveModalOpen(false);
     handleAnythingChanged(false);
-    if (activeStep === "next") setCurrentStep((prevStep) => prevStep + 1);
-    else if (activeStep === "prev") setCurrentStep((prevStep) => prevStep - 1);
+    if (activeStep === "next") {
+      setCurrentStep((prevStep) => prevStep + 1);
+    } else if (activeStep === "prev" && currentStep > 1) {
+        setCurrentStep((prevStep) => prevStep - 1);
+      }
   };
 
   return (

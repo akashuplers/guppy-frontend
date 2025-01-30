@@ -18,11 +18,15 @@ const ModifyMasterWsPopup = ({
   modalType,
   myNewData,
   filteredData,
+  updateNewData,
   whos,
   whats,
   wheres,
   tableData,
   filterData,
+  filteredNewData,
+  uniqueFilterData,
+  forfilter
 }) => {
   const [currentValue, setCurrentValue] = useState("");
   const [popupTitle, setPopupTitle] = useState("");
@@ -45,85 +49,55 @@ const ModifyMasterWsPopup = ({
   const tokenVal = JSON.parse(localStorage.getItem("accessToken"));
   const [typeData, setTypeData] = useState(types);
   const [allData, setAllData] = useState([]);
+  const [oldData,setOldData] = useState([])
+  console.log("forrrr", forfilter);
+  
+  console.log("uniqueFilterData", uniqueFilterData);
+  const result = uniqueFilterData.map(item => ({
+    id: item.id,
+    value: item.masterHead.toLowerCase()
+  }));
 
-  useEffect(() => {
-    if (filterData?.length > 0 || tableData?.length > 0) {
-      let masterHeadValues = [];
-      let clusterValues = [];
-      if (filterData?.length > 0 && tableData?.length > 0) {
-        masterHeadValues = [
-          ...new Set([
-            ...filterData.map((item) => item.masterHead?.value || item?.masterHead),
-            ...tableData.map((item) => item.masterHead),
-          ]),
-        ];
-        clusterValues = [
-          ...new Set([
-            ...filterData.flatMap(
-              (item) =>
-                item.clusterValues?.map((cluster) => cluster.value) || []
-            ),
-            ...tableData.flatMap(
-              (item) =>
-                item.clusterValues?.map((cluster) => cluster.value) || []
-            ),
-          ]),
-        ];
-      } else if (filterData?.length > 0) {
-        masterHeadValues = filterData.map((item) => item.masterHead?.value || item?.masterHead);
-        clusterValues = filterData.flatMap(
-          (item) => item.clusterValues?.map((cluster) => cluster.value) || []
-        );
-      } else if (tableData?.length > 0) {
-        masterHeadValues = tableData.map((item) => item.masterHead);
-        clusterValues = tableData.flatMap(
-          (item) => item.clusterValues?.map((cluster) => cluster.value) || []
-        );
-      }
-      const combinedValues = [
-        ...new Set([...masterHeadValues, ...clusterValues]),
-      ];
-      setAllData(combinedValues);
-      if (combinedValues?.length > 0) {
-        setWhoCluster((prevWhos) => {
-          const updatedWhos = prevWhos?.filter(
-            (item) => !combinedValues?.includes(item.value)
-          );
-          return JSON.stringify(updatedWhos) !== JSON.stringify(prevWhos)
-            ? updatedWhos
-            : prevWhos;
-        });
-
-        setWhatCluster((prevWheres) => {
-          const updatedWheres = prevWheres?.filter(
-            (item) => !combinedValues?.includes(item.value)
-          );
-          return JSON.stringify(updatedWheres) !== JSON.stringify(prevWheres)
-            ? updatedWheres
-            : prevWheres;
-        });
-        setWhereCluster((prevWhats) => {
-          const updatedWhats = prevWhats?.filter(
-            (item) => !combinedValues?.includes(item.value)
-          );
-          return JSON.stringify(updatedWhats) !== JSON.stringify(prevWhats)
-            ? updatedWhats
-            : prevWhats;
-        });
-      }
-    }
-  }, [filterData, tableData, whoCluster, whatCluster, whereCluster]);
+  const oldSaved = forfilter.map(item => ({
+    id: item.id,
+    value: item.masterHead.toLowerCase()
+  }));
+  console.log("result",result);
+  
+  const filterClusterList = (clusterList, updatedTableData) => {
+    const updatedTableIds = updatedTableData.map((item) => item.masterHead);  
+    const filteredWho = clusterList.Who.filter((item) =>
+      updatedTableIds.includes(item.value.toLowerCase())
+    );
+    const filteredWhat = clusterList.What.filter((item) =>
+      updatedTableIds.includes(item.value.toLowerCase())
+    );
+    const filteredWhere = clusterList.Where.filter((item) =>
+      updatedTableIds.includes(item.value.toLowerCase())
+    );
+  
+    return {
+      ...clusterList,
+      Who: filteredWho, 
+      What: filteredWhat,
+      Where: filteredWhere
+    };
+  };
 
   const handleClusterChange = () => {
+    const filteredClusterList = filterClusterList(clusterList, uniqueFilterData);
     if (wsForm === "who") {
-      setclusterHeadVals(clusterList?.Who);
-      setWhoCluster(clusterList?.Who);
+      setclusterHeadVals(filteredClusterList?.Who);
+      setWhoCluster(filteredClusterList?.Who);
+      setOldData(clusterList?.Who)
     } else if (wsForm === "what") {
-      setclusterHeadVals(clusterList?.What);
-      setWhatCluster(clusterList?.What);
+      setclusterHeadVals(filteredClusterList?.What);
+      setWhatCluster(filteredClusterList?.What);
+      setOldData(clusterList?.What)
     } else if (wsForm === "where") {
-      setWhereCluster(clusterList?.Where);
-      setclusterHeadVals(clusterList?.Where);
+      setWhereCluster(filteredClusterList?.Where);
+      setclusterHeadVals(filteredClusterList?.Where);
+      setOldData(clusterList?.Where)
     } else {
       setWhoCluster(null);
       setWhatCluster(null);
@@ -131,9 +105,11 @@ const ModifyMasterWsPopup = ({
     }
   };
 
+  // console.log("clusterHeadVals", clusterHeadVals);
+  
   useEffect(() => {
     handleClusterChange();
-  }, [wsForm, clusterList]);
+  }, [wsForm, clusterList, uniqueFilterData]);
 
   useEffect(() => {
     if (!anythingChanged) {
@@ -147,29 +123,8 @@ const ModifyMasterWsPopup = ({
       setTypo(modifyItemObj?.type || []);
       if (modalType === "InBetweenFlow") {
         const selectedWs = modifyItemObj?.ws;
-        const isPrimarySelected = myNewData?.some(
-          (comb) => comb.ws === "who" && comb.type === "primary"
-        );
-        if (selectedWs === "who" && isPrimarySelected) {
-          setTypeData((prevTypo) =>
-            prevTypo?.filter((item) => item.name !== "Primary")
-          );
-        }
-        if (selectedWs === "what") {
-          if (!typeData?.some((item) => item.name === "Primary")) {
-            setTypeData((prevTypo) => [
-              { id: 1, name: "Primary" },
-              ...prevTypo,
-            ]);
-          }
-        } else if (selectedWs === "where") {
-          if (!typeData?.some((item) => item.name === "Primary")) {
-            setTypeData((prevTypo) => [
-              { id: 1, name: "Primary" },
-              ...prevTypo,
-            ]);
-          }
-        }
+        const matchedData = updateNewData.find((data) => data.id === modifyItemObj?.id);
+        setTypo(matchedData?.type)
       } else if (modalType === "saparate") {
         const selectedWs = modifyItemObj?.ws;
         const isPrimarySelected = filteredData?.some(
@@ -207,16 +162,10 @@ const ModifyMasterWsPopup = ({
         setClusterData(modifyItemObj?.clusterValues || []);
       }
       if (modalType === "InBetweenFlow") {
-        if (
-          clusterValuesVals?.length === 0 &&
-          modifyItemObj?.masterHead?.id === clusterHead?.id
-        ) {
           getClusterValueData(
             modifyItemObj?.masterHead,
-            modifyItemObj?.id ?? clusterHeadId,
-            false
+            modifyItemObj?.id ?? clusterHeadId
           );
-        }
       }
     }
   }, [modifyItemObj, type, clusterHead, clusterHeadVals]);
@@ -278,6 +227,7 @@ const ModifyMasterWsPopup = ({
   };
   const [clusterHeadId, setClusterHeadId] = useState("");
   const [clusterValueSet, setClusterValueSet] = useState();
+console.log("clusterVaaaaaaaaaaalueSet",clusterValueSet);
 
   const onClusterHead = (selectedValue, fieldName) => {
     const selectedCluster = clusterHeadVals.find(
@@ -286,7 +236,7 @@ const ModifyMasterWsPopup = ({
     setClusterHead(selectedCluster?.value);
     setClusterHeadId(selectedCluster?.id);
     if (modalType === "InBetweenFlow") {
-      getClusterValueData(selectedCluster?.value, selectedCluster?.id, true);
+      getClusterValueData(selectedCluster?.value, selectedCluster?.id);
     }
     setAnythingChanged(true);
   };
@@ -296,19 +246,20 @@ const ModifyMasterWsPopup = ({
     ? selectedValue
     : [selectedValue];
     const allClusterValues = valuesArray;
-    let updatedClusterValues = [];
+    let updatedClusterValuesss = [];
     if (valuesArray.includes(selectedValue)) {
-      // If "cat" is selected, add all four values
-      updatedClusterValues = allClusterValues;
+      updatedClusterValuesss = allClusterValues;
     } else {
-      updatedClusterValues = valuesArray.filter(value => allClusterValues.includes(value));
+      updatedClusterValuesss = valuesArray.filter(value => allClusterValues.includes(value));
     }
-    const selectedClusterObjects = updatedClusterValues
-    .map((value) => clusterValuesVals.find((item) => item?.value === value))
+    const selectedClusterObjects = updatedClusterValuesss
+    .map((value) => updatedClusterValues.find((item) => item?.value === value))
     .filter(Boolean);
+
+    const oldSelected = clusterValue
     const oldClusterObjects =
-    (payloadClusterValues || []).filter((item) =>
-      valuesArray.includes(item.value)
+    (oldSaved || []).filter((item) =>
+      valuesArray.includes(item.value.toLowerCase())
     );
     const mergedClusterObjects = [
       ...oldClusterObjects,
@@ -317,10 +268,10 @@ const ModifyMasterWsPopup = ({
       ),
     ].map((item) => ({
       id: item.id,
-      value: item.value,
+      value: item.value.toLowerCase(),
     }));
   
-    setClusterValue(updatedClusterValues);
+    setClusterValue(updatedClusterValuesss);
     setClusterValueSet(mergedClusterObjects);
     setAnythingChanged(true);
   };
@@ -338,6 +289,7 @@ const ModifyMasterWsPopup = ({
       setTempClusterValue("");
     }
   };
+
   const onClusterValuesText = (selectedValue) => {
     const valuesArray = selectedValue
       .split(",")
@@ -380,13 +332,9 @@ const ModifyMasterWsPopup = ({
     setAnythingChanged(true);
   };
 
-  const getClusterValueData = async (value, clusterId, bool) => {
+  const getClusterValueData = async (value, clusterId) => {    
     const data = allData;
-    if (clusterHeadVals?.length === 0) {
-      console.error("clusterHeadVals is not yet available.");
-      return;
-    }
-    const clustHeadVal = clusterHeadVals?.filter((item) => item?.value !== value)
+    const clustHeadVal = result?.filter((item) => item.value.toLowerCase() !== value.toLowerCase())
     const apiUrl = API_BASE_PATH + API_ROUTES.SORT_WS + story_id;
     const payload = {
       clusterHead: { value: value, id: clusterId },
@@ -401,36 +349,101 @@ const ModifyMasterWsPopup = ({
 
     try {
       const response = await axios.post(apiUrl, payload, config);
-
-      if (bool) {
-        const filteredArray = response?.data?.ws?.clusterValues;
-        // const filteredNewArrays = filteredArray?.filter(
-        //   (item) => item?.value !== value
-        // );
-
-        const finalFilteredArray = filteredArray?.filter(
-          (item) => !data.includes(item.value)
-        );
-
-        setclusterValuesVals(finalFilteredArray);
-      } else {
         const filteredArray = response?.data?.ws?.clusterValues;
         const filteredArrays = filteredArray?.filter(
           (item) => !data.includes(item.value)
         );
         setclusterValuesVals(filteredArrays);
         setPayloadClusterValues(filteredArray)
-      }
     } catch (error) {
       console.error("Error calling the API:", error);
     }
   };
 
+  const removeDuplicateClusterHeads = (data) => {
+    const clusterHeads = new Set();
+    data.forEach((item) => {
+      item.clusterValues?.forEach((cluster) => {
+        clusterHeads.add(cluster.value);
+      });
+    });
+  
+    const filteredData = data.filter((item) => !clusterHeads.has(item.masterHead));
+  
+    return filteredData;
+  };
+
+  const filterClusterValues = (filteredNewData, finalFilteredArray,updateNewData) => {
+    const primaryWhoMasterHeads = filteredNewData
+      .filter((item) => item.ws === "who" && item.type?.name === "Primary")
+      .map((item) => item.masterHead);
+
+      const primaryWhoRemovedHeads = updateNewData
+      .filter((item) => item.ws === "who" && item.type === "Primary")
+      .map((item) => item.masterHead);
+      const combinedMasterHeads = new Set([...primaryWhoMasterHeads, ...primaryWhoRemovedHeads]);
+      const updatedFilteredArray = finalFilteredArray.filter(
+        (item) => !combinedMasterHeads.has(item.value.toLowerCase())
+      );
+  
+    return updatedFilteredArray;
+  };  
+
+  const newClusterValues = filterClusterValues(uniqueFilterData, clusterValuesVals,updateNewData);  
+  const clusterValus = (newClusterValues?.length > 0) ? newClusterValues: clusterValuesVals?.length > 1 ? clusterValuesVals:[]
+  
+  const removeItemsWithClusterValues = (filteredData, clusterValues, updateNewData) => {  
+    const dataToProcess = filteredData && filteredData.length > 0 ? filteredData : updateNewData;
+  
+    if (!dataToProcess) {
+      console.warn("No valid data to process");
+      return {
+        updatedFilteredData: [],
+        updatedClusterValues: clusterValues,
+      };
+    }
+  
+    const masterHeadsWithClusterValues = dataToProcess
+      .filter((item) => item.clusterValues && item.clusterValues.length > 0)
+      .map((item) => item.masterHead?.toLowerCase());
+  
+    const updatedClusterValues = clusterValues.filter(
+      (cluster) => !masterHeadsWithClusterValues.includes(cluster.value.toLowerCase())
+    );
+  
+    const updatedFilteredData = dataToProcess.filter(
+      (item) => !item.clusterValues || item.clusterValues.length === 0
+    );
+  
+    return {
+      updatedFilteredData,
+      updatedClusterValues,
+    };
+  };
+  const { updatedFilteredData, updatedClusterValues } = removeItemsWithClusterValues(
+    uniqueFilterData,
+    clusterValus,
+    updateNewData 
+  ); 
+
   const handleUpdate = () => {
     const updatedObj = {
       id: clusterHeadId ? clusterHeadId : modifyItemObj.id,
       ws: wsForm,
-      type: typo || modifyItemObj.type,
+      ...(modalType == "saparate" && {
+        type: typo || modifyItemObj.type,
+      }),
+      ...(modalType === "InBetweenFlow" && {
+
+        type: !Array.isArray(modifyItemObj?.type)
+        ? modifyItemObj?.type
+        : typo === "Primary"
+        ? { id: 1, name: "Primary" }
+        : typo === "Secondary"
+        ? { id: 2, name: "Secondary" }
+        : modifyItemObj?.type,
+                apiType:modifyItemObj?.apiType ?? modifyItemObj?.type
+      }),
       masterHead:
         modalType === "saparate"
           ? clusterHeadData ?? modifyItemObj?.masterHead
@@ -449,8 +462,6 @@ const ModifyMasterWsPopup = ({
         isNewField:
           modifyItemObj?.isNewField === true ? true : modifyItemObj?.new ?? false,
       }),
-      // updated:modifyItemObj?.new === false ? true: false,
-      // isNewField: modifyItemObj?.new === true ? true:modifyItemObj?.new ?? false,
     };
     onModify(updatedObj);
     onClose();
@@ -492,6 +503,7 @@ const ModifyMasterWsPopup = ({
             value={wsForm}
             onChange={(value) => onWsChange(value, "wsForm")}
             placeholder={"Select Ws Form"}
+            disabled={modalType==="InBetweenFlow"}
           >
             {storyWorldOptions?.map((item, index) => (
               <Option key={item.name} value={item?.name}>
@@ -500,7 +512,9 @@ const ModifyMasterWsPopup = ({
             ))}
           </Select>
         </div>
-        <div className="mt-8 mb-6">
+        {modalType === "saparate" && (
+          <>
+          <div className="mt-8 mb-6">
           <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
             Type
           </label>
@@ -518,6 +532,34 @@ const ModifyMasterWsPopup = ({
             ))}
           </Select>
         </div>
+          </>
+        )}
+        
+        {modalType === "InBetweenFlow" &&
+        (
+          <>
+           <div className="mt-8 mb-6">
+          <label className="block mt-5 mb-2 font-medium text-gray-900 text-md md:text-lg">
+            Type
+          </label>
+          <Select
+            size="large"
+            className="w-full"
+            value={typo?.name ?? typo} 
+            onChange={(value) => onTypeChange(value, "typo")} 
+            placeholder={"Select Type"}
+            disabled
+          >
+            {typeData?.map((item, index) => (
+              <Option key={item.name} value={item?.name}>
+                {item?.name}
+              </Option>
+            ))}
+          </Select>
+        </div>
+          </>
+        )}
+       
         {modalType === "InBetweenFlow" && (
           <div>
             <div className="mt-8 mb-6">
@@ -533,6 +575,7 @@ const ModifyMasterWsPopup = ({
                 optionFilterProp="children" // Enables search by dropdown text
                 allowClear
                 placeholder="Select Cluster Head"
+                disabled
               >
                 {whoCluster &&
                   whoCluster?.map((item, index) => (
@@ -570,9 +613,9 @@ const ModifyMasterWsPopup = ({
                 onChange={(value) => onClusterValues(value, "clusterValues")} 
                 placeholder={"Select Cluster Values"}
               >
-                {clusterValuesVals?.map((option) => (
-                  <Option key={option.id} value={option.value}>
-                    {option?.value}
+                {updatedClusterValues?.map((option) => (
+                  <Option key={option.id} value={option.value.toLowerCase()}>
+                    {option.value.toLowerCase()}
                   </Option>
                 ))}
               </Select>

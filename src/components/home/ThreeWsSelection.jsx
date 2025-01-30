@@ -347,12 +347,11 @@ const ThreeWsSelection = ({ onDiscard = () => {}, saveWs, handleSaveSuccess = ()
 
         setStoryUploadApiResponse(updatedContextObj);
         setIsSaved(true);
-
-        message.destroy(alertKey); // stop infinite loader alert
-        message.success("Ws Saved Successfully !");
         handleSaveSuccess(true);
         handleAnythingChanged(false);
-
+        message.destroy(alertKey); // stop infinite loader alert
+        message.success("Ws Saved Successfully !");
+        
       } else {
         message.destroy(alertKey); // stop infinite loader alert
         message.error("Error In Saving Ws ! Unable To Fetch Response !");
