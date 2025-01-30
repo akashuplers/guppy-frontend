@@ -1306,18 +1306,16 @@ if (updatedWhoData?.length > 0) {
     const hasPrimaryWho = checkIfPrimaryWhoExists(updateNewData);
     const result = meregedData.every(item => typeof item.type === 'object' && !Array.isArray(item.type));
     
-    if(newMergedData.length === updateNewData?.length && hasPrimaryWho && result==true){
+    if(newMergedData.length === updateNewData?.length && result==true){
       onSave();
-    } else if (meregedData?.length === updateNewData?.length && hasPrimaryWho) {
+    } else if (meregedData?.length === updateNewData?.length) {
       onSave();
     }  
      else {
       setIsDialogOpen(true);
       if (meregedData?.length !== updateNewData?.length) {
         setTitles("Please Select type as either Primary or Secondary");
-      } else if (!hasPrimaryWho) {
-        setTitles("Please Select one who Primary");
-      }
+      } 
     }
   };
 
