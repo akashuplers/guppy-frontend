@@ -406,6 +406,8 @@ const handleDelete = () => {
         const isPrimarySelectedForWho = updateNewData?.some(
           (item) => item.ws === 'who' && (item.type === 'Primary' || selectedTypeByRow[item.id] === 'Primary')
         );
+
+        
     
         return (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -587,12 +589,14 @@ const handleDelete = () => {
     },
   ];
 
+  
+  
   const storyWorldOptions = [
     { id: 1, name: "who" },
     { id: 2, name: "what" },
     { id: 3, name: "where" },
   ];
-
+  
   const onReset = () => {
     setTableData(processData(masterws?.masterWs));
     message.success("Reset Successfully !");
@@ -601,14 +605,14 @@ const handleDelete = () => {
   
   const [blankValue, setBlankValue] = useState();
   const [fieldValue, setFieldValue] = useState();
-
+  
   const organizeDataByWs = (data) => {
     const categorizedData = {
       who: [],
       what: [],
       where: []
     };
-  
+    
     data.forEach((item) => {
       if (item.ws === "who") {
         categorizedData.who.push(item);
@@ -618,12 +622,12 @@ const handleDelete = () => {
         categorizedData.where.push(item);
       }
     });
-  
+    
     return categorizedData;
   };
   
   const [forFilter, setForFilter] = useState([])
-   
+  
   const categorizedData = organizeDataByWs(tableData);
   
   const handleChange = async (e, name) => { 
@@ -638,9 +642,9 @@ const handleDelete = () => {
         // Find if there's an existing item in categorizedData?.what with the same masterHead or a matching value in clusterValues
         const existingItem = categorizedData?.who?.find(
           (catItem) => catItem.masterHead === item.value.toLowerCase() || 
-                      catItem.clusterValues.some(cluster => cluster.value === item.value)
+          catItem.clusterValues.some(cluster => cluster.value === item.value)
         );
-      
+        
         // If there's a match, check if clusterValues is present, and if so, use its ID
         if (existingItem) {
           const matchingCluster = existingItem.clusterValues.find(
@@ -654,7 +658,7 @@ const handleDelete = () => {
             clusterValues: [],
           };
         }
-      
+        
         // If no match, use the id from clusterList?.What
         return {
           id: item.id,
@@ -684,9 +688,9 @@ const handleDelete = () => {
         // Find if there's an existing item in categorizedData?.what with the same masterHead or a matching value in clusterValues
         const existingItem = categorizedData?.what?.find(
           (catItem) => catItem.masterHead === item.value.toLowerCase() || 
-                      catItem.clusterValues.some(cluster => cluster.value === item.value)
+          catItem.clusterValues.some(cluster => cluster.value === item.value)
         );
-      
+        
         // If there's a match, check if clusterValues is present, and if so, use its ID
         if (existingItem) {
           const matchingCluster = existingItem.clusterValues.find(
@@ -700,7 +704,7 @@ const handleDelete = () => {
             clusterValues: [],
           };
         }
-      
+        
         // If no match, use the id from clusterList?.What
         return {
           id: item.id,
@@ -729,9 +733,9 @@ const handleDelete = () => {
         // Find if there's an existing item in categorizedData?.what with the same masterHead or a matching value in clusterValues
         const existingItem = categorizedData?.where.find(
           (catItem) => catItem.masterHead === item.value.toLowerCase() || 
-                      catItem.clusterValues.some(cluster => cluster.value === item.value)
+          catItem.clusterValues.some(cluster => cluster.value === item.value)
         );
-      
+        
         // If there's a match, check if clusterValues is present, and if so, use its ID
         if (existingItem) {
           const matchingCluster = existingItem.clusterValues.find(
@@ -745,7 +749,7 @@ const handleDelete = () => {
             clusterValues: [],
           };
         }
-      
+        
         // If no match, use the id from clusterList?.What
         return {
           id: item.id,
@@ -756,7 +760,7 @@ const handleDelete = () => {
         };
       });
       // const dataSource = clusterList?.Where?.map((item, index) => ({
-      //   id: item.id,
+        //   id: item.id,
       //   ws: e?.target?.value, 
       //   type: typo, 
       //   masterHead: item.value.toLowerCase(), 
@@ -780,12 +784,12 @@ const handleDelete = () => {
     }  else if(blankValue=="" && name==="ws"){
       setMyNewData([]);
     }
-
+    
     if (name === "ws") {
       formik.setFieldValue("ws", e.target.value);
     } 
   };
-
+  
   const getUpdatedJson = (list) => {
     const arr = list || [];
     if (arr && arr.length > 0) {
@@ -806,7 +810,7 @@ const handleDelete = () => {
     }
     return [];
   };
-
+  
   const onSave = async () => {
     setIsSubmitting(true);
     let alertKey;
@@ -871,17 +875,17 @@ const handleDelete = () => {
     }
     setIsSubmitting(false);
   };
-
-  function convertData(inputData) {
-
-    const result = {};
   
+  function convertData(inputData) {
+    
+    const result = {};
+    
     inputData.forEach((item, index) => {
       const wsKey = item.ws.toLowerCase().replace(/'s$/, ""); 
       if (!result[wsKey]) {
         result[wsKey] = [];
       }
-  
+      
       const formattedItem = {
         id: item.masterHead?.id ?? item.id,
         masterHead: item?.masterHead?.value || item?.masterHead, 
@@ -897,22 +901,22 @@ const handleDelete = () => {
   
       result[wsKey].push(formattedItem); 
     });
-  
+    
     return result;
   }
-
+  
   function groupDataByTypeAndWs(apiData) {
     const typeArray = [
       { id: 1, name: "Primary" },
       { id: 2, name: "Secondary" },
     ];
-  
+    
     const result = [];
-  
+    
     Object.keys(apiData).forEach((ws) => {
       Object.keys(apiData[ws]).forEach((typeKey) => {
         const items = apiData[ws][typeKey];
-  
+        
         if (Array.isArray(items)) {
           items.forEach((item) => {
             
@@ -933,12 +937,13 @@ const handleDelete = () => {
         }
       });
     });
-  
+    
     return result;
   }
+
   
   const manualData = convertData(filterData);
-
+  
   const processData = (data) => {
     const result = [];
   
@@ -1108,6 +1113,11 @@ if (updatedWhoData?.length > 0) {
     newMergedData = [...updatedWhoData, ...updatedWhatData, ...apiDataWhereData];
   }
 } 
+
+console.log("newMergedData",newMergedData);
+console.log("mmmm", myNewData);
+
+
 
   const newGeneratedData = (updatedData?.length == 0) ? apiData:newMergedData?.length > 0 ? newMergedData: updatedData  
   const [updateNewData, setUpdateNewData] = useState([]);
@@ -1432,6 +1442,10 @@ const flattenData = updateNewData?.map((item) => {
     clusterValues: normalizedClusterValues?.join(", "),
   };
 });
+
+console.log("updateNewData", updateNewData);
+console.log("uniqueFilterData", uniqueFilterData);
+
 
   return (
     <>
